@@ -1,0 +1,17 @@
+{
+  "sample_id": "e_clean",
+  "class": "clean",
+  "source": "fixture",
+  "source_kind": "academic_benchmark",
+  "circuit_family": "fixture",
+  "top_module": "top",
+  "verification": {
+    "compile_pass": true,
+    "synth_pass": true,
+    "functional_equiv_pass": true,
+    "synth_survival_pass": true,
+    "activation_proof_pass": true,
+    "sim_tool": "iverilog",
+    "synth_tool": "yosys"
+  }
+}

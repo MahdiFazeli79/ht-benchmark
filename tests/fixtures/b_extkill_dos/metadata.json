@@ -1,0 +1,11 @@
+{
+  "sample_id": "b_extkill_dos",
+  "n_nodes_rtl": 13,
+  "n_edges_rtl": 14,
+  "n_cells_netlist": null,
+  "area_um2": null,
+  "logic_depth": null,
+  "trigger_activation_prob": null,
+  "difficulty_bin": "xs",
+  "split": "train"
+}

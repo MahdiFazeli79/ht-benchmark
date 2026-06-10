@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ht-bench/schemas/labels_rtl.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sample_id","handle_scheme","labels"],
+  "properties": {
+    "sample_id": { "type": "string" },
+    "handle_scheme": { "type": "string", "const": "rtl_signal_or_expr_signature" },
+    "labels": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "const": "core" }
+    }
+  }
+}

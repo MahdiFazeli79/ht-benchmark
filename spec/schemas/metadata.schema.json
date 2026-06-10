@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ht-bench/schemas/metadata.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sample_id","n_nodes_rtl","n_edges_rtl","n_cells_netlist","area_um2","logic_depth","trigger_activation_prob","difficulty_bin","split"],
+  "properties": {
+    "sample_id": { "type": "string" },
+    "n_nodes_rtl": { "type": "integer", "minimum": 0 },
+    "n_edges_rtl": { "type": "integer", "minimum": 0 },
+    "n_cells_netlist": { "type": ["integer","null"], "minimum": 0 },
+    "area_um2": { "type": ["number","null"] },
+    "logic_depth": { "type": ["integer","null"], "minimum": 0 },
+    "trigger_activation_prob": { "type": ["number","null"] },
+    "difficulty_bin": { "type": "string", "enum": ["xs","s","m","l"] },
+    "split": { "type": "string", "enum": ["train","val","test"] }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "sample_id": "b_extkill_dos",
+  "handle_scheme": "rtl_signal_or_expr_signature",
+  "labels": {
+    "top.force0": "core"
+  }
+}

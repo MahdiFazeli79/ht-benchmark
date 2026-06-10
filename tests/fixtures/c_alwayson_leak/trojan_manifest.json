@@ -1,0 +1,44 @@
+{
+  "sample_id": "c_alwayson_leak",
+  "class": "infected",
+  "source": "fixture",
+  "source_kind": "academic_benchmark",
+  "circuit_family": "fixture",
+  "top_module": "top",
+  "verification": {
+    "compile_pass": true,
+    "synth_pass": true,
+    "functional_equiv_pass": true,
+    "synth_survival_pass": true,
+    "activation_proof_pass": true,
+    "sim_tool": "iverilog",
+    "synth_tool": "yosys"
+  },
+  "taxonomy": {
+    "taxonomy_version": "1.0",
+    "taxonomy_ref": "Karri 2010; Trust-Hub 2017",
+    "insertion_phase": "design",
+    "insertion_level": "rtl",
+    "activation": "always_on",
+    "trigger_source": null,
+    "trigger_mechanism": null,
+    "payload": "leak_information"
+  },
+  "inserted_rtl": {
+    "signals": [
+      "top.leak"
+    ],
+    "line_ranges": [
+      [
+        1,
+        2
+      ]
+    ],
+    "module_instances": []
+  },
+  "generator": {
+    "model": "none",
+    "prompt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "attempt_count": 1
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "sample_id": "d_invalid_alwayson_modfunc",
+  "handle_scheme": "rtl_signal_or_expr_signature",
+  "labels": {
+    "top.leak": "core"
+  }
+}

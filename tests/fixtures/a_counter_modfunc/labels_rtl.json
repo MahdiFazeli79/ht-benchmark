@@ -1,0 +1,7 @@
+{
+  "sample_id": "a_counter_modfunc",
+  "handle_scheme": "rtl_signal_or_expr_signature",
+  "labels": {
+    "top.tcount": "core"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "taxonomy_version": "1.0",
+  "taxonomy_ref": "Karri et al. 2010; Trust-Hub (Shakya et al. 2017)",
+  "axes": {
+    "insertion_phase": { "fixed_v1": "design", "values": ["specification","design","fabrication","testing","assembly"] },
+    "insertion_level": { "fixed_v1": "rtl", "values": ["system","rtl","gate","layout","physical"] },
+    "activation": { "values": ["always_on","triggered"] },
+    "trigger_source": { "values": ["internal","external"], "required_when": {"activation": "triggered"}, "else": null },
+    "trigger_mechanism": { "values": ["combinational","sequential_counter","sequential_fsm"], "required_when": {"activation": "triggered"}, "else": null },
+    "payload": { "values": ["modify_functionality","degrade_performance","leak_information","denial_of_service"] }
+  },
+  "feasibility_constraints": [
+    {
+      "id": "always_on_excludes_functional_change",
+      "rule": "if activation == 'always_on' then payload in ['leak_information','degrade_performance']",
+      "rationale": "An always-on Trojan has no trigger gating its effect; any payload that alters observable function fails functional-equivalence verification. Only side-channel leakage and timing/power degradation can pass a functional testbench."
+    }
+  ]
+}

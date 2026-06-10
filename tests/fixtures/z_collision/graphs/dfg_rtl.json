@@ -1,0 +1,112 @@
+{
+  "sample_id": "z_collision",
+  "graph_kind": "dfg_rtl",
+  "nodes": [
+    {
+      "handle": "top.a_b",
+      "x_code": 5
+    },
+    {
+      "handle": "top.x",
+      "x_code": 5
+    },
+    {
+      "handle": "const:1@top.a_b:1",
+      "x_code": 9
+    },
+    {
+      "handle": "expr:plus(const:1@top.a_b:1,top.x)@top.a_b:",
+      "x_code": 17
+    },
+    {
+      "handle": "top.ab",
+      "x_code": 5
+    },
+    {
+      "handle": "const:2@top.ab:1",
+      "x_code": 9
+    },
+    {
+      "handle": "expr:plus(const:2@top.ab:1,top.x)@top.ab:",
+      "x_code": 17
+    },
+    {
+      "handle": "top.y",
+      "x_code": 5
+    },
+    {
+      "handle": "const:0@top.y:0",
+      "x_code": 9
+    },
+    {
+      "handle": "top.rstn",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:ulnot(top.rstn)@top.y:1",
+      "x_code": 7
+    },
+    {
+      "handle": "expr:xor(top.a_b,top.ab)@top.y:2",
+      "x_code": 21
+    },
+    {
+      "handle": "expr:branch(const:0@top.y:0,expr:ulnot(top.rstn)@top.y:1,expr:xor(top.a_b,top.ab)@top.y:2)@top.y:",
+      "x_code": 13
+    }
+  ],
+  "edges": [
+    [
+      0,
+      11
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      1,
+      6
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      4,
+      11
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      4
+    ],
+    [
+      8,
+      12
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      12
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      12,
+      7
+    ]
+  ]
+}

@@ -225,7 +225,7 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
 Stores ONLY `core` nodes (inversion #4). `neighborhood` and `clean` are computed at load (§8) from a `k` parameter; they are never persisted. Keyed by **intrinsic RTL handle**, never by DFG integer index. Two handle forms:
 
 - Named signal node: fully-qualified name, e.g. `"top.uart_rx.trojan_cnt[3]"`.
-- Unnamed intermediate-expression node: canonical signature `"expr:<op>(<sorted,fan-in,signal,names>)@<infected.v line>"`, e.g. `"expr:and(top.a,top.b)@142"`.
+- Unnamed intermediate-expression node: canonical signature `"expr:<op>(<sorted,fan-in,handles>)@<dest>:<child-index-path>"`, e.g. `"expr:xor(top.a,top.s)@top.y:1/2"`. The `<dest>:<path>` is the AST-structural position (binding destination plus child-index path); it is stable across re-extraction and invariant under emission-order shuffle. It replaces the source line — Pyverilog dataflow nodes do not carry line numbers, and structural position is in fact more stable (it does not shift when the file is edited).
 
 **Handle provenance (normative).** The handle is derived from the Verilog AST via Pyverilog scoped signal names, computed on `infected.v` upstream of any downstream tool's preprocessing. It is explicitly NOT the HW2VEC DFG node name: HW2VEC's `remove_underscores()` / flatten transforms are lossy (e.g. `trojan_cnt` and `trojancnt` collapse) and tool-coupled, so they can never be the source of identity. Any downstream tool (HW2VEC included) is a consumer mapped onto these handles, never their source.
 

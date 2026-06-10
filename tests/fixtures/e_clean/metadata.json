@@ -1,0 +1,11 @@
+{
+  "sample_id": "e_clean",
+  "n_nodes_rtl": 6,
+  "n_edges_rtl": 5,
+  "n_cells_netlist": null,
+  "area_um2": null,
+  "logic_depth": null,
+  "trigger_activation_prob": null,
+  "difficulty_bin": "xs",
+  "split": "train"
+}

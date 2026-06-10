@@ -1,0 +1,52 @@
+{
+  "sample_id": "e_clean",
+  "graph_kind": "dfg_rtl",
+  "nodes": [
+    {
+      "handle": "top.y",
+      "x_code": 5
+    },
+    {
+      "handle": "const:0@top.y:0",
+      "x_code": 9
+    },
+    {
+      "handle": "top.rstn",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:ulnot(top.rstn)@top.y:1",
+      "x_code": 7
+    },
+    {
+      "handle": "top.a",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:branch(const:0@top.y:0,expr:ulnot(top.rstn)@top.y:1,top.a)@top.y:",
+      "x_code": 13
+    }
+  ],
+  "edges": [
+    [
+      1,
+      5
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      3,
+      5
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      0
+    ]
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "sample_id": "z_collision",
+  "handle_scheme": "rtl_signal_or_expr_signature",
+  "labels": {
+    "top.a_b": "core",
+    "top.ab": "core"
+  }
+}

@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  light:
+    # Schema + validator + resolver + R9 collision detector. jsonschema only;
+    # validates the committed fixtures without re-extracting.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install jsonschema pytest
+      - run: python -m pytest tests/test_validate.py tests/test_resolve.py tests/test_hw2vec_compat.py -v
+
+  extraction:
+    # Reference extractor + round-trip gate. Needs Graphviz for pygraphviz.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev
+      - run: pip install jsonschema pytest pyverilog pygraphviz
+      - run: python -m pytest tests/test_roundtrip.py -v

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ht-bench/schemas/trojan_manifest.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sample_id","class","source","source_kind","circuit_family","top_module","verification"],
+  "properties": {
+    "sample_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "class": { "type": "string", "enum": ["clean","infected"] },
+    "source": { "type": "string", "minLength": 1 },
+    "source_kind": { "type": "string", "enum": ["llm_generated","academic_benchmark","open_source_ip","vendor_ip"] },
+    "circuit_family": { "type": "string" },
+    "top_module": { "type": "string" },
+
+    "taxonomy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taxonomy_version","taxonomy_ref","insertion_phase","insertion_level","activation","trigger_source","trigger_mechanism","payload"],
+      "properties": {
+        "taxonomy_version": { "type": "string", "const": "1.0" },
+        "taxonomy_ref": { "type": "string" },
+        "insertion_phase": { "type": "string", "const": "design" },
+        "insertion_level": { "type": "string", "const": "rtl" },
+        "activation": { "type": "string", "enum": ["always_on","triggered"] },
+        "trigger_source": { "type": ["string","null"], "enum": ["internal","external",null] },
+        "trigger_mechanism": { "type": ["string","null"], "enum": ["combinational","sequential_counter","sequential_fsm",null] },
+        "payload": { "type": "string", "enum": ["modify_functionality","degrade_performance","leak_information","denial_of_service"] }
+      }
+    },
+
+    "inserted_rtl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signals","line_ranges","module_instances"],
+      "properties": {
+        "signals": { "type": "array", "items": { "type": "string" } },
+        "line_ranges": { "type": "array", "items": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 } },
+        "module_instances": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "generator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model","prompt_hash","attempt_count"],
+      "properties": {
+        "model": { "type": "string" },
+        "prompt_hash": { "type": "string" },
+        "attempt_count": { "type": "integer", "minimum": 1 }
+      }
+    },
+
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compile_pass","synth_pass","sim_tool","synth_tool"],
+      "properties": {
+        "compile_pass": { "type": "boolean" },
+        "synth_pass": { "type": "boolean" },
+        "functional_equiv_pass": { "type": "boolean" },
+        "synth_survival_pass": { "type": "boolean" },
+        "activation_proof_pass": { "type": "boolean" },
+        "sim_tool": { "type": "string" },
+        "synth_tool": { "type": "string" }
+      }
+    }
+  },
+
+  "allOf": [
+    {
+      "if": { "properties": { "class": { "const": "infected" } }, "required": ["class"] },
+      "then": { "required": ["taxonomy","inserted_rtl","generator"] },
+      "else": { "properties": { "taxonomy": false, "inserted_rtl": false, "generator": false } }
+    }
+  ]
+}

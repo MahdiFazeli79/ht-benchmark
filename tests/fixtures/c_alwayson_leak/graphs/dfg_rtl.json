@@ -1,0 +1,84 @@
+{
+  "sample_id": "c_alwayson_leak",
+  "graph_kind": "dfg_rtl",
+  "nodes": [
+    {
+      "handle": "top.leak",
+      "x_code": 5
+    },
+    {
+      "handle": "top.a",
+      "x_code": 5
+    },
+    {
+      "handle": "const:0@top.leak:1",
+      "x_code": 9
+    },
+    {
+      "handle": "const:0@top.leak:2",
+      "x_code": 9
+    },
+    {
+      "handle": "expr:partselect(const:0@top.leak:1,const:0@top.leak:2,top.a)@top.leak:",
+      "x_code": 10
+    },
+    {
+      "handle": "top.y",
+      "x_code": 5
+    },
+    {
+      "handle": "const:0@top.y:0",
+      "x_code": 9
+    },
+    {
+      "handle": "top.rstn",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:ulnot(top.rstn)@top.y:1",
+      "x_code": 7
+    },
+    {
+      "handle": "expr:branch(const:0@top.y:0,expr:ulnot(top.rstn)@top.y:1,top.a)@top.y:",
+      "x_code": 13
+    }
+  ],
+  "edges": [
+    [
+      1,
+      4
+    ],
+    [
+      1,
+      9
+    ],
+    [
+      2,
+      4
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      4,
+      0
+    ],
+    [
+      6,
+      9
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      5
+    ]
+  ]
+}

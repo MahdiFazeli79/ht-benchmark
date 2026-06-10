@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ht-bench/schemas/labels_netlist.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sample_id","handle_scheme","labels"],
+  "properties": {
+    "sample_id": { "type": "string" },
+    "handle_scheme": { "type": "string", "enum": ["hierarchy_path","structural_fingerprint"] },
+    "labels": { "type": "object", "additionalProperties": { "type": "string", "const": "core" } }
+  }
+}

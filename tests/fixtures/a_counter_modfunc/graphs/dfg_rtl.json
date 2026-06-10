@@ -1,0 +1,144 @@
+{
+  "sample_id": "a_counter_modfunc",
+  "graph_kind": "dfg_rtl",
+  "nodes": [
+    {
+      "handle": "top.tcount",
+      "x_code": 5
+    },
+    {
+      "handle": "const:0@top.tcount:0",
+      "x_code": 9
+    },
+    {
+      "handle": "top.rstn",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:ulnot(top.rstn)@top.tcount:1",
+      "x_code": 7
+    },
+    {
+      "handle": "const:1@top.tcount:2/1",
+      "x_code": 9
+    },
+    {
+      "handle": "expr:plus(const:1@top.tcount:2/1,top.tcount)@top.tcount:2",
+      "x_code": 17
+    },
+    {
+      "handle": "expr:branch(const:0@top.tcount:0,expr:plus(const:1@top.tcount:2/1,top.tcount)@top.tcount:2,expr:ulnot(top.rstn)@top.tcount:1)@top.tcount:",
+      "x_code": 13
+    },
+    {
+      "handle": "top.y",
+      "x_code": 5
+    },
+    {
+      "handle": "const:0@top.y:0",
+      "x_code": 9
+    },
+    {
+      "handle": "expr:ulnot(top.rstn)@top.y:1",
+      "x_code": 7
+    },
+    {
+      "handle": "top.a",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:unot(top.a)@top.y:2/0",
+      "x_code": 12
+    },
+    {
+      "handle": "const:4'hf@top.y:2/1/1",
+      "x_code": 9
+    },
+    {
+      "handle": "expr:eq(const:4'hf@top.y:2/1/1,top.tcount)@top.y:2/1",
+      "x_code": 18
+    },
+    {
+      "handle": "expr:branch(expr:eq(const:4'hf@top.y:2/1/1,top.tcount)@top.y:2/1,expr:unot(top.a)@top.y:2/0,top.a)@top.y:2",
+      "x_code": 13
+    },
+    {
+      "handle": "expr:branch(const:0@top.y:0,expr:branch(expr:eq(const:4'hf@top.y:2/1/1,top.tcount)@top.y:2/1,expr:unot(top.a)@top.y:2/0,top.a)@top.y:2,expr:ulnot(top.rstn)@top.y:1)@top.y:",
+      "x_code": 13
+    }
+  ],
+  "edges": [
+    [
+      0,
+      5
+    ],
+    [
+      0,
+      13
+    ],
+    [
+      1,
+      6
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      9
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      0
+    ],
+    [
+      8,
+      15
+    ],
+    [
+      9,
+      15
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      10,
+      14
+    ],
+    [
+      11,
+      14
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      15,
+      7
+    ]
+  ]
+}

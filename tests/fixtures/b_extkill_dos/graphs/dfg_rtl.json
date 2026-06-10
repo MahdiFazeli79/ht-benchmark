@@ -1,0 +1,116 @@
+{
+  "sample_id": "b_extkill_dos",
+  "graph_kind": "dfg_rtl",
+  "nodes": [
+    {
+      "handle": "top.force0",
+      "x_code": 5
+    },
+    {
+      "handle": "top.kill",
+      "x_code": 5
+    },
+    {
+      "handle": "top.en",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:and(top.en,top.kill)@top.force0:",
+      "x_code": 11
+    },
+    {
+      "handle": "top.y",
+      "x_code": 5
+    },
+    {
+      "handle": "const:0@top.y:0",
+      "x_code": 9
+    },
+    {
+      "handle": "top.rstn",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:ulnot(top.rstn)@top.y:1",
+      "x_code": 7
+    },
+    {
+      "handle": "const:4'h0@top.y:2/0",
+      "x_code": 9
+    },
+    {
+      "handle": "top.a",
+      "x_code": 5
+    },
+    {
+      "handle": "expr:branch(top.a,top.en,top.y)@top.y:2/2",
+      "x_code": 13
+    },
+    {
+      "handle": "expr:branch(const:4'h0@top.y:2/0,expr:branch(top.a,top.en,top.y)@top.y:2/2,top.force0)@top.y:2",
+      "x_code": 13
+    },
+    {
+      "handle": "expr:branch(const:0@top.y:0,expr:branch(const:4'h0@top.y:2/0,expr:branch(top.a,top.en,top.y)@top.y:2/2,top.force0)@top.y:2,expr:ulnot(top.rstn)@top.y:1)@top.y:",
+      "x_code": 13
+    }
+  ],
+  "edges": [
+    [
+      0,
+      11
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      3
+    ],
+    [
+      2,
+      10
+    ],
+    [
+      3,
+      0
+    ],
+    [
+      4,
+      10
+    ],
+    [
+      5,
+      12
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      12
+    ],
+    [
+      8,
+      11
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      12,
+      4
+    ]
+  ]
+}

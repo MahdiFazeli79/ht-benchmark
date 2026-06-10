@@ -1,0 +1,11 @@
+{
+  "sample_id": "c_alwayson_leak",
+  "n_nodes_rtl": 10,
+  "n_edges_rtl": 9,
+  "n_cells_netlist": null,
+  "area_um2": null,
+  "logic_depth": null,
+  "trigger_activation_prob": null,
+  "difficulty_bin": "xs",
+  "split": "train"
+}

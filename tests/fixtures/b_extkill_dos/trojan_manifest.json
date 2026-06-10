@@ -1,0 +1,48 @@
+{
+  "sample_id": "b_extkill_dos",
+  "class": "infected",
+  "source": "fixture",
+  "source_kind": "academic_benchmark",
+  "circuit_family": "fixture",
+  "top_module": "top",
+  "verification": {
+    "compile_pass": true,
+    "synth_pass": true,
+    "functional_equiv_pass": true,
+    "synth_survival_pass": true,
+    "activation_proof_pass": true,
+    "sim_tool": "iverilog",
+    "synth_tool": "yosys"
+  },
+  "taxonomy": {
+    "taxonomy_version": "1.0",
+    "taxonomy_ref": "Karri 2010; Trust-Hub 2017",
+    "insertion_phase": "design",
+    "insertion_level": "rtl",
+    "activation": "triggered",
+    "trigger_source": "external",
+    "trigger_mechanism": "combinational",
+    "payload": "denial_of_service"
+  },
+  "inserted_rtl": {
+    "signals": [
+      "top.force0"
+    ],
+    "line_ranges": [
+      [
+        1,
+        2
+      ],
+      [
+        4,
+        4
+      ]
+    ],
+    "module_instances": []
+  },
+  "generator": {
+    "model": "none",
+    "prompt_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "attempt_count": 1
+  }
+}

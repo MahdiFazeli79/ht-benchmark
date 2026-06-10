@@ -10,5 +10,12 @@ venv/
 build/
 dist/
 
+# pytest / tooling
+.pytest_cache/
+
+# Pyverilog parser artifacts (written to cwd at parse time)
+parser.out
+parsetab.py
+
 # dataset build caches (regenerable; never the source of truth)
 data/samples/*/graphs/index_map.*.json

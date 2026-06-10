@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ht-bench/schemas/graph.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["sample_id","graph_kind","nodes","edges"],
+  "properties": {
+    "sample_id": { "type": "string" },
+    "graph_kind": { "type": "string", "enum": ["dfg_rtl","netlist"] },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["handle"],
+        "properties": {
+          "handle": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 2, "maxItems": 2 }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "graph_kind": { "const": "dfg_rtl" } }, "required": ["graph_kind"] },
+      "then": { "properties": { "nodes": { "items": {
+        "additionalProperties": false,
+        "required": ["handle","x_code"],
+        "properties": {
+          "handle": { "type": "string", "minLength": 1 },
+          "x_code": { "type": "integer", "minimum": 0, "maximum": 37 }
+        }
+      } } } }
+    },
+    {
+      "if": { "properties": { "graph_kind": { "const": "netlist" } }, "required": ["graph_kind"] },
+      "then": { "properties": { "nodes": { "items": {
+        "additionalProperties": false,
+        "required": ["handle","cell_type"],
+        "properties": {
+          "handle": { "type": "string", "minLength": 1 },
+          "cell_type": { "type": "string", "minLength": 1 }
+        }
+      } } } }
+    }
+  ]
+}
