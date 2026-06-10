@@ -10,6 +10,16 @@ venv/
 build/
 dist/
 
+# secrets — never commit (Tier-3 hard stop; see project git-authority policy)
+.env
+.env.*
+*.key
+*.pem
+**/secrets*
+**/credentials*
+*_credentials.json
+service-account*.json
+
 # pytest / tooling
 .pytest_cache/
 
