@@ -32,6 +32,19 @@ def test_collision_rejected_for_R9():
     assert any("R9" in e for e in errs), errs
 
 
+def test_copyleft_license_rejected_for_R10(tmp_path):
+    # A GPL circuit must be rejected at intake (incompatible with CC-BY benchmark).
+    import shutil
+    src = FX / "a_counter_modfunc"
+    dst = tmp_path / "gpl"
+    shutil.copytree(src, dst)
+    m = json.loads((dst / "trojan_manifest.json").read_text())
+    m["license"] = "GPL-3.0-only"
+    (dst / "trojan_manifest.json").write_text(json.dumps(m))
+    errors, _ = validate.validate_sample(dst, rtl_only=True)
+    assert any("R10" in e for e in errors), errors
+
+
 def test_handle_uniqueness_guard(tmp_path):
     # Duplicate a handle in a copy of a valid fixture -> validator must fail.
     import shutil

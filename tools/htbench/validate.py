@@ -195,6 +195,16 @@ def validate_sample(sample_dir, rtl_only=False, lint_sources=False, spec_dir=_SP
     except ValueError as e:
         errors.append(str(e))
 
+    # --- R10: license redistributability intake gate ---
+    lic_path = Path(spec_dir) / "licenses.json"
+    if lic_path.exists():
+        allow = {x.lower() for x in _load(lic_path)["redistributable_allowlist"]}
+        if manifest["license"].lower() not in allow:
+            errors.append(
+                f"R10: license {manifest['license']!r} not in the redistributable "
+                f"allowlist (spec/licenses.json); sample rejected at intake."
+            )
+
     # --- optional source lint ---
     if lint_sources:
         known = set(_load(Path(spec_dir) / "sources.json")["known_sources"])

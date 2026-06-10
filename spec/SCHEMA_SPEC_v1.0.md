@@ -116,7 +116,7 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
   "$id": "https://ht-bench/schemas/trojan_manifest.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["sample_id","class","source","source_kind","circuit_family","top_module","verification"],
+  "required": ["sample_id","class","source","source_kind","license","license_url","circuit_family","top_module","verification"],
   "properties": {
     "sample_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
     "class": { "type": "string", "enum": ["clean","infected"] },
@@ -124,6 +124,10 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
       "description": "Free-form provenance, e.g. 'opencores:uart16550', 'iscas85:c3540', 'picorv32', 'core', 'ghost'. No schema change to add a corpus. Optionally lint-checked against spec/sources.json." },
     "source_kind": { "type": "string", "enum": ["llm_generated","academic_benchmark","open_source_ip","vendor_ip"],
       "description": "Closed provenance axis. CORE/GHOST -> llm_generated; ISCAS/ITC-99/Trust-Hub -> academic_benchmark; OpenCores/RISC-V/OpenTitan -> open_source_ip; commercial -> vendor_ip." },
+    "license": { "type": "string", "minLength": 1,
+      "description": "SPDX identifier of the source circuit's license, e.g. 'Apache-2.0', 'ISC', 'BSD-3-Clause', 'CC-BY-4.0'. The license travels with the sample. Must be redistribution-compatible with the benchmark license (R10); a circuit whose license cannot be confirmed redistributable is rejected at intake." },
+    "license_url": { "type": "string", "minLength": 1,
+      "description": "URL to the source circuit's license text or origin repository, so provenance is auditable." },
     "circuit_family": { "type": "string" },
     "top_module": { "type": "string" },
 
@@ -194,7 +198,7 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
 }
 ```
 
-**Cross-field rules the validator MUST enforce beyond JSON Schema (R1–R9):**
+**Cross-field rules the validator MUST enforce beyond JSON Schema (R1–R10):**
 
 - **R1.** (infected) If `activation == "always_on"` then `trigger_source == null` AND `trigger_mechanism == null`.
 - **R2.** (infected) If `activation == "triggered"` then `trigger_source != null` AND `trigger_mechanism != null`.
@@ -205,6 +209,7 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
 - **R7.** Class consistency: `class == "clean"` ⇒ `taxonomy`, `inserted_rtl`, `generator` absent AND `labels_rtl.labels == {}` AND (`labels_netlist.labels == {}` when present). `class == "infected"` ⇒ all three present and `labels_rtl.labels` non-empty.
 - **R8.** Negative-class realism: a `clean` sample's `graphs/dfg_rtl.json` and (full mode) `graphs/netlist.json` MUST be real graphs from the same extraction/synthesis flow as infected samples, with non-empty `nodes` and `edges`. The validator asserts non-empty node and edge counts for clean samples, blocking the trivial "empty graph ⇒ clean" separator.
 - **R9.** AST-handle injectivity: the AST-derived handles of a sample MUST remain pairwise-distinct under any downstream tool name transform used in the benchmark (notably HW2VEC's). If a transform aliases two distinct handles, the sample is REJECTED at build time. A collision is a rejected sample, never a silently merged label. The validator enforces this via the HW2VEC shim's collision detector (§9 / `hw2vec_compat`).
+- **R10.** License redistributability (intake gate): `license` MUST be a SPDX identifier in the redistribution allowlist of `spec/licenses.json` (compatible with the benchmark data license recorded there). A circuit whose license is absent, unconfirmed, or copyleft-incompatible (e.g. GPL/LGPL under a CC-BY benchmark) is REJECTED at intake — same posture as the verification gauntlet. The license must travel with every sample so downstream redistribution is auditable. This protects the redistribution the citation strategy depends on.
 
 ---
 
@@ -369,7 +374,7 @@ Build flag `--rtl-only`. The validator treats `labels_netlist.json`, `graphs/net
 `htbench validate <path>` where path is a sample dir or `data/samples/`:
 
 1. JSON-Schema-validate every file against its schema (including the per-`graph_kind` node-feature conditionals).
-2. Enforce cross-field rules **R1–R9** (§4).
+2. Enforce cross-field rules **R1–R10** (§4).
 3. Enforce taxonomy feasibility constraints from `spec/taxonomy.json` (infected samples).
 4. Assert label key schemes match the declared `handle_scheme`, that stored label values are `"core"` only, and that NO key matches forbidden patterns: integer-only keys, `/^\$/` (Yosys gensyms), `/^\d+$/` (net bit-IDs). Any such key is a hard FAIL naming the offending key.
 5. Assert `handle` is present and UNIQUE within each graph file (§9). A duplicate or empty handle is a hard FAIL.
@@ -455,6 +460,9 @@ If either passes, the conditional branches are tightened until they fail.
 - **Conditional-schema strictness (proven, not trusted).** Added graph-schema negative fixtures (f, g): a `dfg_rtl` node with both `x_code` and `cell_type`, and a `netlist` node with `x_code`, MUST fail validation. Because `graph_kind` is enum-bound to two values, exactly one `if/then` branch always fires and its `additionalProperties: false` rejects the stray key; the base `nodes.items` is deliberately permissive (adding `additionalProperties: false` there would forbid `x_code`/`cell_type` and break the conditional). The fixtures prove the prose.
 - **Negative-class realism (decided + R8).** Clean samples carry real synthesized netlists and real DFGs from the identical flow, non-empty, so the negative class is not trivially separable by graph emptiness. New rule R8; validator asserts non-empty clean-sample graphs.
 - **Verification schema/sample-validity divergence (accepted).** The three infected-only verification flags are optional in JSON Schema and required-and-true only via R4, exactly as R1–R3 push taxonomy semantics past the schema. A file can be schema-valid yet sample-invalid; the validator is the sample-validity authority by design. Inherited consciously, no change.
+
+**Review round 5 (2026-06-10) — surfaced while scoping Phase-1 corpus sourcing:**
+- **License intake gate (R10).** Before ingesting real IP from five source families with five license regimes (OpenCores mixed GPL/LGPL/BSD, ISCAS/ITC-99 academic, RISC-V ISC/Apache, crypto often encumbered), the contract gains `license` + `license_url` provenance fields (required, both classes) and a redistributability allowlist in `spec/licenses.json`. License-compatibility is a hard intake gate: a circuit whose license cannot be confirmed redistribution-compatible with the benchmark data license is rejected, same posture as the verification gauntlet. Frozen BEFORE ingestion because it is a schema touch; deferring it risks a month-4 relicense/rip-out-and-rebalance, and is the one thing that could threaten the redistribution the citation strategy depends on.
 
 **Review round 4 (2026-06-10) — surfaced while planning the `htbench` implementation:**
 - **Handle provenance is AST-derived (§6, normative).** Planning exposed that the only on-hand extractor (HW2VEC) flattens and strips underscores, so its DFG node names are flat, lossy, and tool-coupled (`trojan_cnt`/`trojancnt` collapse). Using them as handles would silently violate the §9 uniqueness guarantee. Fixed: the handle is derived from the Verilog AST (Pyverilog scoped names), upstream of any tool preprocessing; HW2VEC is a downstream consumer mapped onto handles, never their source.

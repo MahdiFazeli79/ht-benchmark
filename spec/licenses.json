@@ -1,0 +1,17 @@
+{
+  "benchmark_data_license": "CC-BY-4.0",
+  "_comment": "Per-sample manifest.license (SPDX) must be in redistributable_allowlist (R10). Permissive + CC-BY-compatible only. Copyleft (GPL/LGPL/MPL) is deliberately excluded: it cannot be redistributed under a single CC-BY benchmark license. A circuit whose license is not on this list is rejected at intake.",
+  "redistributable_allowlist": [
+    "Apache-2.0",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Zlib",
+    "CC0-1.0",
+    "CC-BY-4.0",
+    "Unlicense",
+    "Solderpad-2.1",
+    "public-domain"
+  ]
+}

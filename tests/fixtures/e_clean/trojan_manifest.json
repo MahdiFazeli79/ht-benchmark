@@ -3,6 +3,8 @@
   "class": "clean",
   "source": "fixture",
   "source_kind": "academic_benchmark",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
   "circuit_family": "fixture",
   "top_module": "top",
   "verification": {
