@@ -27,7 +27,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev
+      # iverilog: Pyverilog's dataflow analyzer shells out to it as preprocessor.
+      - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev iverilog
       - run: pip install jsonschema pytest pyverilog pygraphviz
       - run: python -m pytest tests/test_roundtrip.py -v
 
@@ -41,7 +42,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev yosys
+      - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev yosys iverilog
       - name: install sv2v (pinned)
         run: |
           curl -fsSL -o sv2v.zip https://github.com/zachjs/sv2v/releases/download/v0.0.13/sv2v-Linux.zip
