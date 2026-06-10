@@ -35,6 +35,14 @@ _DFG_VOCAB = [
 ]
 _VOCAB_IDX = {t: i for i, t in enumerate(_DFG_VOCAB)}
 
+# Commutative DFOperator.operator strings: operand order is NOT semantic, so we
+# canonicalize (sort) their children before minting handles. All other
+# operators (Minus, Divide, comparisons, Sll/Srl/Sra, and structural nodes like
+# DFBranch/DFConcat/DFPartselect/DFPointer) keep Pyverilog's source order, where
+# operand order IS semantic.
+_COMMUTATIVE = {"And", "Or", "Xor", "Xnor", "Land", "Lor", "Plus", "Times",
+                "Eq", "NotEq"}
+
 # Pyverilog DFOperator.operator strings -> DFG vocab token.
 _OP2VOCAB = {
     "And": "and", "Or": "or", "Xor": "xor", "Xnor": "xnor", "Land": "land",
@@ -75,6 +83,28 @@ def _children(df_node):
         return []
 
 
+def _shape(node) -> str:
+    """Path-free structural signature, used only to canonically order the
+    children of a commutative operator. Deterministic and independent of
+    Pyverilog's operand emission order."""
+    cls = type(node).__name__
+    if cls == "DFTerminal":
+        return f"sig:{node.name}"
+    if cls in ("DFIntConst", "DFFloatConst", "DFEvalValue"):
+        return f"const:{getattr(node, 'value', getattr(node, 'eval', '?'))}"
+    kids = _children(node)
+    op = getattr(node, "operator", None) or _vocab_token_for(node)
+    if op in _COMMUTATIVE:
+        inner = ",".join(sorted(_shape(k) for k in kids))
+    else:
+        inner = ",".join(_shape(k) for k in kids)
+    return f"{op}({inner})"
+
+
+def _is_commutative(node) -> bool:
+    return getattr(node, "operator", None) in _COMMUTATIVE
+
+
 class _Builder:
     """Walks binding trees, mints handles, accumulates nodes and edges.
 
@@ -83,10 +113,14 @@ class _Builder:
     edges: set of (src_handle, dst_handle), resolved to indices at the end.
     """
 
-    def __init__(self):
+    def __init__(self, child_rng=None):
         self.handle_to_x: dict[str, int] = {}
         self.order: list[str] = []          # canonical insertion order of handles
         self.edges: set[tuple[str, str]] = set()
+        # Optional RNG used ONLY to shuffle commutative operands before the
+        # canonical sort, proving the sort neutralizes operand-order variation
+        # (round-trip --perturb). Never applied to non-commutative operators.
+        self.child_rng = child_rng
 
     def _add(self, handle: str, token: str) -> str:
         if handle not in self.handle_to_x:
@@ -114,6 +148,15 @@ class _Builder:
         # Composite node (operator / branch / concat / partselect / pointer):
         # visit children first so we can name this node by its fan-in.
         kids = _children(node)
+        if _is_commutative(node):
+            # Operand order is not semantic: canonicalize so the handle is
+            # independent of Pyverilog's operand emission order. The optional
+            # rng shuffle (test-only) proves the sort neutralizes any order.
+            if self.child_rng is not None:
+                self.child_rng.shuffle(kids)
+            kids = sorted(kids, key=_shape)
+        # else: non-commutative -> preserve Pyverilog source order (semantic).
+
         child_handles = []
         for i, k in enumerate(kids):
             child_path = f"{path}/{i}" if path else str(i)
@@ -135,15 +178,20 @@ class _Builder:
         self.edges.add((root, H.signal_handle(dest)))        # RHS -> LHS
 
 
-def extract_rtl(verilog_path: str, top: str | None = None, shuffle_seed: int | None = None) -> dict:
+def extract_rtl(verilog_path: str, top: str | None = None,
+                shuffle_seed: int | None = None,
+                child_shuffle_seed: int | None = None) -> dict:
     """Extract the canonical RTL DFG from `verilog_path`.
 
     Returns a dict conforming to spec/schemas/graph.schema.json with
-    graph_kind == "dfg_rtl". `shuffle_seed` permutes node emission order to
-    exercise the round-trip gate; handles are unaffected.
+    graph_kind == "dfg_rtl". `shuffle_seed` permutes node emission order;
+    `child_shuffle_seed` permutes commutative operands before the canonical
+    sort. Both exercise the round-trip gate; neither changes handles.
     """
     # Lazy import: keep the package importable without Pyverilog for pure
     # schema/validate work.
+    import random as _random
+
     from pyverilog.dataflow.dataflow_analyzer import VerilogDataflowAnalyzer
 
     topname = top or "top"
@@ -151,7 +199,8 @@ def extract_rtl(verilog_path: str, top: str | None = None, shuffle_seed: int | N
     analyzer.generate()
     binddict = analyzer.getBinddict()
 
-    b = _Builder()
+    child_rng = _random.Random(child_shuffle_seed) if child_shuffle_seed is not None else None
+    b = _Builder(child_rng=child_rng)
     # Deterministic binding order: sorted by destination name.
     for dest in sorted(binddict.keys(), key=str):
         for bind in binddict[dest]:

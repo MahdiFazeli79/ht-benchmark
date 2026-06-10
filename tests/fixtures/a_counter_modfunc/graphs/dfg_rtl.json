@@ -19,15 +19,15 @@
       "x_code": 7
     },
     {
-      "handle": "const:1@top.tcount:2/1",
+      "handle": "const:1@top.tcount:2/0",
       "x_code": 9
     },
     {
-      "handle": "expr:plus(const:1@top.tcount:2/1,top.tcount)@top.tcount:2",
+      "handle": "expr:plus(const:1@top.tcount:2/0,top.tcount)@top.tcount:2",
       "x_code": 17
     },
     {
-      "handle": "expr:branch(const:0@top.tcount:0,expr:plus(const:1@top.tcount:2/1,top.tcount)@top.tcount:2,expr:ulnot(top.rstn)@top.tcount:1)@top.tcount:",
+      "handle": "expr:branch(const:0@top.tcount:0,expr:ulnot(top.rstn)@top.tcount:1,expr:plus(const:1@top.tcount:2/0,top.tcount)@top.tcount:2)@top.tcount:",
       "x_code": 13
     },
     {
@@ -51,19 +51,19 @@
       "x_code": 12
     },
     {
-      "handle": "const:4'hf@top.y:2/1/1",
+      "handle": "const:4'hf@top.y:2/1/0",
       "x_code": 9
     },
     {
-      "handle": "expr:eq(const:4'hf@top.y:2/1/1,top.tcount)@top.y:2/1",
+      "handle": "expr:eq(const:4'hf@top.y:2/1/0,top.tcount)@top.y:2/1",
       "x_code": 18
     },
     {
-      "handle": "expr:branch(expr:eq(const:4'hf@top.y:2/1/1,top.tcount)@top.y:2/1,expr:unot(top.a)@top.y:2/0,top.a)@top.y:2",
+      "handle": "expr:branch(expr:unot(top.a)@top.y:2/0,expr:eq(const:4'hf@top.y:2/1/0,top.tcount)@top.y:2/1,top.a)@top.y:2",
       "x_code": 13
     },
     {
-      "handle": "expr:branch(const:0@top.y:0,expr:branch(expr:eq(const:4'hf@top.y:2/1/1,top.tcount)@top.y:2/1,expr:unot(top.a)@top.y:2/0,top.a)@top.y:2,expr:ulnot(top.rstn)@top.y:1)@top.y:",
+      "handle": "expr:branch(const:0@top.y:0,expr:ulnot(top.rstn)@top.y:1,expr:branch(expr:unot(top.a)@top.y:2/0,expr:eq(const:4'hf@top.y:2/1/0,top.tcount)@top.y:2/1,top.a)@top.y:2)@top.y:",
       "x_code": 13
     }
   ],

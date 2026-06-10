@@ -37,8 +37,14 @@ def roundtrip_sample(sample_dir, perturb=False) -> tuple[bool, str]:
         return False, f"core handles absent from extraction A: {sorted(missA)}"
     A = core  # core handles that resolve
 
-    # Pass B: re-extract (shuffled if perturb), resolve again.
-    gB = extract.extract_rtl(str(inf), top=top, shuffle_seed=987654321 if perturb else 1)
+    # Pass B: re-extract (shuffled if perturb), resolve again. Perturb shuffles
+    # BOTH node emission order AND commutative-operand order, so the gate
+    # exercises the axis that the expr-handle context path depends on.
+    gB = extract.extract_rtl(
+        str(inf), top=top,
+        shuffle_seed=987654321 if perturb else 1,
+        child_shuffle_seed=424242 if perturb else None,
+    )
     hsB = {n["handle"] for n in gB["nodes"]}
     missB = core - hsB
     if missB:

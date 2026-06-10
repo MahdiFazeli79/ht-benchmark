@@ -64,13 +64,19 @@ def const_handle(value: str, context: str) -> str:
 def expr_handle(op: str, fanin_handles: list[str], context: str) -> str:
     """Handle for an unnamed intermediate-expression node.
 
-    Form: ``expr:<op>(<sorted,fan-in,handles>)@<context>`` (spec §6). Fan-in
-    handles are sorted so the handle is independent of operand emission order;
+    Form: ``expr:<op>(<fan-in,handles>)@<context>`` (spec §6). Fan-in handles
+    are joined in the order the CALLER provides; the caller is responsible for
+    canonicalizing operand order (sorted for commutative operators so identity
+    is order-independent; source order for non-commutative operators where
+    operand order is semantic, e.g. ``a-b`` differs from ``b-a``). This module
+    must NOT re-sort: sorting non-commutative operands would alias distinct
+    nodes onto one handle.
+
     `context` is the AST-structural position ``<dest>:<child-index-path>`` that
     disambiguates structurally identical expressions and keeps handles injective
     within a graph (R9 / §9 uniqueness). Pyverilog dataflow nodes do not carry
     source line numbers, so structural position replaces the source line shown
     illustratively in the spec.
     """
-    inner = ",".join(sorted(fanin_handles))
+    inner = ",".join(fanin_handles)
     return f"expr:{op.lower()}({inner})@{context}"

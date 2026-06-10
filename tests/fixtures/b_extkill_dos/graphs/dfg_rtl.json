@@ -7,11 +7,11 @@
       "x_code": 5
     },
     {
-      "handle": "top.kill",
+      "handle": "top.en",
       "x_code": 5
     },
     {
-      "handle": "top.en",
+      "handle": "top.kill",
       "x_code": 5
     },
     {
@@ -47,11 +47,11 @@
       "x_code": 13
     },
     {
-      "handle": "expr:branch(const:4'h0@top.y:2/0,expr:branch(top.a,top.en,top.y)@top.y:2/2,top.force0)@top.y:2",
+      "handle": "expr:branch(const:4'h0@top.y:2/0,top.force0,expr:branch(top.a,top.en,top.y)@top.y:2/2)@top.y:2",
       "x_code": 13
     },
     {
-      "handle": "expr:branch(const:0@top.y:0,expr:branch(const:4'h0@top.y:2/0,expr:branch(top.a,top.en,top.y)@top.y:2/2,top.force0)@top.y:2,expr:ulnot(top.rstn)@top.y:1)@top.y:",
+      "handle": "expr:branch(const:0@top.y:0,expr:ulnot(top.rstn)@top.y:1,expr:branch(const:4'h0@top.y:2/0,top.force0,expr:branch(top.a,top.en,top.y)@top.y:2/2)@top.y:2)@top.y:",
       "x_code": 13
     }
   ],
@@ -65,12 +65,12 @@
       3
     ],
     [
-      2,
-      3
+      1,
+      10
     ],
     [
       2,
-      10
+      3
     ],
     [
       3,

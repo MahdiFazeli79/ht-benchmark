@@ -26,6 +26,14 @@ def test_to_hw2vec_roundtrips_shape():
     pytest.importorskip("torch")
     pytest.importorskip("torch_geometric")
     g = _graph("a_counter_modfunc")
+
+    # Guard against off-by-one alignment bugs that hide on uniform/fully
+    # connected graphs: require >1 distinct node type and at least one leaf
+    # (a node that is never a source of an edge).
+    assert len({n["x_code"] for n in g["nodes"]}) >= 2, "need heterogeneous node types"
+    srcs = {s for s, _ in g["edges"]}
+    assert any(i not in srcs for i in range(len(g["nodes"]))), "need at least one leaf node"
+
     data = HW.to_hw2vec(g)
     # node count matches
     assert data.x.shape[0] == len(g["nodes"])

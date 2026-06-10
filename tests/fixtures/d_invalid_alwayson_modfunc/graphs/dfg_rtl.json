@@ -19,7 +19,7 @@
       "x_code": 9
     },
     {
-      "handle": "expr:partselect(const:0@top.leak:1,const:0@top.leak:2,top.a)@top.leak:",
+      "handle": "expr:partselect(top.a,const:0@top.leak:1,const:0@top.leak:2)@top.leak:",
       "x_code": 10
     },
     {
