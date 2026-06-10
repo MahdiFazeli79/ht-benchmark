@@ -56,12 +56,24 @@ The reference extractor also needs the Graphviz system library
 ## Use
 
 ```bash
+# elaborate a parameterized / SystemVerilog core into flat Verilog-2005
+# (sv2v -> yosys -chparam), preserving intrinsic signal names
+htbench elaborate core.sv pkg.sv --top my_core --chparam CFG=33 -o elaborated.v
+
 # validate a sample directory (or a directory of samples)
 htbench validate data/samples --rtl-only
 
 # graph-regeneration invariance gate (the test that retires the re-run risk)
 htbench roundtrip data/samples --perturb
 ```
+
+`elaborate` is the RTL front-end for production cores. Raw Pyverilog parses
+Verilog-2005 but cannot *elaborate* packed-parameter generate-if gating (the
+CVA6-style `CFG[...]` wall); `sv2v -> yosys hierarchy -chparam -> write_verilog`
+resolves it while keeping user signal names intact (`write_verilog` runs before
+techmap, so no gensyms). One concrete config = one sample; multiple configs of
+one design become leakage-linked variants under a single `variant_group`. See
+`docs/phase1_elaborate_stage.md`.
 
 `validate` enforces the JSON Schemas plus cross-field rules **R1–R9** (taxonomy
 feasibility, verification gates, manifest-matches-files diff, class consistency,

@@ -30,3 +30,23 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev
       - run: pip install jsonschema pytest pyverilog pygraphviz
       - run: python -m pytest tests/test_roundtrip.py -v
+
+  elaborate:
+    # Yosys-elaboration RTL front-end: runs the sv2v + yosys -chparam pipeline
+    # for real (not skipped), like the round-trip gate above. sv2v pinned to
+    # match the version the stage was validated against (docs/phase1_sv2v_canary.md).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev yosys
+      - name: install sv2v (pinned)
+        run: |
+          curl -fsSL -o sv2v.zip https://github.com/zachjs/sv2v/releases/download/v0.0.13/sv2v-Linux.zip
+          unzip -q sv2v.zip
+          sudo install -m 0755 sv2v-Linux/sv2v /usr/local/bin/sv2v
+          sv2v --version && yosys -V
+      - run: pip install jsonschema pytest pyverilog pygraphviz
+      - run: PYTHONPATH=tools python -m pytest tests/test_elaborate.py -v
