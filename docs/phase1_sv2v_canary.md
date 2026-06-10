@@ -69,6 +69,37 @@ kind of toolchain assumption that would otherwise have detonated mid-Phase-1.
 2. If Yosys-elaboration: confirm the "configured instance is a real design"
    framing is acceptable (it is standard, but worth stating in §4).
 
+## Follow-up: Yosys-elaboration mini-spike — PASS (front-end validated)
+
+Ran the proposed fix on representative designs (no download; self-authored to
+reproduce the failing construct), full chain
+`Yosys elaborate (chparam + proc + flatten + write_verilog -noattr) → Pyverilog
+→ extractor → R9`:
+
+- **Resolves the wall.** A packed-parameter `generate-if` (`CFG[5]` gating, the
+  CVA6-style construct) elaborated cleanly under `chparam CFG 33` and extracted
+  to a DFG. The elaboration gap is closed by Yosys.
+- **Handles survive.** User-declared signal names are preserved intact
+  (`top.a`, `top.b`, `top.combined`, `top.result`, `top.rstn`); R9 injective;
+  zero `$`-gensyms. RTL-level `write_verilog` (before techmap/abc) keeps
+  intrinsic names — unlike the gate-level netlist, which gensyms everything.
+- **Caveat — synthetic intermediate nets.** Yosys introduces a few deterministic
+  auto-named nets (`top._0_`) for intermediates it creates during proc/flatten.
+  They are NOT source-intrinsic, but: deterministic within a pinned Yosys
+  version (round-trip-stable), they never correspond to manifest-inserted
+  signals (so manifest→handle joins are unaffected — they default to clean), and
+  they pass the forbidden-key check. **Policy for v1:** document them; the
+  handle contract holds for user signals (which is what labels reference).
+  Cross-Yosys-version stability of `_N_` names is a v1.1 concern (same class as
+  the pinned-tool caveat elsewhere).
+
+**Verdict: adopt the Yosys-elaboration front-end.** It unlocks the parameterized
+production-core backbone and preserves the intrinsic-handle contract for the
+signals that matter. Next: build the elaboration stage into `extract` (or a
+pre-extraction `elaborate` step) and add a config-selection policy (one concrete
+config per design = one sample; multiple configs = leakage-marked variants under
+one `variant_group`).
+
 ## Smaller fix noted in passing
 
 CVA6's license is **SHL-0.51** (Solderpad 0.51), not the `Solderpad-2.1` on the
