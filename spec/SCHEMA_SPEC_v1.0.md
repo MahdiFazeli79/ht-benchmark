@@ -116,7 +116,7 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
   "$id": "https://ht-bench/schemas/trojan_manifest.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["sample_id","class","source","source_kind","license","license_url","circuit_family","top_module","verification"],
+  "required": ["sample_id","class","source","source_kind","license","license_url","circuit_family","variant_group","top_module","verification"],
   "properties": {
     "sample_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
     "class": { "type": "string", "enum": ["clean","infected"] },
@@ -128,7 +128,10 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
       "description": "SPDX identifier of the source circuit's license, e.g. 'Apache-2.0', 'ISC', 'BSD-3-Clause', 'CC-BY-4.0'. The license travels with the sample. Must be redistribution-compatible with the benchmark license (R10); a circuit whose license cannot be confirmed redistributable is rejected at intake." },
     "license_url": { "type": "string", "minLength": 1,
       "description": "URL to the source circuit's license text or origin repository, so provenance is auditable." },
-    "circuit_family": { "type": "string" },
+    "circuit_family": { "type": "string",
+      "description": "DESCRIPTIVE functional type (e.g. 'aes', 'uart', 'riscv_cpu'). For §7 coverage. NOT the split key." },
+    "variant_group": { "type": "string", "minLength": 1,
+      "description": "SPLIT-ATOMIC structurally-independent-design identity = same source code / same generator instance. Config variants share one; unrelated implementations of the same function get distinct ones; a standalone design gets a unique one. Splits never straddle a variant_group (§8)." },
     "top_module": { "type": "string" },
 
     "taxonomy": {
@@ -300,7 +303,12 @@ The integer index and the neighborhood set are both **ephemeral**: computed at l
 
 `metadata.json` (`metadata.schema.json`), `additionalProperties: false`, required keys: `sample_id`, `n_nodes_rtl`, `n_edges_rtl`, `n_cells_netlist` (nullable in RTL-only mode), `area_um2` (nullable), `logic_depth` (nullable), `trigger_activation_prob` (nullable float), `difficulty_bin` (enum: `xs` <100 nodes, `s` 100–1k, `m` 1k–10k, `l` >10k), `split` (enum: `train`,`val`,`test`). `difficulty_bin` is a derived, recomputable reporting convenience (from `n_nodes_rtl`), not a per-node label.
 
-**Split atomicity over `circuit_family` (frozen before any split is published — cannot be retrofitted).** `manifest.circuit_family` is the split-atomic unit: every sample sharing a `circuit_family` MUST land in the same `split` (all train, or all test/val) — the official splits never straddle a family. Config variants of one parameterized generator (e.g. a core at several widths) MUST share a `circuit_family`, so near-identical structural twins cannot leak across train/test (the variant-level lift of the augmentation-leakage discipline). The corpus characterization MUST report the **distinct-`circuit_family` count per bin** alongside the raw sample count, so "120 large designs across 27 families" is auditable rather than "120 large" that are 6 cores × 20 configs. For the `l` bin specifically the target is **≥100 samples spanning ≥25 distinct families** (the family floor is the real anti-leakage constraint). A corpus-level validator check (not per-sample) MAY assert no `circuit_family` straddles a split.
+**Two distinct identity fields — `circuit_family` (descriptive) and `variant_group` (split-atomic).** These are different properties and must not be conflated (the same discipline as `source` vs `source_kind`):
+
+- `manifest.circuit_family` is DESCRIPTIVE — functional type (`"aes"`, `"uart"`, `"riscv_cpu"`), for §7 coverage and reader intuition. Two unrelated AES implementations share `circuit_family: "aes"` and that is correct.
+- `manifest.variant_group` is the SPLIT-ATOMIC key — structurally-independent-design identity: same source code / same generator instance. PicoRV32's config variants share one `variant_group`; Tiny-AES-OpenCores and AES-OpenTitan have DIFFERENT `variant_group`s even though both are `circuit_family: "aes"`; PicoRV32 and CVA6 have different `variant_group`s even though both are `circuit_family: "riscv_cpu"`. A standalone design gets its own unique `variant_group`.
+
+**Split atomicity (frozen before any split is published — cannot be retrofitted).** Every sample sharing a `variant_group` MUST land in the same `split` (all train, or all test/val); official splits never straddle a `variant_group`. This stops near-identical config variants from leaking across train/test (the variant-level lift of the augmentation-leakage discipline). The corpus characterization MUST report the **distinct-`variant_group` count per bin** alongside the raw sample count — "120 large designs across 27 independent designs" is the auditable claim, because the large-circuit-gap finding rests on *structurally independent* designs, not distinct function labels. For the `l` bin the target is **≥100 samples spanning ≥25 distinct `variant_group`s**. A corpus-level validator check (not per-sample) MAY assert no `variant_group` straddles a split.
 
 ---
 
@@ -463,8 +471,11 @@ If either passes, the conditional branches are tightened until they fail.
 - **Negative-class realism (decided + R8).** Clean samples carry real synthesized netlists and real DFGs from the identical flow, non-empty, so the negative class is not trivially separable by graph emptiness. New rule R8; validator asserts non-empty clean-sample graphs.
 - **Verification schema/sample-validity divergence (accepted).** The three infected-only verification flags are optional in JSON Schema and required-and-true only via R4, exactly as R1–R3 push taxonomy semantics past the schema. A file can be schema-valid yet sample-invalid; the validator is the sample-validity authority by design. Inherited consciously, no change.
 
+**Review round 7 (2026-06-10) — split the conflated identity field:**
+- **`circuit_family` (descriptive) vs `variant_group` (split-atomic).** Round 6 reused `circuit_family` as the split key, but that field carries two meanings that provably diverge: two unrelated AES cores share `circuit_family: "aes"` yet are independent (should split); two RISC-V generators share `"riscv_cpu"` yet are different sources. The leakage-atomic property is source/generator identity, not function. Conflating them silently breaks one guarantee (inflated/deflated family count, or a variant-group leaking across a split) with no error — the quiet-corruption signature this project refuses. Fix (same discipline as `source`/`source_kind`): keep `circuit_family` descriptive, add required `variant_group` = structurally-independent-design identity. Splits bind on `variant_group`; the ≥25 floor counts distinct `variant_group`s. Last load-bearing schema decision before sourcing.
+
 **Review round 6 (2026-06-10) — split atomicity, surfaced while ruling on the l-bin config-variant policy:**
-- **`circuit_family` is the split-atomic unit (§8).** Copyleft exclusions (round 5) make the l-bin floor reachable only with config variants of parameterized cores, which are near-identical structural twins. Without a constraint they would leak across train/test (the exact failure Nina's thesis identified with resynthesis augmentation) and the "we expose the large-circuit generalization gap" headline would be a leakage artifact. Frozen now because splits cannot be retrofitted once published: variants share a `circuit_family`, splits never straddle a family, the distinct-family count per bin is a reported statistic, and the `l` bin targets ≥100 samples across ≥25 families. No new field — reuses the existing required `circuit_family`; adds a split constraint + a reporting obligation.
+- **Split atomicity introduced (§8).** Copyleft exclusions (round 5) make the l-bin floor reachable only with config variants of parameterized cores, near-identical structural twins that would leak across train/test (the exact failure Nina's thesis identified with resynthesis augmentation) and make the "large-circuit generalization gap" headline a leakage artifact. Frozen now because splits cannot be retrofitted: variants in one split-atomic group, splits never straddle it, distinct-group count per bin reported, `l` bin ≥100 samples across ≥25 groups. (Round 6 keyed this on `circuit_family`; round 7 corrected the key to a dedicated `variant_group`.)
 
 **Review round 5 (2026-06-10) — surfaced while scoping Phase-1 corpus sourcing:**
 - **License intake gate (R10).** Before ingesting real IP from five source families with five license regimes (OpenCores mixed GPL/LGPL/BSD, ISCAS/ITC-99 academic, RISC-V ISC/Apache, crypto often encumbered), the contract gains `license` + `license_url` provenance fields (required, both classes) and a redistributability allowlist in `spec/licenses.json`. License-compatibility is a hard intake gate: a circuit whose license cannot be confirmed redistribution-compatible with the benchmark data license is rejected, same posture as the verification gauntlet. Frozen BEFORE ingestion because it is a schema touch; deferring it risks a month-4 relicense/rip-out-and-rebalance, and is the one thing that could threaten the redistribution the citation strategy depends on.

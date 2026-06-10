@@ -6,6 +6,7 @@
   "license": "CC0-1.0",
   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
   "circuit_family": "fixture",
+  "variant_group": "d_invalid_alwayson_modfunc",
   "top_module": "top",
   "verification": {
     "compile_pass": true,

@@ -85,13 +85,16 @@ are marked so the official split never straddles them.
 
 ## Rulings (settled 2026-06-10)
 
-1. **l-floor = ≥100 l-bin samples spanning ≥25 distinct `circuit_family`.** Config
-   variants count, but the *family* floor (≥25) is the real constraint, so the
-   bin can't be "6 cores × 20 configs." Every variant shares its generator's
-   `circuit_family`; splits are atomic over `circuit_family` (frozen, spec §8);
-   the distinct-family count per bin is a reported statistic ("120 large across
-   27 families"). **Source the l bin and assign `circuit_family` in the SAME
-   pass** — family identity is the steering variable, not a post-hoc tag.
+1. **l-floor = ≥100 l-bin samples spanning ≥25 distinct `variant_group`.** Config
+   variants count, but the *independent-design* floor (≥25) is the real
+   constraint, so the bin can't be "6 cores × 20 configs." `variant_group` =
+   structurally-independent-design identity (same source/generator); splits are
+   atomic over `variant_group` (frozen, spec §8, round 7); `circuit_family`
+   stays DESCRIPTIVE (function) and is NOT the split key. The distinct-
+   `variant_group` count per bin is a reported statistic ("120 large across 27
+   independent designs"). **Source the l bin and assign `variant_group` in the
+   SAME pass** — independent-design identity is the steering variable, not a
+   post-hoc tag.
 2. **ITC-99 excluded from the redistributed corpus**, and the exclusion becomes a
    one-paragraph **license-rigor note** in §2/§9 ("a redistributability gate
    excluded ITC-99 (copyleft) and most OpenCores crypto (LGPL) at intake"). v1.1

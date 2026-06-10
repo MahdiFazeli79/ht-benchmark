@@ -140,7 +140,9 @@ def build_one(sid: str, spec: dict) -> None:
         "source_kind": "academic_benchmark",
         "license": "CC0-1.0",
         "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-        "circuit_family": "fixture", "top_module": "top",
+        "circuit_family": "fixture",
+        "variant_group": sid,   # each fixture is its own independent design
+        "top_module": "top",
         "verification": {"compile_pass": True, "synth_pass": True,
                          "functional_equiv_pass": True, "synth_survival_pass": True,
                          "activation_proof_pass": True, "sim_tool": "iverilog",

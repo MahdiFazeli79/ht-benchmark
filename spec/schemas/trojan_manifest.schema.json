@@ -3,7 +3,7 @@
   "$id": "https://ht-bench/schemas/trojan_manifest.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["sample_id","class","source","source_kind","license","license_url","circuit_family","top_module","verification"],
+  "required": ["sample_id","class","source","source_kind","license","license_url","circuit_family","variant_group","top_module","verification"],
   "properties": {
     "sample_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
     "class": { "type": "string", "enum": ["clean","infected"] },
@@ -12,6 +12,7 @@
     "license": { "type": "string", "minLength": 1 },
     "license_url": { "type": "string", "minLength": 1 },
     "circuit_family": { "type": "string" },
+    "variant_group": { "type": "string", "minLength": 1 },
     "top_module": { "type": "string" },
 
     "taxonomy": {
