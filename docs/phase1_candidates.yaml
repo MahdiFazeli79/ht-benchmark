@@ -1,0 +1,219 @@
+# Phase-1 candidate circuit list (PRE-DOWNLOAD, for review). Nothing ingested.
+# Two intake dimensions per row: LICENSE (R10) and LANGUAGE/parse-path.
+# parse_path: verilog_direct | sv2v (SystemVerilog->Verilog via sv2v, MIT) |
+#             chisel_gen (generated Verilog, messy names) | EXCLUDE
+# status: candidate | reject (with reason). l-bin sourced first.
+# bin/proxy are pre-extraction estimates (RTL LOC); true bin is post-extraction.
+
+meta:
+  benchmark_data_license: CC-BY-4.0
+  note: First-pass list. Licenses marked 'unconfirmed' = reject under R10 until the
+        repo LICENSE file is checked. This list is the reviewable artifact; the
+        download boundary is NOT crossed.
+
+# ---------------------------------------------------------------------------
+# l-bin candidates (>10k nodes), sourced FIRST. Floor: >=100 samples across
+# >=25 distinct variant_group.
+# ---------------------------------------------------------------------------
+candidates:
+  - variant_group: cva6
+    circuit_family: riscv_cpu
+    source: "github:openhwgroup/cva6"
+    license: Solderpad-2.1
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+    proxy_loc: ">20k"
+    r9_canary: true        # 64-bit core, deep hierarchy + packages
+  - variant_group: openc910
+    circuit_family: riscv_cpu
+    source: "github:XUANTIE-RV/openc910"
+    license: Apache-2.0
+    language: verilog
+    parse_path: verilog_direct
+    bin: l
+    proxy_loc: ">30k"
+    r9_canary: true
+  - variant_group: veer_eh1
+    circuit_family: riscv_cpu
+    source: "github:chipsalliance/Cores-VeeR-EH1"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+    proxy_loc: ">15k"
+    r9_canary: true
+  - variant_group: veer_eh2
+    circuit_family: riscv_cpu
+    source: "github:chipsalliance/Cores-VeeR-EH2"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+    proxy_loc: ">15k"
+  - variant_group: ot_otbn
+    circuit_family: bignum_accel
+    source: "github:lowRISC/opentitan (hw/ip/otbn)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+    proxy_loc: ">10k"
+    r9_canary: true
+  - variant_group: ot_flash_ctrl
+    circuit_family: flash_controller
+    source: "github:lowRISC/opentitan (hw/ip/flash_ctrl)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+    proxy_loc: ">10k"
+  - variant_group: ot_usbdev
+    circuit_family: usb_device
+    source: "github:lowRISC/opentitan (hw/ip/usbdev)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+  - variant_group: ot_kmac
+    circuit_family: keccak
+    source: "github:lowRISC/opentitan (hw/ip/kmac)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+  - variant_group: rocket
+    circuit_family: riscv_cpu
+    source: "github:chipsalliance/rocket-chip"
+    license: BSD-3-Clause
+    language: chisel_gen
+    parse_path: chisel_gen        # generated Verilog; messy $-names -> R9 risk
+    bin: l
+    proxy_loc: ">20k"
+    r9_canary: true
+  - variant_group: boom
+    circuit_family: riscv_cpu
+    source: "github:riscv-boom/riscv-boom"
+    license: BSD-3-Clause
+    language: chisel_gen
+    parse_path: chisel_gen
+    bin: l
+    proxy_loc: ">40k"
+  - variant_group: snitch
+    circuit_family: riscv_cpu
+    source: "github:pulp-platform/snitch_cluster"
+    license: Solderpad-2.1
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+
+  # --- medium-large distinct groups (m, some promotable to l via config) ---
+  - variant_group: cv32e40p
+    circuit_family: riscv_cpu
+    source: "github:openhwgroup/cv32e40p"
+    license: Solderpad-2.1
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+    r9_canary: true
+  - variant_group: ibex
+    circuit_family: riscv_cpu
+    source: "github:lowRISC/ibex"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+    r9_canary: true
+  - variant_group: e203
+    circuit_family: riscv_cpu
+    source: "github:riscv-mcu/e203_hbirdv2"
+    license: unconfirmed     # likely Apache-2.0; verify LICENSE before ingest
+    language: verilog
+    parse_path: verilog_direct
+    bin: m
+  - variant_group: picorv32
+    circuit_family: riscv_cpu
+    source: "github:YosysHQ/picorv32"
+    license: ISC
+    language: verilog
+    parse_path: verilog_direct
+    bin: m            # promotable toward l at wide config (mark variants)
+  - variant_group: vexriscv
+    circuit_family: riscv_cpu
+    source: "github:SpinalHDL/VexRiscv"
+    license: MIT
+    language: verilog     # generated from SpinalHDL; ships Verilog
+    parse_path: verilog_direct
+    bin: m
+  - variant_group: ot_aes
+    circuit_family: aes
+    source: "github:lowRISC/opentitan (hw/ip/aes)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+  - variant_group: ot_hmac
+    circuit_family: hmac
+    source: "github:lowRISC/opentitan (hw/ip/hmac)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+  - variant_group: ot_spi_device
+    circuit_family: spi
+    source: "github:lowRISC/opentitan (hw/ip/spi_device)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+
+  # --- s / xs diversity + existing assets ---
+  - variant_group: serv
+    circuit_family: riscv_cpu
+    source: "github:olofk/serv"
+    license: ISC
+    language: verilog
+    parse_path: verilog_direct
+    bin: s
+  - variant_group: tiny_aes
+    circuit_family: aes
+    source: "opencores:tiny_aes"
+    license: Apache-2.0
+    language: verilog
+    parse_path: verilog_direct
+    bin: s
+  - variant_group: mini_aes
+    circuit_family: aes
+    source: "opencores:mini_aes"
+    license: BSD-2-Clause
+    language: verilog
+    parse_path: verilog_direct
+    bin: s
+  - variant_group: core_existing
+    circuit_family: mixed_small
+    source: "date2027 CORE corpus (LLM-generated, Mahdi-owned)"
+    license: CC-BY-4.0     # assign permissive; Mahdi owns the generated RTL
+    language: verilog
+    parse_path: verilog_direct
+    bin: xs               # the existing 50-circuit clean set; xs/s
+    note: reuse existing clean CORE designs; HW2VEC/GHOST/TrustHub need per-source license check
+
+# ---------------------------------------------------------------------------
+# REJECTED at intake (shown deliberately — the exclusions ARE the review)
+# ---------------------------------------------------------------------------
+rejected:
+  - name: ITC-99 (I99T)
+    source: "github:cad-polito-it/I99T"
+    reason: "R10 license — CC-BY-SA-4.0 / EUPL-1.2 (copyleft, incompatible with CC-BY)"
+  - name: ISCAS-85
+    source: academic mirrors (NCSU)
+    reason: "R10 license — no formal license (unconfirmed); also .bench netlist not synthesizable RTL"
+  - name: ISCAS-89
+    source: academic mirrors
+    reason: "R10 license — unconfirmed; netlist format"
+  - name: OpenCores AES128 / SHA cores / AES-128 pipelined
+    source: opencores.org
+    reason: "R10 license — LGPL (copyleft)"
+  - name: NEORV32
+    source: "github:stnolting/neorv32"
+    reason: "language — VHDL, not supported by the Pyverilog/Verilog pipeline (license BSD-3 is fine)"
