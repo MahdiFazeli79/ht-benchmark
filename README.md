@@ -73,9 +73,21 @@ extraction order to prove handles are traversal-order-independent.
 ## Develop
 
 ```bash
-python -m pytest tests/ -v            # 19 tests
+python -m pytest tests/ -v            # full suite
 python tests/build_fixtures.py        # regenerate fixtures from source
 ```
+
+### Secret guard (enable before any work that touches API keys)
+
+A fail-closed scanner rejects known key prefixes and high-entropy secret
+assignments. It runs in CI and ships as a pre-commit hook:
+
+```bash
+git config core.hooksPath hooks      # enable the pre-commit secret scan
+htbench-scan-secrets .               # scan the tree manually
+```
+
+Mark legitimate fixtures with a trailing `# pragma: allowlist secret`.
 
 ## Status
 

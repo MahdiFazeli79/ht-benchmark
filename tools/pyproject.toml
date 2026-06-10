@@ -17,6 +17,7 @@ hw2vec = ["torch", "torch-geometric"]
 
 [project.scripts]
 htbench = "htbench.cli:main"
+htbench-scan-secrets = "htbench.secret_scan:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Fail-closed secret scan on staged content (Tier-3 guard).
+# Enable once per clone:  git config core.hooksPath hooks
+set -euo pipefail
+repo_root="$(git rev-parse --show-toplevel)"
+PYTHONPATH="$repo_root/tools" python3 -m htbench.secret_scan --staged
