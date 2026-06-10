@@ -20,6 +20,9 @@ dist/
 *_credentials.json
 service-account*.json
 
+# one-shot session handoff (ephemeral, never commit)
+handoff.md
+
 # pytest / tooling
 .pytest_cache/
 
