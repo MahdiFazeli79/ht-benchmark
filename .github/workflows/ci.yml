@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install jsonschema pytest
-      - run: python -m pytest tests/test_validate.py tests/test_resolve.py tests/test_hw2vec_compat.py tests/test_secret_scan.py -v
+      - run: python -m pytest tests/test_validate.py tests/test_resolve.py tests/test_hw2vec_compat.py tests/test_secret_scan.py tests/test_circuit_list.py tests/test_r9_rate.py -v
       # Fail-closed secret scan over the whole tree (Tier-3 guard).
       - run: PYTHONPATH=tools python -m htbench.secret_scan tools tests spec docs .github
 

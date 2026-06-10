@@ -89,6 +89,25 @@ def _cmd_check_list(args) -> int:
     return 0 if rep.structurally_valid else 1
 
 
+def _cmd_r9_rate(args) -> int:
+    import json
+    from pathlib import Path
+
+    from . import r9_rate as R
+
+    specs = json.loads(Path(args.specs).read_text())
+    rep = R.measure_design_specs(specs)
+    out = rep.render()
+    if args.out:
+        Path(args.out).write_text(out)
+        print(f"wrote {args.out}")
+    else:
+        print(out)
+    # Non-zero when the rate crosses the finding threshold, so a CI/batch run
+    # surfaces it loudly.
+    return 1 if rep.design_collision_rate >= R.FINDING_THRESHOLD else 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="htbench")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -128,6 +147,14 @@ def main(argv=None) -> int:
                    help="dir holding licenses.json (the R10 allowlist)")
     c.add_argument("-o", "--out", help="write the report here instead of stdout")
     c.set_defaults(func=_cmd_check_list)
+
+    r9 = sub.add_parser(
+        "r9-rate",
+        help="measure the HW2VEC R9 collision rate over a set of designs (task #27)",
+    )
+    r9.add_argument("specs", help="JSON list of {design_id, sources, top, chparams?}")
+    r9.add_argument("-o", "--out", help="write the report here instead of stdout")
+    r9.set_defaults(func=_cmd_r9_rate)
 
     args = ap.parse_args(argv)
     return args.func(args)
