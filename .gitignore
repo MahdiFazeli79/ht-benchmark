@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# dataset build caches (regenerable; never the source of truth)
+data/samples/*/graphs/index_map.*.json
