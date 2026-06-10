@@ -194,7 +194,7 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
 }
 ```
 
-**Cross-field rules the validator MUST enforce beyond JSON Schema (R1–R8):**
+**Cross-field rules the validator MUST enforce beyond JSON Schema (R1–R9):**
 
 - **R1.** (infected) If `activation == "always_on"` then `trigger_source == null` AND `trigger_mechanism == null`.
 - **R2.** (infected) If `activation == "triggered"` then `trigger_source != null` AND `trigger_mechanism != null`.
@@ -204,6 +204,7 @@ JSON Schema (`spec/schemas/trojan_manifest.schema.json`), draft 2020-12:
 - **R6.** Manifest-matches-files: if `class == "infected"`, the `[start,end]` line ranges of `diff(clean.v, infected.v)` MUST equal `inserted_rtl.line_ranges`. If `class == "clean"`, `diff(clean.v, infected.v)` MUST be empty.
 - **R7.** Class consistency: `class == "clean"` ⇒ `taxonomy`, `inserted_rtl`, `generator` absent AND `labels_rtl.labels == {}` AND (`labels_netlist.labels == {}` when present). `class == "infected"` ⇒ all three present and `labels_rtl.labels` non-empty.
 - **R8.** Negative-class realism: a `clean` sample's `graphs/dfg_rtl.json` and (full mode) `graphs/netlist.json` MUST be real graphs from the same extraction/synthesis flow as infected samples, with non-empty `nodes` and `edges`. The validator asserts non-empty node and edge counts for clean samples, blocking the trivial "empty graph ⇒ clean" separator.
+- **R9.** AST-handle injectivity: the AST-derived handles of a sample MUST remain pairwise-distinct under any downstream tool name transform used in the benchmark (notably HW2VEC's). If a transform aliases two distinct handles, the sample is REJECTED at build time. A collision is a rejected sample, never a silently merged label. The validator enforces this via the HW2VEC shim's collision detector (§9 / `hw2vec_compat`).
 
 ---
 
@@ -225,6 +226,8 @@ Stores ONLY `core` nodes (inversion #4). `neighborhood` and `clean` are computed
 
 - Named signal node: fully-qualified name, e.g. `"top.uart_rx.trojan_cnt[3]"`.
 - Unnamed intermediate-expression node: canonical signature `"expr:<op>(<sorted,fan-in,signal,names>)@<infected.v line>"`, e.g. `"expr:and(top.a,top.b)@142"`.
+
+**Handle provenance (normative).** The handle is derived from the Verilog AST via Pyverilog scoped signal names, computed on `infected.v` upstream of any downstream tool's preprocessing. It is explicitly NOT the HW2VEC DFG node name: HW2VEC's `remove_underscores()` / flatten transforms are lossy (e.g. `trojan_cnt` and `trojancnt` collapse) and tool-coupled, so they can never be the source of identity. Any downstream tool (HW2VEC included) is a consumer mapped onto these handles, never their source.
 
 Schema (`labels_rtl.schema.json`):
 
@@ -366,7 +369,7 @@ Build flag `--rtl-only`. The validator treats `labels_netlist.json`, `graphs/net
 `htbench validate <path>` where path is a sample dir or `data/samples/`:
 
 1. JSON-Schema-validate every file against its schema (including the per-`graph_kind` node-feature conditionals).
-2. Enforce cross-field rules **R1–R8** (§4).
+2. Enforce cross-field rules **R1–R9** (§4).
 3. Enforce taxonomy feasibility constraints from `spec/taxonomy.json` (infected samples).
 4. Assert label key schemes match the declared `handle_scheme`, that stored label values are `"core"` only, and that NO key matches forbidden patterns: integer-only keys, `/^\$/` (Yosys gensyms), `/^\d+$/` (net bit-IDs). Any such key is a hard FAIL naming the offending key.
 5. Assert `handle` is present and UNIQUE within each graph file (§9). A duplicate or empty handle is a hard FAIL.
@@ -390,7 +393,9 @@ The test that retires the month-5 re-run risk. MUST pass before any sample is ge
 4. Assert `A == B`. Any difference = FAIL.
 5. Repeat for netlist if present.
 
-`--perturb` shuffles extraction traversal order (and, if available, runs under a second tool/library version) before step 2, proving labels survive a regeneration they were never written to track. A clean sample (empty `core`) trivially satisfies `A == B == {}`; the gate still validates that its labels resolve. Wire both into `tests/test_roundtrip.py`.
+`--perturb` shuffles extraction traversal order before step 2, proving labels survive a regeneration they were never written to track. A clean sample (empty `core`) trivially satisfies `A == B == {}`; the gate still validates that its labels resolve. Wire both into `tests/test_roundtrip.py`.
+
+The gate's extractor is the reference RTL extractor shipped in this package (`htbench.extract`), which derives handles via the shared handle-derivation function (`htbench.handles`). That function is the contract the later production extractor (§14) must also satisfy. For v1, `--perturb` means shuffled AST traversal order within the same Pyverilog front-end; true cross-front-end re-extraction (a second parser) is a v1.1 aspiration and is out of scope. The gate's guarantee is therefore "handles are traversal-order-independent", not "handles are parser-independent".
 
 ---
 
@@ -450,3 +455,8 @@ If either passes, the conditional branches are tightened until they fail.
 - **Conditional-schema strictness (proven, not trusted).** Added graph-schema negative fixtures (f, g): a `dfg_rtl` node with both `x_code` and `cell_type`, and a `netlist` node with `x_code`, MUST fail validation. Because `graph_kind` is enum-bound to two values, exactly one `if/then` branch always fires and its `additionalProperties: false` rejects the stray key; the base `nodes.items` is deliberately permissive (adding `additionalProperties: false` there would forbid `x_code`/`cell_type` and break the conditional). The fixtures prove the prose.
 - **Negative-class realism (decided + R8).** Clean samples carry real synthesized netlists and real DFGs from the identical flow, non-empty, so the negative class is not trivially separable by graph emptiness. New rule R8; validator asserts non-empty clean-sample graphs.
 - **Verification schema/sample-validity divergence (accepted).** The three infected-only verification flags are optional in JSON Schema and required-and-true only via R4, exactly as R1–R3 push taxonomy semantics past the schema. A file can be schema-valid yet sample-invalid; the validator is the sample-validity authority by design. Inherited consciously, no change.
+
+**Review round 4 (2026-06-10) — surfaced while planning the `htbench` implementation:**
+- **Handle provenance is AST-derived (§6, normative).** Planning exposed that the only on-hand extractor (HW2VEC) flattens and strips underscores, so its DFG node names are flat, lossy, and tool-coupled (`trojan_cnt`/`trojancnt` collapse). Using them as handles would silently violate the §9 uniqueness guarantee. Fixed: the handle is derived from the Verilog AST (Pyverilog scoped names), upstream of any tool preprocessing; HW2VEC is a downstream consumer mapped onto handles, never their source.
+- **R9 injectivity.** New rule: AST handles must remain pairwise-distinct under any downstream tool name transform, or the sample is rejected at build time (a collision is a rejected sample, never a merged label). Enforced by the `hw2vec_compat` collision detector. Header and §10 step 2 now read R1–R9.
+- **§11/§14 circularity resolved.** The round-trip gate uses a *reference* extractor (`htbench.extract`) shipped in the enforcement work unit, not the deferred production extractor; both are clients of the shared handle-derivation function (`htbench.handles`), which is the real contract. `--perturb` is scoped to intra-front-end traversal shuffling for v1; cross-front-end re-extraction is v1.1.
