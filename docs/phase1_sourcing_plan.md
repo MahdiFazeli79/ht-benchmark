@@ -83,14 +83,36 @@ candidate whose license can't be confirmed is dropped here, on the reviewable
 list, never silently ingested. Leakage discipline: variants sharing a generator
 are marked so the official split never straddles them.
 
-## Open items for your ruling
+## Rulings (settled 2026-06-10)
 
-1. **ITC-99 exclude (recommended) vs. carry-with-legal-review.**
-2. **l-floor realism:** with copyleft exclusions, is 100 distinct l-bin designs
-   still the hard floor, or do we accept config-variant families counting toward
-   it (with leakage marking)? This materially changes whether 100 is reachable.
-3. **OpenCores:** worth the per-core license slog for a handful of permissive
-   blocks, or skip OpenCores entirely and lean on RISC-V/OpenTitan?
+1. **l-floor = ≥100 l-bin samples spanning ≥25 distinct `circuit_family`.** Config
+   variants count, but the *family* floor (≥25) is the real constraint, so the
+   bin can't be "6 cores × 20 configs." Every variant shares its generator's
+   `circuit_family`; splits are atomic over `circuit_family` (frozen, spec §8);
+   the distinct-family count per bin is a reported statistic ("120 large across
+   27 families"). **Source the l bin and assign `circuit_family` in the SAME
+   pass** — family identity is the steering variable, not a post-hoc tag.
+2. **ITC-99 excluded from the redistributed corpus**, and the exclusion becomes a
+   one-paragraph **license-rigor note** in §2/§9 ("a redistributability gate
+   excluded ITC-99 (copyleft) and most OpenCores crypto (LGPL) at intake"). v1.1
+   nicety: an adapter script that points at the user's *own* ITC-99 copy
+   (distribute the adapter, not the circuits) — sidesteps redistribution.
+3. **Bounded OpenCores per-core pass**, targeting style diversity the
+   RISC-V/OpenTitan backbone lacks (peripherals, small crypto, bus logic).
+   Confirm license per-core, take the clean ones (Tiny AES Apache, Mini AES BSD,
+   and whatever clears), **stop when marginal diversity flattens**. The value is
+   not count (~a dozen) but the defense against "this is just a RISC-V benchmark"
+   — the backbone is structurally homogeneous, and a model could learn
+   "RISC-V-shaped = the distribution" instead of learning Trojans.
+
+## R9 measurement: run it on the FIRST LARGE designs (not the easy ones)
+
+Task #27's R9 collision-rate check runs on the first large RISC-V cores
+specifically: deep hierarchy + generate blocks are where HW2VEC's
+flatten/underscore-mangle is most likely to alias names. If R9 bites, it bites
+hardest in the very bin you're working hardest to fill, so measure there first —
+a bad rate then changes the handle/normalization before 100 l-bin circuits are
+sourced, not after.
 
 ## Sources
 
