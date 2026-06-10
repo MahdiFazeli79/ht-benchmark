@@ -73,6 +73,22 @@ def _cmd_elaborate(args) -> int:
     return 0
 
 
+def _cmd_check_list(args) -> int:
+    from . import circuit_list as C
+
+    data = C.load(args.path)
+    allow = C.load_allowlist(args.spec_dir)
+    rep = C.check_circuit_list(data, allow)
+    out = rep.render()
+    if args.out:
+        from pathlib import Path
+        Path(args.out).write_text(out)
+        print(f"wrote {args.out}")
+    else:
+        print(out)
+    return 0 if rep.structurally_valid else 1
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="htbench")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -102,6 +118,16 @@ def main(argv=None) -> int:
     e.add_argument("-o", "--out", help="write elaborated Verilog here")
     e.add_argument("--work-dir", dest="work_dir")
     e.set_defaults(func=_cmd_elaborate)
+
+    c = sub.add_parser(
+        "check-list",
+        help="gate a Phase-1 circuit-list manifest before download (task #28)",
+    )
+    c.add_argument("path", help="circuit-list YAML (e.g. docs/phase1_candidates.yaml)")
+    c.add_argument("--spec-dir", dest="spec_dir", default="spec",
+                   help="dir holding licenses.json (the R10 allowlist)")
+    c.add_argument("-o", "--out", help="write the report here instead of stdout")
+    c.set_defaults(func=_cmd_check_list)
 
     args = ap.parse_args(argv)
     return args.func(args)

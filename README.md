@@ -60,6 +60,9 @@ The reference extractor also needs the Graphviz system library
 # (sv2v -> yosys -chparam), preserving intrinsic signal names
 htbench elaborate core.sv pkg.sv --top my_core --chparam CFG=33 -o elaborated.v
 
+# gate a Phase-1 circuit-list manifest BEFORE any download (license + metrics)
+htbench check-list docs/phase1_candidates.yaml
+
 # validate a sample directory (or a directory of samples)
 htbench validate data/samples --rtl-only
 

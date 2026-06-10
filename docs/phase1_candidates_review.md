@@ -2,7 +2,39 @@
 
 Reviewable artifact for task #28. **Nothing ingested.** Machine-readable list:
 `phase1_candidates.yaml`. Read the four headline numbers first — they are where
-this could be quietly wrong, and two of them are currently **failing**.
+this could be quietly wrong.
+
+> **UPDATE 2026-06-10 (Branch A done + gate mechanized).** The four numbers are
+> now COMPUTED by `htbench check-list docs/phase1_candidates.yaml` (module
+> `tools/htbench/circuit_list.py`, 9 tests), reusing the same `spec/licenses.json`
+> R10 allowlist the sample validator uses — they can no longer drift by hand.
+> Live report: `docs/phase1_circuit_list_gate.md`. Branch A (expand permissive
+> non-RISCV/non-OpenTitan IP) was run unattended and changed two of the numbers:
+>
+> | # | Metric | First pass | After Branch A |
+> |---|---|---|---|
+> | 1 | l-bin distinct `variant_group` | 11 (FAIL) | **15** (still FAIL vs ≥25) |
+> | 2 | Homogeneity (RISC-V + OpenTitan) | 87% (RISK) | **62%** (OK) |
+> | 3 | Rejected-on-intake | 5 | 5 |
+> | 4 | SystemVerilog → sv2v | 57% | 52% |
+>
+> Added 17 rows (corundum, gemmini, black_parrot, openpiton, 4 more OpenTitan
+> blocks, secworks crypto, alexforencich ethernet/axi/pcie, PULP axi/hwpe).
+> **Licenses on the new rows are from project KNOWLEDGE, not verified against the
+> repo LICENSE file** — flagged per row; the download gate and Mahdi must
+> re-verify. `e203` and `openpiton` are `unconfirmed` → R10-BLOCKED (default-closed).
+>
+> **The verdict that matters:** diversifying worked (87%→62%), but the l-floor
+> barely moved (11→15, still well under 25). That is the **Branch-B finding made
+> concrete** — permissive, parseable, genuinely-large *independent* designs are
+> scarce. Decision deferred to Mahdi: keep sourcing l (a few more confident large
+> cores may exist — ESP accelerators, more PULP, NVDLA if its license clears) or
+> reshape the large-circuit claim to "size-cliff across N independent designs +
+> documented scarcity." Either way the floor stays a measurement, never padded.
+>
+> The original first-pass analysis below is kept as the record.
+
+---
 
 ## The four numbers (read these first)
 

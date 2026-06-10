@@ -14,6 +14,8 @@ dependencies = ["jsonschema>=4.0"]
 extract = ["pyverilog>=1.3"]
 # HW2VEC torch_geometric downstream view.
 hw2vec = ["torch", "torch-geometric"]
+# Circuit-list gate (check-list) reads a YAML manifest.
+manifest = ["pyyaml>=6.0"]
 
 [project.scripts]
 htbench = "htbench.cli:main"

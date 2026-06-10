@@ -198,6 +198,150 @@ candidates:
     bin: xs               # the existing 50-circuit clean set; xs/s
     note: reuse existing clean CORE designs; HW2VEC/GHOST/TrustHub need per-source license check
 
+  # =========================================================================
+  # BRANCH-A EXPANSION (2026-06-10, added unattended) — attacks the 87%
+  # homogeneity by adding permissive NON-RISCV / NON-OpenTitan IP (crypto,
+  # comms, bus fabric, DSP/ML accel, NoC). Licenses below are from project
+  # KNOWLEDGE, NOT verified against the repo LICENSE file — the download gate
+  # and Mahdi must re-verify each before any clone. `unconfirmed` => R10-blocked.
+  # Honest result: this fixes homogeneity but barely moves the l-floor, which
+  # confirms the review's thesis that permissive LARGE independent designs are
+  # genuinely scarce (Branch-B finding).
+  # =========================================================================
+
+  # --- large (l) non-CPU / diversifying ---
+  - variant_group: corundum
+    circuit_family: ethernet_nic
+    source: "github:ucsdsysnet/corundum"
+    license: BSD-2-Clause        # project-knowledge; verify LICENSE at clone
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+    proxy_loc: ">40k"
+    r9_canary: true              # large SV NIC datapath — deep hierarchy
+    note: license from knowledge; verify at clone
+  - variant_group: gemmini
+    circuit_family: ml_accelerator
+    source: "github:ucb-bar/gemmini"
+    license: BSD-3-Clause        # Berkeley/Chipyard; verify at clone
+    language: chisel_gen
+    parse_path: chisel_gen       # generated Verilog; $-names -> R9 risk
+    bin: l
+    proxy_loc: ">15k"
+    note: non-CPU large accel; license from knowledge
+  - variant_group: black_parrot
+    circuit_family: riscv_cpu
+    source: "github:black-parrot/black-parrot"
+    license: BSD-3-Clause        # verify at clone
+    language: systemverilog
+    parse_path: sv2v
+    bin: l
+    proxy_loc: ">20k"
+    note: adds an l-bin distinct group (still riscv_cpu, helps floor not homogeneity)
+  - variant_group: openpiton
+    circuit_family: noc_tile
+    source: "github:PrincetonUniversity/openpiton"
+    license: unconfirmed         # likely BSD-3 / Solderpad mix — BLOCKED until checked
+    language: verilog
+    parse_path: verilog_direct
+    bin: l
+    note: NoC + tile, strong l + diversity candidate; license must be confirmed
+
+  # --- medium (m) diversity: crypto / comms / bus / DSP ---
+  - variant_group: ot_otp_ctrl
+    circuit_family: otp_controller
+    source: "github:lowRISC/opentitan (hw/ip/otp_ctrl)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+  - variant_group: ot_keymgr
+    circuit_family: key_manager
+    source: "github:lowRISC/opentitan (hw/ip/keymgr)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+  - variant_group: ot_csrng
+    circuit_family: csrng
+    source: "github:lowRISC/opentitan (hw/ip/csrng)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+  - variant_group: ot_entropy_src
+    circuit_family: entropy_source
+    source: "github:lowRISC/opentitan (hw/ip/entropy_src)"
+    license: Apache-2.0
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+  - variant_group: secworks_aes
+    circuit_family: aes
+    source: "github:secworks/aes"
+    license: BSD-2-Clause        # Strömbergson cores; verify at clone
+    language: verilog
+    parse_path: verilog_direct
+    bin: m
+  - variant_group: secworks_sha512
+    circuit_family: sha2
+    source: "github:secworks/sha512"
+    license: BSD-2-Clause
+    language: verilog
+    parse_path: verilog_direct
+    bin: m
+  - variant_group: verilog_ethernet
+    circuit_family: ethernet_mac
+    source: "github:alexforencich/verilog-ethernet"
+    license: MIT                 # alexforencich repos are MIT; verify at clone
+    language: verilog
+    parse_path: verilog_direct
+    bin: m
+  - variant_group: verilog_axi
+    circuit_family: axi_fabric
+    source: "github:alexforencich/verilog-axi"
+    license: MIT
+    language: verilog
+    parse_path: verilog_direct
+    bin: m
+  - variant_group: verilog_pcie
+    circuit_family: pcie
+    source: "github:alexforencich/verilog-pcie"
+    license: MIT
+    language: verilog
+    parse_path: verilog_direct
+    bin: m
+  - variant_group: pulp_axi
+    circuit_family: axi_fabric
+    source: "github:pulp-platform/axi"
+    license: Solderpad-2.1
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+  - variant_group: pulp_hwpe
+    circuit_family: dsp_accelerator
+    source: "github:pulp-platform/hwpe-stream"
+    license: Solderpad-2.1
+    language: systemverilog
+    parse_path: sv2v
+    bin: m
+
+  # --- small (s) crypto diversity ---
+  - variant_group: secworks_sha256
+    circuit_family: sha2
+    source: "github:secworks/sha256"
+    license: BSD-2-Clause
+    language: verilog
+    parse_path: verilog_direct
+    bin: s
+  - variant_group: secworks_chacha
+    circuit_family: chacha
+    source: "github:secworks/chacha"
+    license: BSD-2-Clause
+    language: verilog
+    parse_path: verilog_direct
+    bin: s
+
 # ---------------------------------------------------------------------------
 # REJECTED at intake (shown deliberately — the exclusions ARE the review)
 # ---------------------------------------------------------------------------
