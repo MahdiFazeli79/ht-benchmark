@@ -33,6 +33,66 @@ def is_forbidden_key(key: str) -> bool:
     return any(p.search(key) for p in _FORBIDDEN_PATTERNS)
 
 
+# --- handle classification (spec §10 R11, round 9) -------------------------- #
+#
+# The CVA6 canary (docs/phase1_sv2v_r9_canary.md) found tool-artifact classes the
+# original denylist had never seen (`_sv2v_N`, `$func$`). The lesson: across 500
+# designs from heterogeneous toolchains, MORE unseen artifact shapes will appear,
+# and a denylist that is merely *current* silently lets a synthetic node
+# masquerade as an intrinsic handle — the exact quiet corruption the identity
+# scheme refuses. So classification is INVERTED toward an allowlist: a handle is
+# intrinsic only if POSITIVELY identifiable as source-derived; anything that is
+# neither positively-intrinsic nor known-synthetic is `unclassified` and FAILS
+# LOUD (R11) instead of defaulting to intrinsic.
+
+# Known tool-generated (synthetic) shapes — non-source-intrinsic, never a
+# manifest signal, deterministic within pinned tools. Tolerated (classified
+# synthetic, excluded from intrinsic, never a label key), not rejected.
+_SYNTHETIC_PATTERNS = (
+    re.compile(r"(?:^|\.)_\d+_$"),        # Yosys proc/flatten nets: top._0_
+    re.compile(r"(?:^|\.)_sv2v_\d+$"),    # sv2v lowering temporaries
+    re.compile(r"\$"),                    # sv2v/yosys inlined-fn & gensym symbols
+)
+
+# Positive intrinsic shape: a dotted hierarchical path of Verilog identifiers,
+# each optionally yosys-escaped (leading backslash), with an optional trailing
+# bit/part-select. This is what a declared source signal looks like after any
+# conformant front end; it traces back to the RTL.
+_INTRINSIC_SEGMENT = r"\\?[A-Za-z_][A-Za-z0-9_]*"
+_INTRINSIC_SIGNAL = re.compile(
+    rf"^{_INTRINSIC_SEGMENT}(?:\.{_INTRINSIC_SEGMENT})*(?:\[\d+(?::\d+)?\])?$"
+)
+
+
+def is_synthetic(handle: str) -> bool:
+    """True if `handle` is a known tool-generated artifact (denylist)."""
+    base = handle.split("[", 1)[0]
+    return any(p.search(base) for p in _SYNTHETIC_PATTERNS)
+
+
+def classify_handle(handle: str) -> str:
+    """Classify a handle as one of:
+
+    - ``"structural"`` — an extractor-minted ``expr:``/``const:`` node (intrinsic
+      by construction; never a manifest signal);
+    - ``"synthetic"`` — a known tool artifact (`_N_`, `_sv2v_N`, `$…`);
+    - ``"intrinsic"`` — positively source-derived (a declared-signal path);
+    - ``"unclassified"`` — none of the above. R11 fails loud on this rather than
+      letting an unseen artifact class masquerade as intrinsic.
+
+    Order matters: structural first, then the synthetic denylist (so `_sv2v_0`,
+    which also matches the intrinsic-segment shape, is caught as synthetic), then
+    the positive intrinsic test, else unclassified.
+    """
+    if handle.startswith(("expr:", "const:")):
+        return "structural"
+    if is_synthetic(handle):
+        return "synthetic"
+    if _INTRINSIC_SIGNAL.match(handle):
+        return "intrinsic"
+    return "unclassified"
+
+
 def signal_handle(scoped_name: str, bit: int | None = None) -> str:
     """Handle for a named signal node.
 

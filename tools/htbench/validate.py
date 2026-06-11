@@ -167,6 +167,15 @@ def validate_sample(sample_dir, rtl_only=False, lint_sources=False, spec_dir=_SP
         for h in hs:
             if H.is_forbidden_key(h):
                 errors.append(f"{gname}: forbidden handle key: {h!r}")
+            # R11: a handle must be positively classifiable. An unclassified
+            # handle (neither source-intrinsic nor known tool-synthetic) fails
+            # loud rather than defaulting to intrinsic — the canary proved new
+            # artifact classes keep appearing (spec §10 R11).
+            elif H.classify_handle(h) == "unclassified":
+                errors.append(
+                    f"{gname}: R11 unclassified handle {h!r} (neither "
+                    f"source-intrinsic nor known tool-synthetic)"
+                )
         if len(set(hs)) != len(hs):
             dupes = {h for h in hs if hs.count(h) > 1}
             errors.append(f"{gname}: duplicate handles: {sorted(dupes)}")
@@ -177,6 +186,13 @@ def validate_sample(sample_dir, rtl_only=False, lint_sources=False, spec_dir=_SP
         for key in lbls["labels"]:
             if H.is_forbidden_key(key):
                 errors.append(f"{lname}: forbidden handle key: {key!r}")
+            # A label must reference a real signal: intrinsic or structural, never
+            # a synthetic tool net or an unclassified handle (R11).
+            elif H.classify_handle(key) in ("synthetic", "unclassified"):
+                errors.append(
+                    f"{lname}: R11 label key {key!r} is "
+                    f"{H.classify_handle(key)}, not a source-intrinsic signal"
+                )
 
     # --- 5. label-handle resolution ---
     try:

@@ -10,7 +10,7 @@
 
 | # | Metric | Value | Verdict |
 |---|---|---|---|
-| 1 | l-bin distinct `variant_group` | 15 | FAIL vs ≥25 floor |
+| 1 | l-bin distinct independent families | 15 | ecosystem yield (≥25 floor RETIRED — Branch B, scarcity documented) |
 | 2 | Homogeneity (RISC-V 35% + OpenTitan 28%) | 62% | OK |
 | 3 | Rejected-on-intake | 5 | audit trail |
 | 4 | SystemVerilog → needs sv2v | 52% | pipeline dependency |

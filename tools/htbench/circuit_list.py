@@ -33,11 +33,13 @@ BINS = {"xs", "s", "m", "l"}
 REQUIRED = ("variant_group", "circuit_family", "source",
             "license", "language", "parse_path", "bin")
 
-# The l-bin floor is a MEASUREMENT, never a target to pad toward (spec §8): we
-# report it, and if it cannot be reached with permissive independent designs that
-# scarcity is itself a finding (Branch B). So failing it is a WARNING, not a
-# structural error that blocks the manifest.
-L_FLOOR_GROUPS = 25
+# The ≥25 l-bin floor is RETIRED (Branch B, spec round 9). The sv2v→R9 canary
+# confirmed the SystemVerilog large designs are parseable, so 15 is the genuine,
+# complete count — and permissive, large, independent, parseable RTL is simply
+# scarce in the open ecosystem. We report all distinct large families the gated
+# ecosystem yields, honestly, with the count; we do NOT pad toward a target. The
+# old floor is kept only as a reference line in the report.
+L_FLOOR_GROUPS_RETIRED = 25
 L_FLOOR_SAMPLES = 100
 
 
@@ -55,7 +57,6 @@ class CircuitListReport:
     n_rejected: int = 0                                 # rows in the `rejected` section
     bin_distinct: dict = field(default_factory=dict)    # bin -> distinct variant_group count
     l_distinct: int = 0
-    l_floor_ok: bool = False
     top_family: tuple = ("", 0.0)
     riscv_share: float = 0.0
     opentitan_share: float = 0.0
@@ -83,8 +84,9 @@ class CircuitListReport:
         L.append("## The four headline numbers\n")
         L.append("| # | Metric | Value | Verdict |")
         L.append("|---|---|---|---|")
-        v1 = "PASS" if self.l_floor_ok else f"FAIL vs ≥{L_FLOOR_GROUPS} floor"
-        L.append(f"| 1 | l-bin distinct `variant_group` | {self.l_distinct} | {v1} |")
+        v1 = (f"ecosystem yield (≥{L_FLOOR_GROUPS_RETIRED} floor RETIRED — "
+              f"Branch B, scarcity documented)")
+        L.append(f"| 1 | l-bin distinct independent families | {self.l_distinct} | {v1} |")
         homog = self.riscv_share + self.opentitan_share
         v2 = "OK" if homog < 0.70 else "RISK — homogeneous"
         L.append(f"| 2 | Homogeneity (RISC-V {self.riscv_share:.0%} + "
@@ -158,7 +160,6 @@ def check_circuit_list(data: dict, allowlist: set[str]) -> CircuitListReport:
     bin_counts = Counter(r.get("bin") for r in candidates)
     rep.bin_distinct = {b: bin_counts.get(b, 0) for b in BINS}
     rep.l_distinct = bin_counts.get("l", 0)
-    rep.l_floor_ok = rep.l_distinct >= L_FLOOR_GROUPS
 
     fam_counts = Counter(r.get("circuit_family") for r in candidates)
     if fam_counts:

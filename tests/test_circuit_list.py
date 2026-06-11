@@ -63,13 +63,13 @@ def test_r10_blocks_non_allowlisted_license_default_closed():
     assert blocked == {"copyleft", "unknown"}   # unconfirmed blocks (default-closed)
 
 
-def test_l_floor_is_warning_not_structural_error():
-    # One l-bin design: well below the ≥25 floor, but the manifest is valid.
+def test_l_distinct_reported_floor_retired():
+    # Branch B: the count is the finding; there is no ≥25 pass/fail gate.
     data = {"candidates": [_row(variant_group="big", bin="l")]}
     rep = C.check_circuit_list(data, ALLOW)
     assert rep.structurally_valid
     assert rep.l_distinct == 1
-    assert rep.l_floor_ok is False
+    assert not hasattr(rep, "l_floor_ok")   # the binary floor gate is gone
 
 
 def test_metrics_distinct_per_bin_and_shares():

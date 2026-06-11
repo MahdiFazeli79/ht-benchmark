@@ -42,24 +42,16 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import handles as H
+
 # Yosys `write_verilog -noattr` already drops `(* ... *)`, but sv2v can emit
 # synthesis attributes (`(* full_case, parallel_case *)`) on other paths; this
 # defensive strip is the shim the sv2v canary identified. Usually a no-op here.
 _ATTR_RE = re.compile(r"\(\*.*?\*\)", re.DOTALL)
 
-# Tool-generated (non-source-intrinsic) handle shapes. None correspond to a
-# manifest-inserted signal; all are deterministic within pinned tools. Widened
-# after the CVA6 canary (docs/phase1_sv2v_canary.md) surfaced sv2v temporaries
-# and inlined-function artifacts that the toy fixture never produced:
-#   - `_N_`        : Yosys proc/flatten intermediate nets (`top._0_`)
-#   - `_sv2v_N`    : sv2v lowering temporaries (`top.\i_mul._sv2v_0`)
-#   - `$`          : sv2v/yosys inlined-function & gensym symbols
-#                    (`...sext32to64$func$mul_flat.v:111$81.operand`)
-_SYNTHETIC_PATTERNS = (
-    re.compile(r"(?:^|\.)_\d+_$"),
-    re.compile(r"(?:^|\.)_sv2v_\d+$"),
-    re.compile(r"\$"),
-)
+# The synthetic-handle denylist is owned by htbench.handles (the identity
+# contract, where classify_handle / R11 also live) so there is ONE canonical
+# list. These shims keep the elaborate-facing names.
 
 
 class ElaborationError(RuntimeError):
@@ -84,9 +76,9 @@ def is_synthetic_net(handle: str) -> bool:
     Synthetic handles are valid (not forbidden), but they are not source-intrinsic
     and a manifest-inserted signal never maps to one. Covers Yosys `_N_` nets,
     sv2v `_sv2v_N` temporaries, and `$`-bearing inlined-function artifacts.
+    Delegates to the canonical denylist in htbench.handles.
     """
-    base = handle.split("[", 1)[0]            # ignore an optional bit-select
-    return any(p.search(base) for p in _SYNTHETIC_PATTERNS)
+    return H.is_synthetic(handle)
 
 
 def partition_synthetic(handles):
