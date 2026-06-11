@@ -1,0 +1,4 @@
+{
+  "trigger": "sel=1, a=8'hA5, b=8'h5A",
+  "observable_effect": "Instead of outputting b=8'h5A (the expected mux result when sel=1), the output y leaks a mix of both inputs: y = {b[3:0], a[7:4]} = {4'hA, 4'hA} = 8'hAA, revealing bits from the non-selected input 'a' alongside bits from 'b'."
+}

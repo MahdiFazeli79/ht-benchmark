@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hAA and b == 8'h55 (simultaneously)",
+  "observable_effect": "clean sum would be 8'hAA + 8'h55 = 9'hFF (255), but the Trojan outputs 9'hFD (253) because bit 1 of the sum is flipped via XOR with 9'h002, corrupting the result and degrading computational correctness; additionally, the inserted mux logic on the critical path degrades timing performance"
+}

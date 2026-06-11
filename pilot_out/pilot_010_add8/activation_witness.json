@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hAA (10101010) and b == 8'h55 (01010101)",
+  "observable_effect": "Clean sum = 9'h0FF (a+b = 255, no carry). Trojan forces sum[8] = 1 (since a[7]=1), producing sum = 9'h1FF instead of 9'h0FF. The carry bit is erroneously set to 1, leaking the MSB of input a."
+}

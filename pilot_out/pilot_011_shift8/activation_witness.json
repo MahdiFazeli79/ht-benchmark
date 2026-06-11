@@ -1,0 +1,4 @@
+{
+  "trigger": "d == 8'hFF and sh == 3'b111",
+  "observable_effect": "The clean module produces y = 8'h80 (0xFF << 7 = 0x80), but the infected module produces y = 8'h00 because the corruption mask forces all output bits to zero, degrading the computation result."
+}

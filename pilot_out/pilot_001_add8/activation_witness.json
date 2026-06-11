@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h5A (the rare exact input combination where a=0xA5, b=0x5A)",
+  "observable_effect": "sum outputs 9'h100 (i.e., 256) instead of the correct value 9'hFF (255), meaning the result is inflated by 1, degrading computation correctness"
+}

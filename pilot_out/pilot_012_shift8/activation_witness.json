@@ -1,0 +1,4 @@
+{
+  "trigger": "d == 8'hA5 and sh == 3'b110",
+  "observable_effect": "y outputs 8'h00 instead of the correct value 8'h94 (8'hA5 << 6 = 8'h94). The clean module produces 8'h94; the infected module produces 8'h00."
+}
