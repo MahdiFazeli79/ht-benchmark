@@ -79,10 +79,13 @@ def _structural_signature(text: str) -> str:
 
 
 def build_manifest(sample_id, spec, result, *, model, prompt_hash, license, license_url,
-                   circuit_family, variant_group, sim_tool="iverilog", synth_tool="yosys"):
+                   circuit_family, variant_group, sim_tool="iverilog", synth_tool="yosys",
+                   temperature=None):
     """Construct a schema-valid infected trojan_manifest.json. `inserted_rtl.line_ranges`
     comes from the SAME structural diff the validator's R6 uses, so it passes by
-    construction; the round-10 grade rides in `verification`."""
+    construction; the round-10 grade rides in `verification`. `temperature` (when the
+    client pins one) is recorded in `generator` so sampling conditions are recoverable
+    per sample; omitted when None so pre-pin manifests stay byte-identical."""
     grade = result.verification or {}
     verification = {"compile_pass": True, "synth_pass": True,
                     "functional_equiv_pass": True, "synth_survival_pass": True,
@@ -90,6 +93,9 @@ def build_manifest(sample_id, spec, result, *, model, prompt_hash, license, lice
     for k in ("activation_proof_method", "reachability_established", "divergence_attribution"):
         if k in grade:
             verification[k] = grade[k]
+    generator = {"model": model, "prompt_hash": prompt_hash, "attempt_count": result.attempts}
+    if temperature is not None:
+        generator["temperature"] = temperature
     return {
         "sample_id": sample_id, "class": "infected",
         "source": f"llm:{model}", "source_kind": "llm_generated",
@@ -102,7 +108,7 @@ def build_manifest(sample_id, spec, result, *, model, prompt_hash, license, lice
                      "trigger_mechanism": spec.trigger_mechanism, "payload": spec.payload},
         "inserted_rtl": {"signals": [], "line_ranges": result.ground_truth["line_ranges"],
                          "module_instances": []},
-        "generator": {"model": model, "prompt_hash": prompt_hash, "attempt_count": result.attempts},
+        "generator": generator,
         "verification": verification,
     }
 
@@ -257,6 +263,7 @@ def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_
                          yield_window, min_attempts_before_floor)
     if client is None:
         client = I.AnthropicClient(model=api_model)      # the only paid path
+    sampling_temperature = getattr(client, "temperature", None)   # logged per manifest (None ⇒ omitted)
     report = PilotReport()
     for sample_id, clean_rtl, spec, meta in specs:
         cell = f"{spec.activation}/{spec.trigger_mechanism}/{spec.payload}"
@@ -275,7 +282,8 @@ def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_
             continue
         if res.accepted:
             write_sample(out_dir, sample_id, clean_rtl, spec, res,
-                         model=api_model, prompt_hash=prompt_hash, **meta)
+                         model=api_model, prompt_hash=prompt_hash,
+                         temperature=sampling_temperature, **meta)
             report.accepted.append({
                 "sample_id": sample_id, "cell": cell,
                 "sig": _structural_signature("\n".join(res.ground_truth["added_text"])),

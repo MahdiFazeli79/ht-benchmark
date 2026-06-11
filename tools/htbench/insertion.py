@@ -109,6 +109,7 @@ class AnthropicClient(LLMClient):
     `generate_sample`, so spend control is never the client's responsibility."""
     model: str
     max_tokens: int = 4096
+    temperature: float = 1.0          # pinned, not left to the API default; logged per manifest
     _client: object = None
 
     def __post_init__(self):
@@ -119,7 +120,7 @@ class AnthropicClient(LLMClient):
 
     def complete(self, prompt: str) -> LLMResponse:
         resp = self._client.messages.create(
-            model=self.model, max_tokens=self.max_tokens,
+            model=self.model, max_tokens=self.max_tokens, temperature=self.temperature,
             messages=[{"role": "user", "content": prompt}])
         text = "".join(getattr(b, "text", "") for b in resp.content
                        if getattr(b, "type", "") == "text")

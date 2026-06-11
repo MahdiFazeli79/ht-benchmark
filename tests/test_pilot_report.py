@@ -35,6 +35,17 @@ def test_build_manifest_is_schema_valid_and_carries_grade():
     assert man["verification"]["activation_proof_method"] == "input_driven"
     assert man["verification"]["divergence_attribution"] == "trigger_only"
     assert man["inserted_rtl"]["line_ranges"] == [[2, 2]]    # from the structural diff
+    assert "temperature" not in man["generator"]            # omitted when not pinned (pre-pin manifests unchanged)
+
+
+def test_build_manifest_logs_temperature_when_pinned():
+    man = P.build_manifest("s_001", _spec(), _result(), model="claude-sonnet-x",
+                           prompt_hash="abc123", license="MIT",
+                           license_url="https://opensource.org/licenses/MIT",
+                           circuit_family="adder", variant_group="pilot_add8",
+                           temperature=1.0)
+    assert [e.message for e in SCHEMA.iter_errors(man)] == []  # optional field stays schema-valid
+    assert man["generator"]["temperature"] == 1.0             # sampling condition recorded per sample
 
 
 def test_report_metrics():

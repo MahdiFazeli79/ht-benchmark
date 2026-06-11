@@ -152,6 +152,7 @@ def test_anthropic_client_wires_tokens_without_sdk_or_spend():
     assert r.in_tokens == 120 and r.out_tokens == 47 and r.model == "claude-sonnet-x"
     assert "<INFECTED>" in r.text
     assert sdk.seen["model"] == "claude-sonnet-x"          # model id forwarded
+    assert sdk.seen["temperature"] == 1.0                  # temperature pinned, not API-default
 
 
 def test_load_env_sets_without_override(tmp_path, monkeypatch):
