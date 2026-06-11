@@ -318,6 +318,9 @@ class InsertionResult:
     verification: dict | None = None    # the gauntlet's round-10 grade (on accept)
     reason: str = ""
     steered: bool = False               # the v2 host-observable steering fired ≥1× in this loop
+    attempt1_added_text: list | None = None  # attempt-1 inserted text (same-prompt collapse signal,
+                                             # free of repair-path divergence); None if attempt 1
+                                             # never produced a valid structural diff
 
 
 def generate_sample(
@@ -339,6 +342,7 @@ def generate_sample(
     feedback = None
     last_reason = "no attempt"
     steered = False                      # did the v2 steering fire at least once?
+    attempt1_added = None                # attempt-1 inserted text, for the collapse cluster
     est_out = est_out_tokens if est_out_tokens is not None else _approx_tokens(spec.clean_rtl) + 256
 
     for attempt in range(1, max_repairs + 2):
@@ -358,6 +362,8 @@ def generate_sample(
         if not gt["line_ranges"]:
             feedback = last_reason = "no lines were added (empty structural diff)"
             continue
+        if attempt == 1:                                # same-prompt collapse signal, captured
+            attempt1_added = gt["added_text"]           # before any repair-path divergence
 
         # The gauntlet (incl. activation-proof) consumes the witness; dual
         # assertion (fires on infected, silent on clean) lives inside `verify`.
@@ -365,11 +371,13 @@ def generate_sample(
         if verdict.ok:
             guard.record_outcome(True)
             return InsertionResult(True, infected, gt, attempt, activation=activation,
-                                   verification=verdict.detail, steered=steered)
+                                   verification=verdict.detail, steered=steered,
+                                   attempt1_added_text=attempt1_added)
         last_reason = verdict.reason                    # recorded reject reason stays clean
         feedback = _steer_feedback(verdict.reason)      # next attempt gets host-observable steering
         if feedback != verdict.reason:                  # steering actually fired this round
             steered = True
 
     guard.record_outcome(False)
-    return InsertionResult(False, None, None, max_repairs + 1, reason=last_reason, steered=steered)
+    return InsertionResult(False, None, None, max_repairs + 1, reason=last_reason,
+                           steered=steered, attempt1_added_text=attempt1_added)

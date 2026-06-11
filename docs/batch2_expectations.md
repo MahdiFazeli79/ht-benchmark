@@ -38,12 +38,42 @@ not defect.
   witnesses the steering fired on, the fraction that converted to accepts. High =>
   general steering suffices forever; low => the net-naming steering variant is the
   justified v3. Decision input, measured not guessed.
-- **Near-duplicate clusters** across the repeat-probe cells: the collapse-breadth
-  signal. Uniform clustering across cells => collapse is taxonomy-wide; clustering
-  only on simple cells => cell-dependent, and the cheaper diversification answers
-  may cover most of the corpus.
+- **Collapse clusters (attempt-1)** across the repeat-probe cells: the
+  collapse-breadth signal. Read the ATTEMPT-1 clusters
+  (`PilotReport.attempt1_collapse_clusters`), not the final-accept clusters, for
+  the sequential cells 1-3: their triplicate is same-prompt only on attempt 1: once
+  a sample rejects and the v2 steering fires, its accepted attempt-2 output carries
+  its own repair history, so identical specs no longer share a prompt and final-
+  accept clustering would read repair-path noise as base-sampling diversity.
+  Attempt-1 outputs are same-prompt by construction (one retained intermediate per
+  sample, pooled across accepted and rejected), so final-accept clusters measure the
+  v2 fix and attempt-1 clusters measure collapse, without contaminating each other.
+  Uniform clustering across cells => collapse is taxonomy-wide; clustering only on
+  simple cells => cell-dependent, and the cheaper diversification answers may cover
+  most of the corpus. The combinational repeat-probes (6-8, 9-11) accept on attempt
+  1, so their final and attempt-1 clusters coincide.
+
+## Proposed spec set (12 samples, for review)
+
+`pilot.batch2_specs()` / `_BATCH2_CELLS`. All R1-R3 feasible at construction;
+the two new hosts (`accum8`, `alu8`) verified to compile (iverilog -g2012) and
+synthesize (yosys) before review.
+
+| # | host | mechanism | payload | purpose |
+|---|------|-----------|---------|---------|
+| 1-3 | counter8 | sequential_counter | denial_of_service | seq-fix validation + collapse probe (the exact pilot-1 reject cell, 3× identical) |
+| 4 | counter8 | sequential_fsm | modify_functionality | the other pilot-1 sequential reject |
+| 5 | accum8 | sequential_counter | degrade_performance | second sequential host (not only counter8) |
+| 6-8 | mux2x8 | combinational | degrade_performance | collapse-breadth probe cell #2 (3× identical) |
+| 9-11 | cmp8 | combinational | denial_of_service | collapse-breadth probe cell #3 (3× identical) |
+| 12 | alu8 | combinational | modify_functionality | cost-slope point (larger self-authored host) |
+
+Proposed caps for the run (set in the run session, not here): same as pilot 1,
+$10 total / $1 per-run / 0.20 yield floor over 10 armed at 8. alu8 costs more
+per sample (bigger prompt); still well within the per-run cap.
 
 ## Status
 
-Spec not yet drafted. The spec set is the next no-spend artifact (for review);
-the RUN is the Tier-3 gate, authorized only in the run session.
+Spec DRAFTED and mock-tested (no spend), awaiting review. The RUN is the Tier-3
+gate, authorized only in the run session (key provenance, caps, spec set, model
+id). Real-core cost point deferred to a separately-gated download.

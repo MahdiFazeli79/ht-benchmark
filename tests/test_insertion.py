@@ -99,6 +99,7 @@ def test_accept_on_first_attempt():
     assert res.activation["trigger"] == "count == 8'hC7 with en=1"   # witness carried
     assert g.spent_usd > 0 and g.acceptance_rate() == 1.0
     assert res.steered is False                                      # no steering on a clean accept
+    assert res.attempt1_added_text == res.ground_truth["added_text"]  # accept-on-1: attempt-1 == final
 
 
 def test_repair_then_accept():
@@ -120,6 +121,26 @@ def test_reject_after_exhausting_repairs():
 
 
 # --- prompt_v2: host-observable witness steering (no spend) ---
+
+def test_attempt1_added_text_retains_attempt_one_not_final():
+    # Two DIFFERENT infected outputs across attempts: attempt 1 rejects (steered),
+    # attempt 2 accepts. The collapse intermediate must be attempt 1's, not the final.
+    inf1 = ("module m(input a, output y);\n  wire t1;\n  assign t1 = a & 1'b0;\n"
+            "  assign y = a ^ t1;\nendmodule\n")
+    inf2 = ("module m(input a, output y);\n  wire t2;\n  assign t2 = a | 1'b0;\n"
+            "  assign y = a ^ t2;\nendmodule\n")
+    client = I.MockLLMClient([_wrap(inf1), _wrap(inf2)])
+    calls = {"n": 0}
+    def verify(*_):
+        calls["n"] += 1
+        return (I.Verdict(False, "witness not applicable to clean: x")
+                if calls["n"] == 1 else I.Verdict(True))
+    res = I.generate_sample(_spec(), client, _guard(), verify, max_repairs=3)
+    assert res.accepted and res.attempts == 2
+    assert any("t1" in line for line in res.attempt1_added_text)        # attempt-1 retained
+    assert any("t2" in line for line in res.ground_truth["added_text"])  # final is attempt-2
+    assert not any("t2" in line for line in res.attempt1_added_text)     # not contaminated
+
 
 def test_prompt_version_is_v2():
     # Guards an accidental bump; the manifest stamps this value.

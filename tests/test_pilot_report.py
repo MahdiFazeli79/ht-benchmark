@@ -79,6 +79,49 @@ def test_report_metrics():
     assert r.steering_conversion_rate() is None                 # no steered samples ⇒ nothing to measure
 
 
+def test_attempt1_collapse_clusters_decouple_from_repair_path():
+    r = P.PilotReport()
+    # three same-prompt (cells 1-3) samples whose attempt-1 outputs collapse to "s1";
+    # two accepted with DIVERGENT final sigs (repair-path), one rejected.
+    r.accepted = [
+        {"sample_id": "b2_001", "cell": "c", "sig": "final_a", "attempt1_sig": "s1",
+         "method": "state_injection", "steered": True, "witness": {}},
+        {"sample_id": "b2_002", "cell": "c", "sig": "final_b", "attempt1_sig": "s1",
+         "method": "state_injection", "steered": True, "witness": {}}]
+    r.rejected = [{"sample_id": "b2_003", "cell": "c", "reason": "witness not applicable to clean: x",
+                   "attempt1_sig": "s1", "steered": True}]
+    # final-accept clustering sees no dup (repair-path divergence hid the collapse)
+    assert r.near_duplicate_clusters() == {}
+    # attempt-1 clustering recovers it across all three (accepted + rejected)
+    assert r.attempt1_collapse_clusters() == {"s1": ["b2_001", "b2_002", "b2_003"]}
+    rendered = r.render()
+    assert "collapse clusters (attempt-1" in rendered.lower()
+    assert "docs/batch2_expectations.md" in rendered          # expected grades cited up front
+
+
+def test_batch2_specs_feasible_and_composed():
+    from collections import Counter
+    specs = P.batch2_specs()
+    assert len(specs) == 12                                    # ~12-sample budget
+    ids = [sid for sid, _, _, _ in specs]
+    assert len(set(ids)) == 12 and all(s.startswith("batch2_") for s in ids)
+    # construction did not raise ⇒ every cell is R1-R3 feasible
+    cells = [(sp.top_module, sp.trigger_mechanism, sp.payload) for _, _, sp, _ in specs]
+    # (a) sequential-fix validation: both mechanisms, across TWO hosts (not only counter8)
+    seq = [c for c in cells if c[1] in ("sequential_counter", "sequential_fsm")]
+    assert len(seq) == 5
+    assert {c[0] for c in seq} == {"counter8", "accum8"}
+    # (b) collapse-breadth: three distinct repeat-probe cells, 3 identical each
+    triples = [c for c, n in Counter(cells).items() if n == 3]
+    assert len(triples) == 3
+    # (c) cost host present and materially larger than a toy host
+    assert any(top == "alu8" for top, _, _ in cells)
+    assert len(P._HOSTS["alu8"]) > 4 * len(P._HOSTS["add8"])
+    # variant_group keys on host source (shared with batch 1), not on batch id
+    vgs = {sp.top_module: meta["variant_group"] for _, _, sp, meta in specs}
+    assert vgs["counter8"] == "pilot_counter8"
+
+
 def test_steering_conversion_rate():
     r = P.PilotReport()
     # 2 steered → accepted, 1 steered → rejected, 1 unsteered accept (ignored by the metric)
