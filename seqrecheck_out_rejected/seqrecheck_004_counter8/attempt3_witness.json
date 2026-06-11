@@ -1,0 +1,4 @@
+{
+  "trigger": "Run counter with en=1 continuously from reset. When count == 8'hAA, en=1 causes FSM to go S0\u2192S1 and count becomes 8'hAB. Next cycle with count == 8'hAB and en=1, FSM goes S1\u2192S2 and count becomes 8'hAC normally. Then on the NEXT cycle, FSM is in S2, so with en=1, instead of count incrementing from 8'hAC to 8'hAD, count is forced to 8'h00. Concretely: after count reaches 8'hAB (FSM in S1), apply en=1 for one more cycle to move FSM to S2 (count\u21928'hAC), then apply en=1 again when FSM==S2.",
+  "observable_effect": "When FSM is in state S2 and en=1, count is forced to 8'h00 instead of incrementing normally (e.g., from 8'hAC to 8'hAD). The clean module would show count==8'hAD while the infected module shows count==8'h00."
+}

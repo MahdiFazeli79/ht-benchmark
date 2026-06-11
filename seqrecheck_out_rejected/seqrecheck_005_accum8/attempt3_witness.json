@@ -1,0 +1,4 @@
+{
+  "trigger": "Starting from reset, perform accumulations such that after exactly 170 (0xAA) en=1 pulses, acc holds 8'hAA. Concretely: after rst_n deasserted, apply din=8'h01 with en=1 for 170 clock cycles (so acc == 8'hAA == 170 after 170 additions of 1, and seq_cnt == 8'hAA simultaneously). On the 171st en=1 pulse (seq_cnt==8'hAA, acc==8'hAA), apply din=8'h01.",
+  "observable_effect": "acc remains 8'hAA (accumulation is skipped/stalled) instead of advancing to 8'hAB as the clean module would produce."
+}

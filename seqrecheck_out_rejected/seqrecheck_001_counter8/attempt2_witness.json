@@ -1,0 +1,4 @@
+{
+  "trigger": "Drive the counter so that count reaches 8'hAB with en=1 exactly 3 times (causing trojan_seq to increment from 0 to 1, 1 to 2, 2 to 3=2'b11). Once trojan_seq==2'b11, the Trojan is armed. On the next clock edge (with or without en), the payload fires.",
+  "observable_effect": "When trojan_trigger==1 (trojan_seq==2'b11), count is forced to 8'h00 on every clock edge regardless of en, and the counter permanently stays at 0 (denial of service). The clean module would continue counting normally (e.g., count increments from 8'hAB to 8'hAC etc.), while the infected module resets and holds count at 8'h00."
+}

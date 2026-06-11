@@ -1,0 +1,4 @@
+{
+  "trigger": "rst_n=1, en=1; accumulate din values so that acc reaches 8'hAA three separate times (each time en=1 while acc==8'hAA). On the third occurrence (seq_cnt==2'b10 at the clock edge when acc==8'hAA and en=1), the Trojan fires.",
+  "observable_effect": "Instead of computing acc = 8'hAA + din (normal accumulation), acc is set to 8'h55 (8'hAA >> 1 = 8'h55), regardless of din. The accumulator is degraded by a right-shift instead of addition."
+}

@@ -1,0 +1,42 @@
+{
+  "sample_id": "seqrecheck_004_counter8",
+  "class": "rejected_noncorpus",
+  "top_module": "counter8",
+  "taxonomy_cell": "triggered/sequential_fsm/modify_functionality",
+  "final_reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmpbbse9al3/tb.v:17: error: Could not find variable ``dut.trojan_state'' in ``tb''\n1 error(s) during elaboration.",
+  "cost_usd": 0.063606,
+  "attempts": [
+    {
+      "attempt": 1,
+      "reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+      "in_tokens": 606,
+      "out_tokens": 651,
+      "cost_usd": 0.011583,
+      "parsed": true
+    },
+    {
+      "attempt": 2,
+      "reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+      "in_tokens": 647,
+      "out_tokens": 1018,
+      "cost_usd": 0.017211,
+      "parsed": true
+    },
+    {
+      "attempt": 3,
+      "reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+      "in_tokens": 647,
+      "out_tokens": 1052,
+      "cost_usd": 0.017721,
+      "parsed": true
+    },
+    {
+      "attempt": 4,
+      "reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmpbbse9al3/tb.v:17: error: Could not find variable ``dut.trojan_state'' in ``tb''\n1 error(s) during elaboration.",
+      "in_tokens": 647,
+      "out_tokens": 1010,
+      "cost_usd": 0.017091,
+      "parsed": true
+    }
+  ]
+}

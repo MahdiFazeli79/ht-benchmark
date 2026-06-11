@@ -1,0 +1,42 @@
+{
+  "sample_id": "seqrecheck_005_accum8",
+  "class": "rejected_noncorpus",
+  "top_module": "accum8",
+  "taxonomy_cell": "triggered/sequential_counter/degrade_performance",
+  "final_reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmp0ja9zq8a/tb.v:20: error: Could not find variable ``dut.trojan_cnt'' in ``tb''\n1 error(s) during elaboration.",
+  "cost_usd": 0.053349,
+  "attempts": [
+    {
+      "attempt": 1,
+      "reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmprijnap4i/tb.v:18: error: Could not find variable ``dut.seq_cnt'' in ``tb''\n1 error(s) during elaboration.",
+      "in_tokens": 624,
+      "out_tokens": 377,
+      "cost_usd": 0.007527,
+      "parsed": true
+    },
+    {
+      "attempt": 2,
+      "reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmpr0d43tcx/tb.v:20: error: Could not find variable ``dut.seq_cnt'' in ``tb''\n1 error(s) during elaboration.",
+      "in_tokens": 814,
+      "out_tokens": 854,
+      "cost_usd": 0.015252,
+      "parsed": true
+    },
+    {
+      "attempt": 3,
+      "reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmpaev59z9b/tb.v:20: error: Could not find variable ``dut.seq_cnt'' in ``tb''\n1 error(s) during elaboration.",
+      "in_tokens": 815,
+      "out_tokens": 862,
+      "cost_usd": 0.015375,
+      "parsed": true
+    },
+    {
+      "attempt": 4,
+      "reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmp0ja9zq8a/tb.v:20: error: Could not find variable ``dut.trojan_cnt'' in ``tb''\n1 error(s) during elaboration.",
+      "in_tokens": 815,
+      "out_tokens": 850,
+      "cost_usd": 0.015195,
+      "parsed": true
+    }
+  ]
+}

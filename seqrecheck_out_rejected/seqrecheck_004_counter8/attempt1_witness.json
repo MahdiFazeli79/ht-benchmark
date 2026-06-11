@@ -1,0 +1,4 @@
+{
+  "trigger": "Internal FSM reaches state 2'b11 after observing the sequence count==8'hAA \u2192 count==8'hAB \u2192 count==8'hAC on consecutive enabled clock edges (i.e., en=1 held while count naturally passes through 0xAA, 0xAB, 0xAC). The trojan_active flag latches on the clock edge after count==8'hAC, so the payload fires starting when count would next be 0xAD.",
+  "observable_effect": "Once trojan_active=1, instead of incrementing, count is bitwise-inverted (XOR 0xFF) on each enabled clock edge. For example, after the trigger sequence completes and count==8'hAD, the next enabled clock produces count==8'h52 (i.e., 0xAD ^ 0xFF) rather than 0xAE. The clean module would show count==8'hAE at that point."
+}

@@ -1,0 +1,4 @@
+{
+  "trigger": "internal sequential counter trojan_cnt reaches 8'hAA (170 rising clock edges with en=1 after reset); on that specific clock edge the Trojan fires",
+  "observable_effect": "count stops incrementing (freezes at its current value) on the triggering clock edge instead of incrementing by 1, while the clean module would increment normally; count remains frozen on every subsequent en=1 cycle as long as trojan_trig stays asserted (one cycle), then normal counting resumes \u2014 the net result is that exactly one increment is skipped/suppressed, demonstrating denial-of-service"
+}

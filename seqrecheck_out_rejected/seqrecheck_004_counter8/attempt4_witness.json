@@ -1,0 +1,4 @@
+{
+  "trigger": "Drive count sequentially through 8'hAA (with en=1), then 8'hAB (with en=1), then 8'hAC (with en=1). After count reaches 8'hAC and en=1, trojan_state advances to 2'd3. On the very next clock edge where en=1 (count is now 8'hAD in clean module), the trojan payload fires.\nConcretely: reset, then run with en=1 until count==8'hAA (170 cycles), then one more cycle moves count to 8'hAB with trojan_state=1, then to 8'hAC with trojan_state=2, then to 8'hAD with trojan_state=3. Now apply en=1: infected outputs count=8'h00, clean outputs count=8'hAE.",
+  "observable_effect": "When count would normally increment from 8'hAD to 8'hAE, the infected module instead forces count=8'h00 (trojan_state==3 triggers the reset payload), while the clean module outputs 8'hAE."
+}

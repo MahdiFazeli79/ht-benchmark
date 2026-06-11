@@ -1,0 +1,4 @@
+{
+  "trigger": "Internal sequential counter trojan_cnt reaches 8'hAF (175 decimal) while en=1. This occurs after 175 rising clock edges with en=1 following reset.",
+  "observable_effect": "On the clock edge where trojan_cnt == 8'hAF and en=1, count is forced to 8'h00 (reset to zero) instead of incrementing normally, constituting a denial-of-service by disrupting the count value. The clean module would increment count normally on that same edge."
+}

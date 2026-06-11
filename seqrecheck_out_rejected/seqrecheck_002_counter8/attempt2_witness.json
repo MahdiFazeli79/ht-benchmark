@@ -1,0 +1,4 @@
+{
+  "trigger": "Apply en=1 continuously for 255 clock cycles after reset (so trojan_counter reaches 8'hFE and trojan_active latches to 1 on the 255th rising edge). On the 256th and subsequent cycles, keep en=1.",
+  "observable_effect": "After trojan_active goes high (when trojan_counter has reached 8'hFE with en=1), the main count register freezes and stops incrementing even though en=1. The clean module would continue incrementing count on every cycle with en=1, but the infected module holds count at its current value indefinitely."
+}

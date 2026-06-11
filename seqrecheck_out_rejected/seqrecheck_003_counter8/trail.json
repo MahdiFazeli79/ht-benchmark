@@ -1,0 +1,42 @@
+{
+  "sample_id": "seqrecheck_003_counter8",
+  "class": "rejected_noncorpus",
+  "top_module": "counter8",
+  "taxonomy_cell": "triggered/sequential_counter/denial_of_service",
+  "final_reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+  "cost_usd": 0.051924,
+  "attempts": [
+    {
+      "attempt": 1,
+      "reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+      "in_tokens": 607,
+      "out_tokens": 357,
+      "cost_usd": 0.007176,
+      "parsed": true
+    },
+    {
+      "attempt": 2,
+      "reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmpq6mu7m9r/tb.v:16: error: Could not find variable ``dut.trojan_cnt'' in ``tb''\n1 error(s) during elaboration.",
+      "in_tokens": 648,
+      "out_tokens": 624,
+      "cost_usd": 0.011304,
+      "parsed": true
+    },
+    {
+      "attempt": 3,
+      "reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+      "in_tokens": 800,
+      "out_tokens": 1157,
+      "cost_usd": 0.019755,
+      "parsed": true
+    },
+    {
+      "attempt": 4,
+      "reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+      "in_tokens": 648,
+      "out_tokens": 783,
+      "cost_usd": 0.013689,
+      "parsed": true
+    }
+  ]
+}

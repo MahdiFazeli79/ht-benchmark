@@ -1,0 +1,4 @@
+{
+  "trigger": "count == 8'hA5 with en=1 (the counter naturally reaches 8'hA5 after 165 increments from reset; once count is 8'hA5 and en=1 fires on a clock edge, trojan_lock latches to 1)",
+  "observable_effect": "count freezes permanently at 8'hA5 on all subsequent cycles regardless of en, even though the clean module would continue incrementing (8'hA6, 8'hA7, etc.)"
+}

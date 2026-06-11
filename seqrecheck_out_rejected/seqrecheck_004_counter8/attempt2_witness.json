@@ -1,0 +1,4 @@
+{
+  "trigger": "Drive count to 8'hAA with en=1 (FSM_IDLE -> FSM_S1 on that clock edge). Then apply en=1 for the next cycle (FSM_S1 -> FSM_TRIG). Then the cycle where fsm_state==FSM_TRIG fires the payload. Concretely: let count naturally reach 8'hAA with en=1 (or reset and manually drive), then keep en=1 for two more cycles. At the second posedge after count==8'hAA is sampled, fsm_state==FSM_TRIG causes the payload.\n\nExact sequence: \n1. count==8'hAA, en=1 \u2192 FSM goes IDLE\u2192S1, count becomes 8'hAB\n2. count==8'hAB, en=1 \u2192 FSM goes S1\u2192TRIG, count becomes 8'hAC  \n3. count==8'hAC, en=1 (or any), fsm_state==FSM_TRIG \u2192 payload fires: count forced to 8'h00 instead of 8'hAD",
+  "observable_effect": "When fsm_state reaches FSM_TRIG (two cycles after count==8'hAA with en=1), count is forced to 8'h00 instead of the expected value 8'hAD. The clean module would show count==8'hAD at that cycle, while the infected module shows count==8'h00."
+}

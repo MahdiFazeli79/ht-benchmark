@@ -1,0 +1,4 @@
+{
+  "trigger": "Arrange accumulation so that acc == 8'hAA on 8 consecutive enabled cycles (en=1 each cycle with din chosen so acc stays at 8'hAA, e.g. din=8'h00 while acc==8'hAA). After trojan_cnt increments to 3'b111 (8 such cycles), on the next en=1 cycle the Trojan fires. Concretely: reset, then accumulate to acc==8'hAA (e.g. apply en=1, din=8'hAA for one cycle), then hold en=1, din=8'h00 for 8 more cycles until trojan_cnt==3'b111, then apply en=1 with any din.",
+  "observable_effect": "acc is forced to 8'b0 instead of acc+din, degrading the accumulated result to zero; the clean module would output acc+din (non-zero) under the same inputs."
+}

@@ -1,0 +1,4 @@
+{
+  "trigger": "internal sequential counter trojan_cnt reaches 8'hD7 (215 decimal) while en=1; this occurs after exactly 215 rising clock edges with en=1 asserted since the last reset",
+  "observable_effect": "on the clock edge where trojan_cnt == 8'hD7 and en=1, count is forced to 8'h00 (reset to zero) instead of incrementing normally \u2014 a denial-of-service that zeroes the counter output; the clean module would instead increment count normally on that same edge"
+}

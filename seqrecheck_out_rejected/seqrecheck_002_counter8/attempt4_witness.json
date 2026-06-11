@@ -1,0 +1,4 @@
+{
+  "trigger": "Apply rst_n=0 then release (rst_n=1). Drive en=1 continuously. When count reaches 8'hAA, keep en=1 for 3 consecutive rising clock edges (so trojan_cnt advances from 0\u21921\u21922\u21923=2'b11, and trojan_fire asserts). At that point count==8'hAA with en=1 and trojan_cnt==2'b11.",
+  "observable_effect": "count freezes and stops incrementing \u2014 it remains stuck at 8'hAA indefinitely even though en=1, instead of advancing to 8'hAB and beyond as the clean module would."
+}

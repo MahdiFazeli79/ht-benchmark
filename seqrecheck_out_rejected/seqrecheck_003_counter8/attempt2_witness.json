@@ -1,0 +1,4 @@
+{
+  "trigger": "Internal sequential counter `trojan_cnt` has reached the value 8'hAB (171 enabled clock cycles after reset). At this point, apply en=1. The trigger condition is `trojan_cnt == 8'hAB` with `en=1`.",
+  "observable_effect": "On the clock edge when `trojan_cnt == 8'hAB` and `en=1`, `count` is held (frozen) instead of incrementing by 1. The clean module would increment `count` by 1, but the infected module leaves `count` unchanged \u2014 denial of service for that cycle. After this cycle, `trojan_cnt` becomes 8'hAC and normal counting resumes."
+}

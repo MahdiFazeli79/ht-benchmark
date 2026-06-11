@@ -1,0 +1,42 @@
+{
+  "sample_id": "seqrecheck_001_counter8",
+  "class": "rejected_noncorpus",
+  "top_module": "counter8",
+  "taxonomy_cell": "triggered/sequential_counter/denial_of_service",
+  "final_reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+  "cost_usd": 0.051291,
+  "attempts": [
+    {
+      "attempt": 1,
+      "reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+      "in_tokens": 607,
+      "out_tokens": 337,
+      "cost_usd": 0.006876,
+      "parsed": true
+    },
+    {
+      "attempt": 2,
+      "reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmpxxghx_02/tb.v:16: error: Could not find variable ``dut.trojan_seq'' in ``tb''\n1 error(s) during elaboration.",
+      "in_tokens": 648,
+      "out_tokens": 825,
+      "cost_usd": 0.014319,
+      "parsed": true
+    },
+    {
+      "attempt": 3,
+      "reason": "activation_proof: witness not applicable to clean \u2014 references a signal absent from clean (structural): compile: /var/folders/y2/1815kk410mj5wgx5yhxd8xfh0000gq/T/tmp8cfhoi7b/tb.v:17: error: Could not find variable ``dut.trojan_seq'' in ``tb''\n1 error(s) during elaboration.",
+      "in_tokens": 798,
+      "out_tokens": 921,
+      "cost_usd": 0.016209,
+      "parsed": true
+    },
+    {
+      "attempt": 4,
+      "reason": "activation_proof: witness produced no divergence (infected == clean under trigger); diagnostic: no divergence within window cap",
+      "in_tokens": 799,
+      "out_tokens": 766,
+      "cost_usd": 0.013887,
+      "parsed": true
+    }
+  ]
+}

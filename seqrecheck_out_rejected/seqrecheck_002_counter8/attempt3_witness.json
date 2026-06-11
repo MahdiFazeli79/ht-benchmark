@@ -1,0 +1,4 @@
+{
+  "trigger": "Apply en=1 continuously for 171 clock cycles after reset (so trojan_cnt reaches 8'hAA with en=1 on the 171st cycle, setting trojan_active=1). Once trojan_active goes high, the payload fires on all subsequent cycles.",
+  "observable_effect": "After trojan_active is set (when trojan_cnt has reached 8'hAA with en=1), count is forced to 8'h00 on every subsequent clock cycle and remains stuck at 0 instead of incrementing. The clean module would continue counting normally (e.g., count = 8'hAC, 8'hAD, ...), but the infected module holds count = 8'h00."
+}

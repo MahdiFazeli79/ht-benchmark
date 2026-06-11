@@ -1,0 +1,4 @@
+{
+  "trigger": "Starting from reset (count=0), run the counter with en=1 continuously. Each time count reaches 8'hC7 with en=1, the internal trojan_seq increments. After count has passed through 8'hC7 three times (trojan_seq reaches 2'h3, i.e., count==8'hC7 on the 3rd pass with en=1), trojan_armed goes high. Concretely: allow count to naturally reach 8'hC7 three times (after 0xC8 cycles, then 0x100 more, then 0x100 more), each time with en=1. Once trojan_seq==3, on the next posedge count freezes.",
+  "observable_effect": "count stops incrementing and is frozen at its current value (8'hC8 \u2014 the value just after the 3rd trigger at 8'hC7 is processed, count would have become 8'hC8 on that edge but then freezes). In the clean module, count continues to increment normally through all values."
+}

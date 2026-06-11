@@ -1,0 +1,4 @@
+{
+  "trigger": "After reset, apply en=1 for exactly 165 (8'hA5) consecutive clock cycles so that seq_cnt reaches 8'hA5; on the 166th rising edge where en=1 and seq_cnt==8'hA5, the Trojan fires.",
+  "observable_effect": "On that triggering clock edge, acc is held at its previous value instead of being incremented by din \u2014 one accumulation is silently skipped. The clean module would produce acc_clean = acc_prev + din, but the infected module outputs acc_infected = acc_prev, a difference of din."
+}
