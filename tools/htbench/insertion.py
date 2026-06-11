@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from . import cost_guard as CG
 from . import validate as _V
@@ -78,6 +79,51 @@ class MockLLMClient(LLMClient):
 
 def _approx_tokens(s: str) -> int:
     return max(1, len(s) // 4)
+
+
+def load_env(path: str = ".env") -> None:
+    """Load KEY=VALUE lines from a .env file into os.environ without overriding
+    already-set vars. Minimal, no dependency — so the Anthropic SDK (which reads
+    ANTHROPIC_API_KEY from the environment) sees the gitignored key."""
+    import os
+    p = Path(path)
+    if not p.exists():
+        return
+    for line in p.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+
+
+@dataclass
+class AnthropicClient(LLMClient):
+    """The paid client — the ONLY metered call in the whole engine.
+
+    Lazy SDK import (the module stays importable without `anthropic`); reads the
+    key from the environment (`load_env` first). `_client` is injectable so tests
+    mock the SDK at zero cost. `model` is REQUIRED — no magic default; the exact
+    API model id is set deliberately at pilot time. This client makes the raw
+    call only; the cost guard's pre_call_check/record_spend wrap it in
+    `generate_sample`, so spend control is never the client's responsibility."""
+    model: str
+    max_tokens: int = 4096
+    _client: object = None
+
+    def __post_init__(self):
+        if self._client is None:
+            load_env()
+            import anthropic
+            self._client = anthropic.Anthropic()   # reads ANTHROPIC_API_KEY from env
+
+    def complete(self, prompt: str) -> LLMResponse:
+        resp = self._client.messages.create(
+            model=self.model, max_tokens=self.max_tokens,
+            messages=[{"role": "user", "content": prompt}])
+        text = "".join(getattr(b, "text", "") for b in resp.content
+                       if getattr(b, "type", "") == "text")
+        return LLMResponse(text, resp.usage.input_tokens, resp.usage.output_tokens, self.model)
 
 
 # --------------------------------------------------------------------------- #

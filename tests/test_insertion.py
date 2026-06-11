@@ -127,6 +127,46 @@ def test_cost_guard_blocks_overspend_before_call():
     assert g.spent_usd == 0.0                            # nothing spent
 
 
+def test_anthropic_client_wires_tokens_without_sdk_or_spend():
+    # Inject a fake SDK client -> no anthropic import, no network, no cost.
+    class _Block:
+        type = "text"
+        text = _wrap(INFECTED)
+
+    class _Resp:
+        content = [_Block()]
+        usage = type("U", (), {"input_tokens": 120, "output_tokens": 47})()
+
+    class _FakeSDK:
+        def __init__(self):
+            self.messages = self
+            self.seen = {}
+
+        def create(self, **kw):
+            self.seen = kw
+            return _Resp()
+
+    sdk = _FakeSDK()
+    c = I.AnthropicClient(model="claude-sonnet-x", _client=sdk)
+    r = c.complete("hello")
+    assert r.in_tokens == 120 and r.out_tokens == 47 and r.model == "claude-sonnet-x"
+    assert "<INFECTED>" in r.text
+    assert sdk.seen["model"] == "claude-sonnet-x"          # model id forwarded
+
+
+def test_load_env_sets_without_override(tmp_path, monkeypatch):
+    import os
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / ".env").write_text("HTBENCH_TEST_KEY=from_file\n# comment\n")
+    monkeypatch.delenv("HTBENCH_TEST_KEY", raising=False)
+    I.load_env()
+    assert os.environ["HTBENCH_TEST_KEY"] == "from_file"
+    # does not override an already-set var
+    os.environ["HTBENCH_TEST_KEY"] = "preset"
+    I.load_env()
+    assert os.environ["HTBENCH_TEST_KEY"] == "preset"
+
+
 def test_yield_floor_aborts_a_bad_batch():
     g = _guard(yield_floor=0.2, yield_window=10, min_attempts_before_floor=8)
     client = I.MockLLMClient([_wrap(INFECTED)])

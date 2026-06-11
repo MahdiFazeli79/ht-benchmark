@@ -31,6 +31,8 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev iverilog
       - run: pip install jsonschema pytest pyverilog pygraphviz
       - run: python -m pytest tests/test_roundtrip.py -v
+      # Phase-2 mechanical gauntlet (compile/sim/synth-survival) — real iverilog + yosys.
+      - run: python -m pytest tests/test_gauntlet.py -v
 
   elaborate:
     # Yosys-elaboration RTL front-end: runs the sv2v + yosys -chparam pipeline
