@@ -153,6 +153,11 @@ class PilotReport:
 
     def render(self) -> str:
         L = ["# Phase-2 pilot report\n"]
+        L.append("> SCOPE: hosts are toy self-authored modules (8-bit adder/mux/…). This"
+                 " pilot validates the PIPELINE and the COST MODEL, **not** insertion"
+                 " feasibility on realistic cores — synth-survival and insertion difficulty"
+                 " on a toy host do not generalize (a Trojan there can be folded away or"
+                 " trivially preserved in ways a real core won't).\n")
         L.append(f"- spent: ${self.spent_usd:.4f}" + (f"  ABORTED: {self.aborted}" if self.aborted else ""))
         L.append(f"- attempted: {self.attempted}  accepted: {len(self.accepted)}  "
                  f"yield: {self.yield_rate:.0%}\n")
@@ -193,11 +198,16 @@ _FAMILY = {"add8": "adder", "mux2x8": "mux", "cmp8": "comparator",
 # payloads, 5 hosts) AND REPEAT one cell across 4 hosts so near-dup clustering can
 # detect mode collapse (the LLM emitting the same Trojan shape). All R1-R3 feasible.
 _PILOT_CELLS = [
-    # the repeated cell (×4, different hosts) — the mode-collapse probe
+    # mode-collapse probe (amended): 3 IDENTICAL-spec repeats (same host + cell) so
+    # clustering is unambiguous — same prompt, identical hash = real collapse, with no
+    # signature-over-merge confound. Plus 1 cross-host instance of the same cell to
+    # CHARACTERIZE the over-merge (does the signature merge across hosts?) rather than
+    # be fooled by it. (Running rows 1-4 as 4 different hosts would make the probe's
+    # positive signal indistinguishable from the signature's known false positive.)
+    ("add8", "triggered", "internal", "combinational", "degrade_performance"),
+    ("add8", "triggered", "internal", "combinational", "degrade_performance"),
     ("add8", "triggered", "internal", "combinational", "degrade_performance"),
     ("mux2x8", "triggered", "internal", "combinational", "degrade_performance"),
-    ("cmp8", "triggered", "internal", "combinational", "degrade_performance"),
-    ("shift8", "triggered", "internal", "combinational", "degrade_performance"),
     # breadth across payloads / trigger sources (combinational)
     ("add8", "triggered", "internal", "combinational", "modify_functionality"),
     ("mux2x8", "triggered", "external", "combinational", "leak_information"),

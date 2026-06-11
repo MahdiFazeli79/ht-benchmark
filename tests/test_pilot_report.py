@@ -73,9 +73,11 @@ def test_default_pilot_specs_feasible_spans_taxonomy_and_repeats_a_cell():
     assert len(specs) == 12
     cells = {(s.activation, s.trigger_mechanism, s.payload) for _, _, s, _ in specs}
     assert len(cells) >= 6                                  # breadth across the taxonomy
-    counts = Counter((s.activation, s.trigger_source, s.trigger_mechanism, s.payload)
-                     for _, _, s, _ in specs)
-    assert max(counts.values()) >= 4                        # one cell repeated >=4x (mode-collapse probe)
+    # amended probe: >=3 IDENTICAL-spec repeats (same HOST + cell) so collapse
+    # clustering is unambiguous (no cross-host over-merge confound)
+    host_cell = Counter((s.top_module, s.activation, s.trigger_source, s.trigger_mechanism, s.payload)
+                        for _, _, s, _ in specs)
+    assert max(host_cell.values()) >= 3
     ids = [sid for sid, _, _, _ in specs]
     assert len(set(ids)) == len(ids)                        # unique sample ids
 
