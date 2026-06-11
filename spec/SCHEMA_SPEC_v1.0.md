@@ -301,7 +301,7 @@ The node/cell reference scheme and the Phase-0.3 netlist-labeling method are ONE
 
 The integer index and the neighborhood set are both **ephemeral**: computed at load, never the source of truth.
 
-`metadata.json` (`metadata.schema.json`), `additionalProperties: false`, required keys: `sample_id`, `n_nodes_rtl`, `n_edges_rtl`, `n_cells_netlist` (nullable in RTL-only mode), `area_um2` (nullable), `logic_depth` (nullable), `trigger_activation_prob` (nullable float), `difficulty_bin` (enum: `xs` <100 nodes, `s` 100–1k, `m` 1k–10k, `l` >10k), `split` (enum: `train`,`val`,`test`). `difficulty_bin` is a derived, recomputable reporting convenience (from `n_nodes_rtl`), not a per-node label.
+`metadata.json` (`metadata.schema.json`), `additionalProperties: false`, required keys: `sample_id`, `n_nodes_rtl`, `n_edges_rtl`, `n_cells_netlist` (nullable in RTL-only mode), `area_um2` (nullable), `logic_depth` (nullable), `trigger_activation_prob` (nullable float), `difficulty_bin` (enum: `xs` <100 nodes, `s` 100–1k, `m` 1k–10k, `l` >10k), `split` (enum: `train`,`val`,`test`). `difficulty_bin` is a derived, recomputable reporting convenience (from `n_nodes_rtl`), not a per-node label. Optional key `elaboration` (round 8): RTL front-end provenance — `front_end ∈ {raw_pyverilog, yosys_elaborate}`, `sv2v_used`/`sv2v_version`, `yosys_version`, `top_module`, `chparams` (the config that produced this sample), `synthetic_nets`. Absent for raw-Verilog samples; present whenever the Yosys-elaboration front end (sv2v + `hierarchy -chparam`) produced the extracted Verilog, so a configured/SystemVerilog instance is reproducible. Frozen as an OPTIONAL block before the front end populates the corpus (same freeze-the-field-before-the-data discipline as the netlist handle union).
 
 **Two distinct identity fields — `circuit_family` (descriptive) and `variant_group` (split-atomic).** These are different properties and must not be conflated (the same discipline as `source` vs `source_kind`):
 
@@ -456,6 +456,8 @@ If either passes, the conditional branches are tightened until they fail.
 ---
 
 ## 15. Engineering resolutions folded in before freeze
+
+**Review round 8 (2026-06-11) — elaboration provenance (folded in before the front end populates the corpus):** the Yosys-elaboration RTL front end (sv2v + `hierarchy -chparam`, §8/`elaborate.py`) turns a configured/SystemVerilog source into the Verilog-2005 the extractor sees. That transform must be reproducible per sample, but the frozen `metadata.json` (`additionalProperties:false`) had no home for it. Added an OPTIONAL `elaboration` block recording `front_end`, sv2v/yosys versions, `chparams`, `top_module`, `synthetic_nets`. Optional ⇒ raw-Verilog samples and existing fixtures stay valid; sv2v provenance and yosys-elaboration provenance land in ONE amendment because sv2v is becoming a standard normalization step (its parseability canary gates the l-floor). Same discipline as the netlist handle union: freeze the field before the data populates it.
 
 **Review round 1 (2026-06-10):** (1) JSON canonical, HW2VEC view via converter, pickle forbidden as store. (2) Graph nodes carry a required, unique `handle`; validator asserts uniqueness. (3) `source` free string + closed `source_kind`; appendable `sources.json` lint registry. (4) RTL-only mode confirmed compatible with the round-trip gate.
 

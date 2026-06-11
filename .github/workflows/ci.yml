@@ -10,12 +10,12 @@ jobs:
     # validates the committed fixtures without re-extracting.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - run: pip install jsonschema pytest
-      - run: python -m pytest tests/test_validate.py tests/test_resolve.py tests/test_hw2vec_compat.py tests/test_secret_scan.py tests/test_circuit_list.py tests/test_r9_rate.py -v
+      - run: python -m pytest tests/test_validate.py tests/test_resolve.py tests/test_hw2vec_compat.py tests/test_secret_scan.py tests/test_circuit_list.py tests/test_r9_rate.py tests/test_metadata_elaboration.py -v
       # Fail-closed secret scan over the whole tree (Tier-3 guard).
       - run: PYTHONPATH=tools python -m htbench.secret_scan tools tests spec docs .github
 
@@ -23,8 +23,8 @@ jobs:
     # Reference extractor + round-trip gate. Needs Graphviz for pygraphviz.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       # iverilog: Pyverilog's dataflow analyzer shells out to it as preprocessor.
@@ -38,8 +38,8 @@ jobs:
     # match the version the stage was validated against (docs/phase1_sv2v_canary.md).
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - run: sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev yosys iverilog

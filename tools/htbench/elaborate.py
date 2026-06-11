@@ -197,6 +197,28 @@ def elaborate(
     )
 
 
+def metadata_block(result: "ElaborationResult", graph: dict | None = None) -> dict:
+    """Build the optional `metadata.json` `elaboration` block (spec round 8).
+
+    `graph` (if given) is the extracted DFG, used to count synthetic `_N_` nets.
+    The returned dict conforms to metadata.schema.json's `elaboration` property.
+    """
+    tv = result.tool_versions
+    synthetic = 0
+    if graph is not None:
+        _, synth = partition_synthetic([n["handle"] for n in graph["nodes"]])
+        synthetic = len(synth)
+    return {
+        "front_end": "yosys_elaborate",
+        "sv2v_used": result.sv2v_used,
+        "sv2v_version": tv.get("sv2v"),
+        "yosys_version": tv.get("yosys"),
+        "top_module": result.top,
+        "chparams": {k: str(v) for k, v in result.chparams.items()},
+        "synthetic_nets": synthetic,
+    }
+
+
 def elaborate_and_extract(sources, top: str, chparams: dict | None = None, **kw):
     """Elaborate then run the reference RTL extractor.
 

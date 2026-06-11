@@ -13,6 +13,25 @@
     "logic_depth": { "type": ["integer","null"], "minimum": 0 },
     "trigger_activation_prob": { "type": ["number","null"] },
     "difficulty_bin": { "type": "string", "enum": ["xs","s","m","l"] },
-    "split": { "type": "string", "enum": ["train","val","test"] }
+    "split": { "type": "string", "enum": ["train","val","test"] },
+    "elaboration": {
+      "type": ["object","null"],
+      "description": "Optional RTL front-end provenance (round 8). Records how a configured/SystemVerilog source was elaborated to the Verilog-2005 the extractor saw, so a sample is reproducible. Absent for raw-Verilog samples that needed no front end.",
+      "additionalProperties": false,
+      "required": ["front_end"],
+      "properties": {
+        "front_end": { "type": "string", "enum": ["raw_pyverilog","yosys_elaborate"] },
+        "sv2v_used": { "type": "boolean" },
+        "sv2v_version": { "type": ["string","null"] },
+        "yosys_version": { "type": ["string","null"] },
+        "top_module": { "type": ["string","null"] },
+        "chparams": {
+          "type": "object",
+          "additionalProperties": { "type": ["string","number","boolean"] }
+        },
+        "synthetic_nets": { "type": "integer", "minimum": 0,
+          "description": "count of Yosys-introduced _N_ nets (not source-intrinsic; never manifest signals)" }
+      }
+    }
   }
 }
