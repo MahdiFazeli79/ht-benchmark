@@ -26,6 +26,10 @@ handoff.md
 # pytest / tooling
 .pytest_cache/
 
+# paid-run logs (throwaway; a metered run is invoked deliberately each session,
+# never re-run from a committed script — so no runner is committed either)
+*_run.log
+
 # Pyverilog parser artifacts (written to cwd at parse time)
 parser.out
 parsetab.py

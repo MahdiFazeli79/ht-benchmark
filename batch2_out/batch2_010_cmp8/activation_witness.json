@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h3C",
+  "observable_effect": "gt is forced to 0 instead of 1 (since 0xA5=165 > 0x3C=60, the clean module outputs gt=1, but the infected module outputs gt=0 \u2014 a denial-of-service suppression of the greater-than result)"
+}

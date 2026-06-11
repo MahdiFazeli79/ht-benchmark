@@ -1,0 +1,4 @@
+{
+  "trigger": "sel=1, a=8'hA5, b=8'h5A (all three conditions simultaneously)",
+  "observable_effect": "output y becomes 8'hA5 (i.e., 8'h5A XOR 8'hFF) instead of the correct 8'h5A; the clean module outputs 8'h5A but the infected module outputs 8'hA5, representing a full bit-flip of the selected data (performance/correctness degradation)"
+}

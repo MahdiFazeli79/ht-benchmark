@@ -1,0 +1,4 @@
+{
+  "trigger": "op == 3'd2 (AND operation), a == 8'hAA (10101010), b == 8'h55 (01010101)",
+  "observable_effect": "y outputs 8'hFF (255) instead of the correct 8'h00 (0), because 0xAA & 0x55 = 0x00 normally but the Trojan ORs in 0xFF; also zero flag is 0 instead of 1"
+}

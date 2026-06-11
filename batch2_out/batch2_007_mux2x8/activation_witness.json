@@ -1,0 +1,4 @@
+{
+  "trigger": "sel=1, a=8'hA5, b=8'h5A",
+  "observable_effect": "Instead of outputting 8'h5A (the correct mux output when sel=1), the output y is forced to 8'hA5 (i.e., 8'h5A ^ 8'hFF = 8'hA5), producing an inverted/corrupted result that degrades functional correctness on this rare input combination. The clean module outputs 8'h5A for these inputs, while the infected module outputs 8'hA5."
+}

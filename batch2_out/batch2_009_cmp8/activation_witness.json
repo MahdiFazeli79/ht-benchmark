@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 (10100101) and b == 8'h3C (00111100)",
+  "observable_effect": "gt is forced to 0 (denial of service \u2014 correct result would be gt=1 since 0xA5 > 0x3C, but the Trojan suppresses the output)"
+}
