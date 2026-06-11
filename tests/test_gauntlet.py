@@ -56,3 +56,54 @@ def test_run_mechanical_passes_stealthy_and_reports_stage_on_fail():
     assert G.run_mechanical(CLEAN, INF_STEALTHY, "add8").ok
     v = G.run_mechanical(CLEAN, INF_BROAD, "add8")
     assert not v.ok and v.reason.startswith("functional_equivalence:")
+
+
+# --- activation-proof (the trigger-half of FE; reuses simulate + _mismatches) ---
+
+# state-injection fixture: a counter whose alarm fires only at count==0xC7
+CLEAN_CTR = ("module ctr(input clk, input rst_n, input en, output reg [7:0] count, output alarm);\n"
+             "  assign alarm = 1'b0;\n"
+             "  always @(posedge clk or negedge rst_n) if(!rst_n) count<=0; else if(en) count<=count+1;\n"
+             "endmodule\n")
+INF_CTR = ("module ctr(input clk, input rst_n, input en, output reg [7:0] count, output alarm);\n"
+           "  assign alarm = (count == 8'hC7);\n"
+           "  always @(posedge clk or negedge rst_n) if(!rst_n) count<=0; else if(en) count<=count+1;\n"
+           "endmodule\n")
+
+
+def test_activation_proof_input_driven_pass():
+    v = G.activation_proof(CLEAN, INF_STEALTHY, "add8",
+                           {"trigger": "a == 8'hDE with b == 8'hAD", "observable_effect": "sum=0"})
+    assert v.ok
+    assert v.detail["activation_proof_method"] == "input_driven"
+    assert v.detail["reachability_established"] is True
+    assert v.detail["divergence_attribution"] == "trigger_only"   # NOT payload_confirmed
+
+
+def test_activation_proof_state_injection_pass():
+    v = G.activation_proof(CLEAN_CTR, INF_CTR, "ctr",
+                           {"trigger": "count == 8'hC7", "observable_effect": "alarm=1"})
+    assert v.ok
+    assert v.detail["activation_proof_method"] == "state_injection"
+    assert v.detail["reachability_established"] is False          # forced, not reached
+
+
+def test_activation_proof_no_divergence_rejects():
+    v = G.activation_proof(CLEAN, INF_STEALTHY, "add8", {"trigger": "a == 8'h01 with b == 8'h02"})
+    assert not v.ok and "no divergence" in v.reason
+
+
+def test_activation_proof_unparseable_rejects():
+    v = G.activation_proof(CLEAN, INF_STEALTHY, "add8", {"trigger": "magic rare value"})
+    assert not v.ok and "un-parseable" in v.reason
+
+
+def test_run_full_passes_and_carries_grade():
+    v = G.run_full(CLEAN, INF_STEALTHY, "add8",
+                   {"trigger": "a == 8'hDE with b == 8'hAD", "observable_effect": "sum=0"})
+    assert v.ok and v.detail["activation_proof_method"] == "input_driven"
+
+
+def test_run_full_fails_on_bad_witness():
+    v = G.run_full(CLEAN, INF_STEALTHY, "add8", {"trigger": "a == 8'h00 with b == 8'h00"})
+    assert not v.ok and v.reason.startswith("activation_proof:")

@@ -118,12 +118,12 @@ def _gen_tb(top: str, ports: dict, vectors: list[dict]) -> str:
             + "  initial begin\n" + "\n".join(body) + "\n  end\nendmodule\n")
 
 
-def simulate(rtl: str, top: str, ports: dict, vectors: list[dict], *,
-             iverilog="iverilog", vvp="vvp"):
-    """Shared sim harness: drive `vectors` into `top`, return the output trace
-    (one line per step). Returns (trace, "") or (None, error). Reused by FE and
-    (later) activation-proof — same harness, different stimulus + assertion."""
-    tb = _gen_tb(top, ports, vectors)
+def _compile_run_extract(rtl: str, tb: str, *, iverilog="iverilog", vvp="vvp"):
+    """Compile dut+tb, run, extract the $display output trace. The SINGLE place
+    trace handling lives (drops the vvp/`$finish` banner, whose tmp-path differs
+    between runs and would otherwise read as a spurious divergence) — FE and
+    activation-proof both go through here, so their notion of an output trace can
+    never drift apart."""
     with tempfile.TemporaryDirectory() as d:
         Path(d, "dut.v").write_text(rtl)
         Path(d, "tb.v").write_text(tb)
@@ -135,17 +135,29 @@ def simulate(rtl: str, top: str, ports: dict, vectors: list[dict], *,
         rc, out, err = _run([vvp, out_bin])
         if rc != 0:
             return None, f"sim: {err.strip()[:200]}"
-    # Keep only the $display output lines (space-separated decimals); this drops
-    # the vvp/$finish banner ("...tb.v:N: $finish called at ...") whose tmp-path
-    # differs between runs and would otherwise read as a spurious divergence.
     trace = [ln.strip() for ln in out.splitlines() if re.fullmatch(r"[0-9 ]+", ln.strip())]
     return trace, ""
 
 
+def simulate(rtl: str, top: str, ports: dict, vectors: list[dict], **kw):
+    """Shared sim harness: drive `vectors` into `top`, return (trace, "") or
+    (None, error). Reused by FE and activation-proof."""
+    return _compile_run_extract(rtl, _gen_tb(top, ports, vectors), **kw)
+
+
+def _mismatches(trace_a, trace_b) -> list[int]:
+    """The SINGLE divergence notion shared by FE and activation-proof. If these
+    two tests compared traces differently, their mutual-protection guarantee
+    (FE backstops the parser; a mis-parse can only false-reject) would silently
+    break — so both call this."""
+    return [i for i, (a, b) in enumerate(zip(trace_a, trace_b)) if a != b]
+
+
 def functional_equivalence(clean: str, infected: str, top: str, *,
                            n_vectors=64, seed=1234) -> GauntletVerdict:
-    """Dormancy: infected ≡ clean on random non-trigger inputs. The SAME vector
-    set drives both; any output mismatch means the Trojan is not stealthy."""
+    """Dormancy: infected ≡ clean on random non-trigger inputs (bounded by the
+    vector budget — "equal on N random vectors", not proven-equivalent). The SAME
+    vector set drives both; any mismatch means the Trojan is not stealthy."""
     ports = parse_ports(clean, top)
     rng = _random.Random(seed)
     vectors = [{n: rng.getrandbits(w) for n, w in ports["data_inputs"]}
@@ -156,7 +168,7 @@ def functional_equivalence(clean: str, infected: str, top: str, *,
     ti, ei = simulate(infected, top, ports, vectors)
     if ti is None:
         return GauntletVerdict(False, f"infected sim error: {ei}")
-    mism = [i for i, (a, b) in enumerate(zip(tc, ti)) if a != b]
+    mism = _mismatches(tc, ti)
     if mism:
         return GauntletVerdict(False,
                                f"not dormant: diverges on {len(mism)}/{n_vectors} random vectors",
@@ -206,3 +218,120 @@ def run_mechanical(clean: str, infected: str, top: str) -> GauntletVerdict:
         if not v.ok:
             return GauntletVerdict(False, f"{name}: {v.reason}", v.detail)
     return GauntletVerdict(True, "mechanical tests passed")
+
+
+# --------------------------------------------------------------------------- #
+# Activation-proof — the trigger-half of FE (built against the round-9/10 design)
+# --------------------------------------------------------------------------- #
+
+_VAL = r"([0-9]+'[bBhHdD][0-9a-fA-F_xXzZ]+|0[xX][0-9a-fA-F_]+|\d+)"
+_ASSIGN_RE = re.compile(r"([A-Za-z_]\w*)\s*(?:==|=)\s*" + _VAL)
+
+
+def _parse_value(tok: str) -> int:
+    tok = tok.strip().replace("_", "")
+    m = re.fullmatch(r"(\d+)'([bBhHdD])([0-9a-fA-FxXzZ]+)", tok)
+    if m:
+        base = {"b": 2, "h": 16, "d": 10}[m.group(2).lower()]
+        return int(re.sub(r"[xXzZ]", "0", m.group(3)), base)   # x/z → 0 for stimulus
+    if tok.lower().startswith("0x"):
+        return int(tok, 16)
+    return int(tok, 10)
+
+
+def parse_witness(trigger_text: str, ports: dict) -> dict:
+    """Lenient parse of the witness trigger into a stimulus: each ``sig=val`` is
+    an APPLIED INPUT (a top-level input port) or a FORCED internal signal. Fail
+    LOUD on an un-parseable witness (reject the sample, don't guess) — a mis-parse
+    can only false-reject because FE backstops it and clean is the reference. The
+    parser only reproduces the trigger; it never interprets it semantically."""
+    input_names = {n for n, _ in ports["inputs"]}
+    inputs, forces = {}, {}
+    for name, val in _ASSIGN_RE.findall(trigger_text):
+        (inputs if name in input_names else forces)[name] = _parse_value(val)
+    if not inputs and not forces:
+        raise ValueError(f"un-parseable witness trigger: {trigger_text!r}")
+    return {"inputs": inputs, "forces": forces,
+            "method": "state_injection" if forces else "input_driven"}
+
+
+def _gen_witness_tb(top: str, ports: dict, inputs: dict, forces: dict) -> str:
+    decls, conns = [], []
+    for n, w in ports["inputs"]:
+        decls.append(f"  reg [{w-1}:0] {n};")
+        conns.append(f".{n}({n})")
+    for n, w in ports["outputs"]:
+        decls.append(f"  wire [{w-1}:0] {n};")
+        conns.append(f".{n}({n})")
+    out_names = [n for n, _ in ports["outputs"]]
+    disp_fmt = " ".join("%0d" for _ in out_names)
+    disp_args = ", ".join(out_names) if out_names else '""'
+    clk, rst = ports["clk"], ports["rst"]
+    body = []
+    if clk:
+        body.append(f"    {clk} = 0;")
+    if rst:
+        av = 0 if ports["rst_active_low"] else 1
+        dv = 1 if ports["rst_active_low"] else 0
+        body.append(f"    {rst} = {av};")
+    for n, _ in ports["data_inputs"]:
+        body.append(f"    {n} = 0;")
+    if rst:
+        body.append("    #13;")
+        body.append(f"    {rst} = {dv};")
+    for n, v in inputs.items():
+        body.append(f"    {n} = {v};")
+    body.append(f"    @(posedge {clk}); #1;" if clk else "    #2;")
+    for n, v in forces.items():
+        body.append(f"    force dut.{n} = {v};")     # state injection
+    body.append(f"    @(posedge {clk}); #1;" if clk else "    #2;")
+    body.append(f'    $display("{disp_fmt}", {disp_args});')
+    body.append("    $finish;")
+    clk_drv = f"  always #5 {clk} = ~{clk};\n" if clk else ""
+    return ("module tb;\n" + "\n".join(decls) + "\n"
+            + f"  {top} dut(" + ", ".join(conns) + ");\n" + clk_drv
+            + "  initial begin\n" + "\n".join(body) + "\n  end\nendmodule\n")
+
+
+def activation_proof(clean: str, infected: str, top: str, witness: dict) -> GauntletVerdict:
+    """The trigger-half of FE: the witnessed trigger produces a divergence the
+    clean circuit does not, under identical stimulus. v1 proves TRIGGER-attributable
+    divergence (something diverged at the trigger), NOT payload-confirmed (that the
+    claimed effect fired) — graded as `divergence_attribution=trigger_only`.
+    input-driven (real inputs, reachable) vs state-injection (forced state,
+    reachability not established) is graded too. Reuses the SHARED trace handling
+    and comparison so it cannot drift from FE."""
+    ports = parse_ports(clean, top)
+    try:
+        st = parse_witness(witness.get("trigger", ""), ports)
+    except ValueError as e:
+        return GauntletVerdict(False, f"activation-proof: {e}")
+    grade = {"activation_proof_method": st["method"],
+             "reachability_established": st["method"] == "input_driven",
+             "divergence_attribution": "trigger_only"}
+    tb = _gen_witness_tb(top, ports, st["inputs"], st["forces"])
+    tc, ec = _compile_run_extract(clean, tb)
+    if tc is None:
+        # forcing a Trojan-only signal absent from clean lands here → can't
+        # establish "silent on clean" → reject (honest, lost yield not bad data).
+        return GauntletVerdict(False, f"witness not applicable to clean: {ec}", grade)
+    ti, ei = _compile_run_extract(infected, tb)
+    if ti is None:
+        return GauntletVerdict(False, f"infected sim error: {ei}", grade)
+    if not _mismatches(tc, ti):
+        return GauntletVerdict(False,
+                               "witness produced no divergence (infected == clean under trigger)",
+                               grade)
+    return GauntletVerdict(True, "", grade)
+
+
+def run_full(clean: str, infected: str, top: str, witness: dict) -> GauntletVerdict:
+    """The complete gauntlet: three mechanical tests, then activation-proof. The
+    passing verdict's `detail` carries the round-10 grading for the manifest."""
+    v = run_mechanical(clean, infected, top)
+    if not v.ok:
+        return v
+    ap = activation_proof(clean, infected, top, witness)
+    if not ap.ok:
+        return GauntletVerdict(False, f"activation_proof: {ap.reason}", ap.detail)
+    return GauntletVerdict(True, "all gauntlet tests passed", ap.detail)

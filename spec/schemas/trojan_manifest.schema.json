@@ -63,6 +63,12 @@
         "functional_equiv_pass": { "type": "boolean" },
         "synth_survival_pass": { "type": "boolean" },
         "activation_proof_pass": { "type": "boolean" },
+        "activation_proof_method": { "type": "string", "enum": ["input_driven","state_injection"],
+          "description": "round 10: how the trigger was reached. input_driven = real applied inputs (reachable); state_injection = forced internal state (reachability not established)." },
+        "reachability_established": { "type": "boolean",
+          "description": "round 10: true only for input_driven proofs; false when the trigger state was force-injected." },
+        "divergence_attribution": { "type": "string", "enum": ["trigger_only","payload_confirmed"],
+          "description": "round 10: v1 proves trigger_only (the witnessed trigger produces a divergence the clean circuit does not). payload_confirmed (the claimed effect actually fires) is the deferred effect-checking tightening." },
         "sim_tool": { "type": "string" },
         "synth_tool": { "type": "string" }
       }
