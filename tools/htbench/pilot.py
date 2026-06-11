@@ -121,7 +121,8 @@ def write_sample(out_dir, sample_id, clean_rtl, spec, result, **manifest_kw) -> 
 @dataclass
 class PilotReport:
     accepted: list = field(default_factory=list)   # {sample_id, cell, sig, method, witness}
-    rejected: list = field(default_factory=list)   # {cell, reason}
+    rejected: list = field(default_factory=list)   # {cell, reason} — model failed the gauntlet
+    errors: list = field(default_factory=list)     # {cell, error} — infra/API failure, NOT a reject
     spent_usd: float = 0.0
     aborted: str = ""                              # "" or the abort reason
 
@@ -173,6 +174,10 @@ class PilotReport:
             L.append(f"- {sig}: {ids}")
         L.append(f"\n## Trojan-only-signal reject rate: {self.trojan_only_reject_rate():.0%} "
                  f"(of {len(self.rejected)} rejects) — high ⇒ self-referential witnesses")
+        if self.errors:
+            L.append(f"\n## Infra/API errors (NOT model rejects): {len(self.errors)}")
+            for e in self.errors:
+                L.append(f"- {e['cell']}: {e['error']}")
         L.append("\n## Testbench-artifact spot-check (witnesses for manual review)")
         for a in self.accepted[:5]:
             L.append(f"- {a['sample_id']}: {a['witness']}")
@@ -264,6 +269,9 @@ def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_
         except CG.BudgetExceeded as e:
             report.aborted = f"budget: {e}"
             break
+        except Exception as e:                       # API/SDK/infra error — record, keep going
+            report.errors.append({"cell": cell, "error": f"{type(e).__name__}: {e}"})
+            continue
         if res.accepted:
             write_sample(out_dir, sample_id, clean_rtl, spec, res,
                          model=api_model, prompt_hash=prompt_hash, **meta)

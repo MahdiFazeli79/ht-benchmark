@@ -98,6 +98,21 @@ def test_run_pilot_yield_floor_aborts(tmp_path):
     assert not rep.accepted and len(rep.rejected) < 10      # stopped early
 
 
+def test_run_pilot_records_api_error_separately_and_continues(tmp_path):
+    # A transient API/SDK error is recorded as an infra error (NOT a model reject,
+    # so it doesn't pollute yield) and the run continues.
+    class _Boom(I.LLMClient):
+        def complete(self, prompt):
+            raise RuntimeError("api down")
+
+    rep = P.run_pilot([("p_001", "module m(input a, output y); assign y=a; endmodule", _spec(), {})],
+                      tmp_path, api_model="x", pricing_key="claude-sonnet-4",
+                      total_usd_cap=10.0, per_run_usd_cap=1.0, client=_Boom())
+    assert not rep.accepted and not rep.rejected
+    assert len(rep.errors) == 1 and "api down" in rep.errors[0]["error"]
+    assert rep.spent_usd == 0.0
+
+
 def test_run_pilot_budget_refuses_before_spending(tmp_path):
     # per-run cap is below any call's cost -> pre_call_check refuses the FIRST call,
     # before the client is invoked. Nothing spends.
