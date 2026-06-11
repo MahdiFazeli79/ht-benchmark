@@ -252,6 +252,7 @@ def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_
     where manifest_meta carries license/license_url/circuit_family/variant_group.
     Stops on YieldFloorAbort or BudgetExceeded (records the abort)."""
     I.load_env()
+    Path(out_dir).mkdir(parents=True, exist_ok=True)     # always exists (for the report/cleanliness)
     guard = CG.CostGuard(total_usd_cap, per_run_usd_cap, yield_floor,
                          yield_window, min_attempts_before_floor)
     if client is None:
