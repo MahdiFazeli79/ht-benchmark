@@ -256,9 +256,10 @@ class PilotReport:
         for cell, n in sorted(self.taxonomy_spread().items()):
             L.append(f"- {cell}: {n}")
         L.append("\n## Activation-proof method spread")
-        L.append("(sequential cells are EXPECTED to grade state_injection / "
-                 "reachability=false by design — host-register witnesses, the round-10 "
-                 "weaker-evidence tier, not a defect. See docs/batch2_expectations.md.)")
+        L.append("(under drive-to-state, sequential accepts grade input_driven + "
+                 "reachability_established=true — the trigger is REACHED via inputs, not "
+                 "forced — so state_injection is now the exception. See "
+                 "docs/drive_to_state_design.md.)")
         for m, n in sorted(self.method_spread().items(), key=lambda x: str(x[0])):
             L.append(f"- {m}: {n}")
         dups = self.near_duplicate_clusters()
@@ -391,8 +392,8 @@ _BATCH2_CELLS = [
     # (a) sequential-fix validation + collapse probe on a SEQUENTIAL cell. Three
     # IDENTICAL repeats of the EXACT pilot-1 reject cell, now under v2 steering: the
     # conversion-rate metric reads these, near-dup clustering reads collapse here.
-    # Expect state_injection / reachability=false grades (host-register witnesses) —
-    # design, not defect.
+    # (Historical note: batch 2 ran under prompt_v2 + forced-state proof and rejected
+    # all sequential cells; drive-to-state since recovers them as input_driven/reachable.)
     ("counter8", "triggered", "internal", "sequential_counter", "denial_of_service"),
     ("counter8", "triggered", "internal", "sequential_counter", "denial_of_service"),
     ("counter8", "triggered", "internal", "sequential_counter", "denial_of_service"),

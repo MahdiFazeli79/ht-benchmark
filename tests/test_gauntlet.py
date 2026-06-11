@@ -3,7 +3,9 @@
 Fixtures: a combinational adder with a rare INPUT-SPACE Trojan (matches the locked
 prompt's design) — dormant on random inputs, fires only on (a,b)=(0xDE,0xAD).
 """
+import json
 import shutil
+from pathlib import Path
 
 import pytest
 
@@ -58,20 +60,24 @@ def test_run_mechanical_passes_stealthy_and_reports_stage_on_fail():
     assert not v.ok and v.reason.startswith("functional_equivalence:")
 
 
-# --- activation-proof (the trigger-half of FE; reuses simulate + _mismatches) ---
+# --- activation-proof: drive-to-state (pure, no force) ---
 
-# state-injection fixture: a counter whose alarm fires only at count==0xC7
-CLEAN_CTR = ("module ctr(input clk, input rst_n, input en, output reg [7:0] count, output alarm);\n"
-             "  assign alarm = 1'b0;\n"
-             "  always @(posedge clk or negedge rst_n) if(!rst_n) count<=0; else if(en) count<=count+1;\n"
-             "endmodule\n")
-INF_CTR = ("module ctr(input clk, input rst_n, input en, output reg [7:0] count, output alarm);\n"
-           "  assign alarm = (count == 8'hC7);\n"
-           "  always @(posedge clk or negedge rst_n) if(!rst_n) count<=0; else if(en) count<=count+1;\n"
-           "endmodule\n")
+# counter with a freeze-on-count==0xA5 Trojan (the seqrecheck 001 recovery case):
+# DRIVE count to 0xA5 via en=1, then the freeze diverges from clean — observable
+# precisely because count is reached, not forced.
+_CTR_CLEAN = ("module counter8(input clk, input rst_n, input en, output reg [7:0] count);\n"
+              "  always @(posedge clk or negedge rst_n) if(!rst_n) count<=0; else if(en) count<=count+1;\n"
+              "endmodule\n")
+_CTR_FREEZE = ("module counter8(input clk, input rst_n, input en, output reg [7:0] count);\n"
+               "  reg trojan_lock;\n"
+               "  always @(posedge clk or negedge rst_n) begin\n"
+               "    if(!rst_n) begin count<=0; trojan_lock<=0; end\n"
+               "    else begin if(count==8'hA5 && en) trojan_lock<=1'b1;\n"
+               "      if(trojan_lock) count<=count; else if(en) count<=count+1; end\n"
+               "  end\nendmodule\n")
 
 
-def test_activation_proof_input_driven_pass():
+def test_activation_proof_combinational_input_driven_pass():
     v = G.activation_proof(CLEAN, INF_STEALTHY, "add8",
                            {"trigger": "a == 8'hDE with b == 8'hAD", "observable_effect": "sum=0"})
     assert v.ok
@@ -80,30 +86,37 @@ def test_activation_proof_input_driven_pass():
     assert v.detail["divergence_attribution"] == "trigger_only"   # NOT payload_confirmed
 
 
-def test_activation_proof_state_injection_pass():
-    v = G.activation_proof(CLEAN_CTR, INF_CTR, "ctr",
-                           {"trigger": "count == 8'hC7", "observable_effect": "alarm=1"})
-    assert v.ok
-    assert v.detail["activation_proof_method"] == "state_injection"
-    assert v.detail["reachability_established"] is False          # forced, not reached
-
-
-def test_activation_proof_input_driven_but_no_reset_is_not_reachable():
-    # Stateful module with NO reset: input-driven divergence, but the state starts
-    # at X -> reachability cannot be claimed even though method is input_driven.
-    clean = ("module lat(input clk, input [7:0] d, output reg [7:0] q);\n"
-             "  always @(posedge clk) q <= d;\nendmodule\n")
-    inf = ("module lat(input clk, input [7:0] d, output reg [7:0] q);\n"
-           "  always @(posedge clk) q <= (d == 8'h5A) ? 8'h00 : d;\nendmodule\n")
-    v = G.activation_proof(clean, inf, "lat", {"trigger": "d == 8'h5A", "observable_effect": "q=0"})
+def test_drive_to_state_reaches_and_accepts():
+    # the recovery: a sequential freeze Trojan the old force path masked now accepts,
+    # graded the STRONGER input_driven + reachability_established tier.
+    v = G.activation_proof(_CTR_CLEAN, _CTR_FREEZE, "counter8",
+                           {"trigger": "count == 8'hA5 with en=1", "observable_effect": "count freezes"})
     assert v.ok
     assert v.detail["activation_proof_method"] == "input_driven"
-    assert v.detail["reachability_established"] is False        # no reset -> not established
+    assert v.detail["reachability_established"] is True
+    assert v.detail["reached_cycle"] >= 0
 
 
-def test_activation_proof_no_divergence_rejects():
-    v = G.activation_proof(CLEAN, INF_STEALTHY, "add8", {"trigger": "a == 8'h01 with b == 8'h02"})
-    assert not v.ok and "no divergence" in v.reason
+def test_drive_to_state_structural_when_no_host_predicate():
+    # a witness keyed on a Trojan-internal net (absent from clean) has nothing host-
+    # observable to drive to -> structural, not a force.
+    v = G.activation_proof(_CTR_CLEAN, _CTR_FREEZE, "counter8",
+                           {"trigger": "trojan_lock == 1 with en=1", "observable_effect": "x"})
+    assert not v.ok and v.reason.startswith("structural")
+
+
+def test_drive_to_state_not_reachable_in_budget():
+    # en held 0 -> count never advances -> the predicate is genuinely unreachable.
+    v = G.activation_proof(_CTR_CLEAN, _CTR_FREEZE, "counter8",
+                           {"trigger": "count == 8'hA5 with en=0", "observable_effect": "x"}, budget=64)
+    assert not v.ok and v.reason.startswith("not-reachable-in-budget")
+
+
+def test_drive_to_state_masking_when_reached_but_no_divergence():
+    # clean vs clean: the trigger is reached but nothing diverges -> masking/unobservable.
+    v = G.activation_proof(_CTR_CLEAN, _CTR_CLEAN, "counter8",
+                           {"trigger": "count == 8'hA5 with en=1", "observable_effect": "x"}, budget=256)
+    assert not v.ok and v.reason.startswith("masking")
 
 
 def test_activation_proof_unparseable_rejects():
@@ -111,50 +124,23 @@ def test_activation_proof_unparseable_rejects():
     assert not v.ok and "un-parseable" in v.reason
 
 
-# divergence-window diagnostic: a sequential payload that surfaces N cycles after the
-# forced trigger, which the single-sample decision TB observes too early.
-_SEQ_CLEAN = ("module d(input clk, input rst_n, input [7:0] s_in, output reg [7:0] o);\n"
-              "  reg [7:0] s;\n"
-              "  always @(posedge clk or negedge rst_n)\n"
-              "    if(!rst_n) begin s<=0; o<=0; end else begin s<=s_in; o<=s; end\nendmodule\n")
-_SEQ_INF_NOW = ("module d(input clk, input rst_n, input [7:0] s_in, output reg [7:0] o);\n"
-                "  reg [7:0] s;\n"
-                "  always @(posedge clk or negedge rst_n)\n"
-                "    if(!rst_n) begin s<=0; o<=0; end else begin s<=s_in; o<=(s==8'hC7)?8'hFF:s; end\n"
-                "endmodule\n")
-_SEQ_INF_DELAY = ("module d(input clk, input rst_n, input [7:0] s_in, output reg [7:0] o);\n"
-                  "  reg [7:0] s; reg [2:0] dly;\n"
-                  "  always @(posedge clk or negedge rst_n)\n"
-                  "    if(!rst_n) begin s<=0; o<=0; dly<=0; end\n"
-                  "    else begin s<=s_in; o<=s; dly<={dly[1:0],(s==8'hC7)}; if(dly[2]) o<=8'hAA; end\n"
-                  "endmodule\n")
-
-
-def test_divergence_cycle_diagnostic_measures_latency():
-    ports = G.parse_ports(_SEQ_CLEAN, "d")
-    f = {"s": 0xC7}                                              # force the host register at the trigger
-    assert G._divergence_cycle(_SEQ_CLEAN, _SEQ_CLEAN, "d", ports, {}, f) is None    # identical
-    assert G._divergence_cycle(_SEQ_CLEAN, _SEQ_INF_NOW, "d", ports, {}, f) == 0     # immediate
-    assert G._divergence_cycle(_SEQ_CLEAN, _SEQ_INF_DELAY, "d", ports, {}, f) == 3   # 3-cycle latency
-
-
-def test_activation_proof_no_divergence_carries_diagnostic():
-    # the single-sample decision rejects (observes too early), but the diagnostic
-    # records WHEN the sequential payload would surface — the TB-timing fix parameter.
-    v = G.activation_proof(_SEQ_CLEAN, _SEQ_INF_DELAY, "d",
-                           {"trigger": "s=8'hC7", "observable_effect": "o=AA"})
-    assert not v.ok and "no divergence" in v.reason             # decision still rejects
-    assert v.detail["divergence_cycle_diagnostic"] == 3         # latency captured in the grade
-    assert "cycle 3" in v.reason                                # and surfaced in the reason/trail
-
-
-def test_activation_proof_not_applicable_self_classifies_structural():
-    # a Trojan-internal witness (net absent from clean) fails at COMPILE, and the
-    # reason marks it structural so (c) auto-classifies without RTL inspection.
-    v = G.activation_proof(CLEAN, INF_STEALTHY, "add8",
-                           {"trigger": "trojan_secret = 8'h01", "observable_effect": "x"})
-    assert not v.ok and "not applicable to clean" in v.reason
-    assert "structural" in v.reason
+def test_drive_to_state_does_not_regress_committed_accepts():
+    # §4 regression gate: every previously-accepted sample (pilot 1 + batch 2, all
+    # combinational input-vector witnesses) must still accept via the degenerate path.
+    import glob
+    root = Path(__file__).resolve().parents[1]
+    n = ok = 0
+    for sd in sorted(glob.glob(str(root / "batch2_out/*/")) + glob.glob(str(root / "pilot_out/*/"))):
+        man = Path(sd, "trojan_manifest.json")
+        if not man.exists():
+            continue
+        top = json.loads(man.read_text())["top_module"]
+        clean = (Path(sd) / "clean.v").read_text()
+        inf = (Path(sd) / "infected.v").read_text()
+        wit = json.loads((Path(sd) / "activation_witness.json").read_text())
+        n += 1
+        ok += 1 if G.activation_proof(clean, inf, top, wit).ok else 0
+    assert n >= 17 and ok == n          # superset: no committed accept regresses
 
 
 def test_run_full_passes_and_carries_grade():

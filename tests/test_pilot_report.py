@@ -96,7 +96,7 @@ def test_attempt1_collapse_clusters_decouple_from_repair_path():
     assert r.attempt1_collapse_clusters() == {"s1": ["b2_001", "b2_002", "b2_003"]}
     rendered = r.render()
     assert "collapse clusters (attempt-1" in rendered.lower()
-    assert "docs/batch2_expectations.md" in rendered          # expected grades cited up front
+    assert "docs/drive_to_state_design.md" in rendered        # grading note cites the live doc
 
 
 def test_sequential_recheck_specs_is_batch2_sequential_subset():

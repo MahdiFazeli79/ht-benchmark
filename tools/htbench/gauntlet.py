@@ -244,134 +244,166 @@ def _parse_value(tok: str) -> int:
     return int(tok, 10)
 
 
-def parse_witness(trigger_text: str, ports: dict) -> dict:
-    """Lenient parse of the witness trigger into a stimulus: each ``sig=val`` is
-    an APPLIED INPUT (a top-level input port) or a FORCED internal signal. Fail
-    LOUD on an un-parseable witness (reject the sample, don't guess) — a mis-parse
-    can only false-reject because FE backstops it and clean is the reference. The
-    parser only reproduces the trigger; it never interprets it semantically."""
-    input_names = {n for n, _ in ports["inputs"]}
-    inputs, forces = {}, {}
-    for name, val in _ASSIGN_RE.findall(trigger_text):
-        (inputs if name in input_names else forces)[name] = _parse_value(val)
-    if not inputs and not forces:
+DRIVE_BUDGET = 4096          # admissibility constant: a trigger must be input-reachable
+DRIVE_OBSERVE = 16           # within this many cycles; payload observed over this window
+_SETTLE_CAP = 64             # extra hold cycles a witness may request (FSM arm), capped
+
+
+def _clean_signals(rtl: str, ports: dict) -> set:
+    """Identifier namespace DECLARED in clean (ports + reg/wire/logic). A drive
+    predicate on a signal NOT here is Trojan-internal — there is nothing in clean to
+    drive to, so it is structural."""
+    names = {n for n, _ in ports["inputs"]} | {n for n, _ in ports["outputs"]}
+    for m in re.finditer(r"\b(?:reg|wire|logic)\b\s*(?:signed\s*)?(?:\[[^\]]*\]\s*)?([A-Za-z_]\w*)", rtl):
+        names.add(m.group(1))
+    return names
+
+
+def _extract_settle(text: str, cap: int = _SETTLE_CAP) -> int:
+    """Conservative: only an explicit 'N consecutive/more/additional … edge/cycle' is a
+    settle (FSM arm after the trigger). 'apply en=1 for 254 cycles' is a DRIVE length,
+    not a settle, so it must NOT match. Default 0, capped."""
+    m = re.search(r"(\d+)\s+(?:more |additional |consecutive )(?:\w+\s+){0,3}(?:edge|cycle)",
+                  text, re.I)
+    return min(int(m.group(1)), cap) if m else 0
+
+
+def parse_drive_witness(trigger_text: str, ports: dict, clean_signals: set) -> dict:
+    """Drive-to-state parse (pure; no force). Splits the witness's sig=val pairs into
+    held inputs (the stimulus to hold), a host-observable reach predicate (the state to
+    DRIVE to), and Trojan-internal references (signals in neither inputs nor clean).
+    clk/rst assignments are dropped — the TB owns reset and clocking. Fail-loud on a
+    witness with no parseable assignment."""
+    data_inputs = {n for n, _ in ports["data_inputs"]}     # held stimulus (excludes clk/rst)
+    all_inputs = {n for n, _ in ports["inputs"]}
+    pairs = _ASSIGN_RE.findall(trigger_text)
+    if not pairs:
         raise ValueError(f"un-parseable witness trigger: {trigger_text!r}")
-    return {"inputs": inputs, "forces": forces,
-            "method": "state_injection" if forces else "input_driven"}
+    held, reach_candidates, internal = {}, [], []
+    for name, val in pairs:
+        v = _parse_value(val)
+        if name in data_inputs:
+            held[name] = v
+        elif name in all_inputs:
+            continue                                       # clk/rst — TB handles reset+clock
+        elif name in clean_signals:
+            reach_candidates.append((name, v))             # host-observable predicate to drive to
+        else:
+            internal.append(name)                          # Trojan-internal
+    return {"held_inputs": held,
+            "reach": reach_candidates[0] if reach_candidates else None,
+            "settle": _extract_settle(trigger_text),
+            "internal_refs": internal}
 
 
-def _gen_witness_tb(top: str, ports: dict, inputs: dict, forces: dict, observe_cycles: int = 1) -> str:
-    """`observe_cycles == 1` (default) samples outputs once, one edge after the force —
-    the DECISION testbench, unchanged. `observe_cycles > 1` (clocked designs only)
-    samples every cycle for that many cycles, for the divergence-window DIAGNOSTIC
-    (when does a sequential payload first surface after the trigger?)."""
+def _tb_io(ports):
     decls, conns = [], []
     for n, w in ports["inputs"]:
-        decls.append(f"  reg [{w-1}:0] {n};")
-        conns.append(f".{n}({n})")
+        decls.append(f"  reg [{w-1}:0] {n};"); conns.append(f".{n}({n})")
     for n, w in ports["outputs"]:
-        decls.append(f"  wire [{w-1}:0] {n};")
-        conns.append(f".{n}({n})")
-    out_names = [n for n, _ in ports["outputs"]]
-    disp_fmt = " ".join("%0d" for _ in out_names)
-    disp_args = ", ".join(out_names) if out_names else '""'
+        decls.append(f"  wire [{w-1}:0] {n};"); conns.append(f".{n}({n})")
+    return decls, conns, [n for n, _ in ports["outputs"]]
+
+
+def _gen_apply_tb(top, ports, held_inputs):
+    """Combinational degenerate case: apply the input vector, observe once. No clock,
+    no force — the v1 input-driven path, minus the force."""
+    decls, conns, out_names = _tb_io(ports)
+    fmt = " ".join("%0d" for _ in out_names)
+    args = ", ".join(out_names) if out_names else '""'
+    body = [f"    {n} = 0;" for n, _ in ports["data_inputs"]]
+    body += [f"    {n} = {v};" for n, v in held_inputs.items()]
+    body += ["    #2;", f'    $display("{fmt}", {args});', "    $finish;"]
+    return ("module tb;\n" + "\n".join(decls) + "\n"
+            + f"  {top} dut(" + ", ".join(conns) + ");\n"
+            + "  initial begin\n" + "\n".join(body) + "\n  end\nendmodule\n")
+
+
+def _gen_drive_tb(top, ports, held_inputs, reach_signal, budget):
+    """Sequential drive-to-state: reset, hold the inputs, clock up to `budget` cycles,
+    and each cycle display the reach signal (col 0, read via dut.<sig> — observed, NOT
+    forced) then the outputs. Python finds the cycle the reach predicate is met and
+    compares the OUTPUT columns from there."""
+    decls, conns, out_names = _tb_io(ports)
+    fmt = " ".join("%0d" for _ in range(1 + len(out_names)))   # reach + outputs
+    args = ", ".join([f"dut.{reach_signal}"] + out_names)
     clk, rst = ports["clk"], ports["rst"]
-    body = []
-    if clk:
-        body.append(f"    {clk} = 0;")
+    body = [f"    {clk} = 0;"]
     if rst:
         av = 0 if ports["rst_active_low"] else 1
         dv = 1 if ports["rst_active_low"] else 0
         body.append(f"    {rst} = {av};")
-    for n, _ in ports["data_inputs"]:
-        body.append(f"    {n} = 0;")
+    body += [f"    {n} = 0;" for n, _ in ports["data_inputs"]]
     if rst:
-        body.append("    #13;")
-        body.append(f"    {rst} = {dv};")
-    for n, v in inputs.items():
-        body.append(f"    {n} = {v};")
-    body.append(f"    @(posedge {clk}); #1;" if clk else "    #2;")
-    for n, v in forces.items():
-        body.append(f"    force dut.{n} = {v};")     # state injection
-    if clk and observe_cycles > 1:                   # divergence-window diagnostic: sample each cycle
-        body.append(f"    repeat({observe_cycles}) begin @(posedge {clk}); #1; "
-                    f'$display("{disp_fmt}", {disp_args}); end')
-    else:                                            # decision TB: one sample, one edge after the force
-        body.append(f"    @(posedge {clk}); #1;" if clk else "    #2;")
-        body.append(f'    $display("{disp_fmt}", {disp_args});')
+        body += ["    #13;", f"    {rst} = {dv};"]
+    body += [f"    {n} = {v};" for n, v in held_inputs.items()]
+    body.append(f'    repeat({budget}) begin @(posedge {clk}); #1; $display("{fmt}", {args}); end')
     body.append("    $finish;")
-    clk_drv = f"  always #5 {clk} = ~{clk};\n" if clk else ""
     return ("module tb;\n" + "\n".join(decls) + "\n"
-            + f"  {top} dut(" + ", ".join(conns) + ");\n" + clk_drv
+            + f"  {top} dut(" + ", ".join(conns) + ");\n"
+            + f"  always #5 {clk} = ~{clk};\n"
             + "  initial begin\n" + "\n".join(body) + "\n  end\nendmodule\n")
 
 
-def activation_proof(clean: str, infected: str, top: str, witness: dict) -> GauntletVerdict:
-    """The trigger-half of FE: the witnessed trigger produces a divergence the
-    clean circuit does not, under identical stimulus. v1 proves TRIGGER-attributable
-    divergence (something diverged at the trigger), NOT payload-confirmed (that the
-    claimed effect fired) — graded as `divergence_attribution=trigger_only`.
-    input-driven (real inputs, reachable) vs state-injection (forced state,
-    reachability not established) is graded too. Reuses the SHARED trace handling
-    and comparison so it cannot drift from FE."""
+def _split_trace(trace):
+    return [[int(x) for x in ln.split()] for ln in trace if ln.split()]
+
+
+def activation_proof(clean: str, infected: str, top: str, witness: dict,
+                     *, budget: int = DRIVE_BUDGET, observe: int = DRIVE_OBSERVE) -> GauntletVerdict:
+    """Drive-to-state trigger proof (pure — no force). For a sequential trigger, DRIVE
+    the inputs to a host-observable reach predicate within `budget` cycles, then observe
+    whether infected diverges from clean over `observe` cycles. No force, so forcing the
+    payload's own register can't mask it. Three reject classes self-classify:
+    `structural` (no host-observable trigger to drive to), `not-reachable-in-budget`
+    (the trigger is genuinely deep), `masking/unobservable` (reached but never surfaces).
+    An accept grades input_driven + reachability_established (the stronger tier)."""
     ports = parse_ports(clean, top)
+    clean_sigs = _clean_signals(clean, ports)
     try:
-        st = parse_witness(witness.get("trigger", ""), ports)
+        w = parse_drive_witness(witness.get("trigger", ""), ports, clean_sigs)
     except ValueError as e:
         return GauntletVerdict(False, f"activation-proof: {e}")
-    # reachability holds only if the trigger state was reached FROM RESET: a
-    # combinational design has no state, and a reset-driven design starts known.
-    # A stateful design with no detectable reset starts at X — input-driven is NOT
-    # enough to claim reachability there (it would overclaim). So:
-    combinational = ports["clk"] is None
-    reset_driven = ports["rst"] is not None
-    reachable = st["method"] == "input_driven" and (combinational or reset_driven)
-    grade = {"activation_proof_method": st["method"],
-             "reachability_established": reachable,
-             "divergence_attribution": "trigger_only"}
-    tb = _gen_witness_tb(top, ports, st["inputs"], st["forces"])
+    grade = {"divergence_attribution": "trigger_only"}
+
+    if ports["clk"] is None:                               # combinational: apply + observe once
+        tb = _gen_apply_tb(top, ports, w["held_inputs"])
+        tc, _ = _compile_run_extract(clean, tb)
+        ti, _ = _compile_run_extract(infected, tb)
+        if tc is None or ti is None:
+            return GauntletVerdict(False, "activation-proof: combinational sim error", grade)
+        grade.update(activation_proof_method="input_driven", reachability_established=True)
+        if _mismatches(tc, ti):
+            return GauntletVerdict(True, "", grade)
+        return GauntletVerdict(False, "masking/unobservable: trigger applied, no divergence at outputs", grade)
+
+    # sequential: pure drive-to-state to a host-observable predicate
+    if w["reach"] is None:
+        refs = w["internal_refs"] or ["(none)"]
+        return GauntletVerdict(False, f"structural: witness names {refs} absent from clean and not an "
+                               "input — no host-observable trigger to drive to", grade)
+    reach_sig, reach_val = w["reach"]
+    tb = _gen_drive_tb(top, ports, w["held_inputs"], reach_sig, budget)
     tc, ec = _compile_run_extract(clean, tb)
     if tc is None:
-        # Clean produced no trace. Carry the STAGE so the failure self-classifies:
-        # a compile (bind) failure ⇒ the witness names a signal absent from clean
-        # (structural / pre-sim — the Trojan-internal-witness case); a sim failure ⇒
-        # clean ran but crashed (a different bucket). Either way "silent on clean"
-        # can't be established → reject (honest, lost yield not bad data).
-        stage = "references a signal absent from clean (structural)" if ec.startswith("compile:") \
-            else "clean sim error (runtime)"
-        return GauntletVerdict(False, f"witness not applicable to clean — {stage}: {ec}", grade)
+        return GauntletVerdict(False, f"activation-proof: clean drive sim error: {ec}", grade)
+    rows_c = _split_trace(tc)
+    T = next((i for i, r in enumerate(rows_c) if r and r[0] == reach_val), None)
+    if T is None:
+        return GauntletVerdict(False, f"not-reachable-in-budget: {reach_sig}=={reach_val} not reached "
+                               f"within {budget} cycles", grade)
     ti, ei = _compile_run_extract(infected, tb)
     if ti is None:
-        return GauntletVerdict(False, f"infected sim error: {ei}", grade)
-    if not _mismatches(tc, ti):
-        # Post-sim: clean and infected matched at the single sample point. If the
-        # payload is sequential it may surface only later — measure WHEN with the
-        # divergence-window diagnostic. The cycle is the gauntlet-TB fix parameter
-        # (sample window = first divergence + margin); None ⇒ no divergence in cap.
-        dc = _divergence_cycle(clean, infected, top, ports, st["inputs"], st["forces"])
-        grade["divergence_cycle_diagnostic"] = dc
-        tail = (f"; diagnostic: diverges at cycle {dc} within window (TB-timing fix parameter)"
-                if dc is not None else "; diagnostic: no divergence within window cap")
-        return GauntletVerdict(False,
-                               "witness produced no divergence (infected == clean under trigger)" + tail,
-                               grade)
-    return GauntletVerdict(True, "", grade)
-
-
-def _divergence_cycle(clean, infected, top, ports, inputs, forces, *, cycles=16):
-    """Diagnostic ONLY — never changes a verdict. Re-runs the witness stimulus but
-    observes outputs every cycle for `cycles` after the trigger, and returns the first
-    cycle where infected diverges from clean (or None: no divergence within the cap).
-    That cycle IS the sample-window fix parameter for a sequential payload that the
-    single-sample decision TB observes too early. Combinational designs (no clk) have
-    no window, so this collapses to the single-sample answer."""
-    tb = _gen_witness_tb(top, ports, inputs, forces, observe_cycles=cycles)
-    tc, _ = _compile_run_extract(clean, tb)
-    ti, _ = _compile_run_extract(infected, tb)
-    if tc is None or ti is None:
-        return None
-    mism = _mismatches(tc, ti)
-    return mism[0] if mism else None
+        return GauntletVerdict(False, f"activation-proof: infected drive sim error: {ei}", grade)
+    rows_i = _split_trace(ti)
+    grade.update(activation_proof_method="input_driven", reachability_established=True,
+                 reached_cycle=T, settle_cycles=w["settle"])
+    start = T + w["settle"]
+    for i in range(start, min(start + observe, len(rows_c), len(rows_i))):
+        if rows_c[i][1:] != rows_i[i][1:]:                 # output columns (skip col 0 = reach)
+            return GauntletVerdict(True, "", grade)
+    return GauntletVerdict(False, f"masking/unobservable: reached {reach_sig}=={reach_val} at cycle {T}, "
+                           f"no divergence in {observe} cycles", grade)
 
 
 def run_full(clean: str, infected: str, top: str, witness: dict) -> GauntletVerdict:

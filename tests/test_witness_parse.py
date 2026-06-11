@@ -18,35 +18,35 @@ def test_parse_value_verilog_literals():
     assert G._parse_value("4'bxx01") == 1            # x/z → 0 for stimulus
 
 
-PORTS = {"inputs": [("a", 8), ("b", 8), ("en", 1)], "data_inputs": [("a", 8), ("b", 8), ("en", 1)]}
+# a counter: en is the held stimulus; clk/rst are TB-owned; count is host-observable.
+PORTS = {"inputs": [("clk", 1), ("rst_n", 1), ("en", 1)], "data_inputs": [("en", 1)],
+         "outputs": [("count", 8)], "clk": "clk", "rst": "rst_n"}
+CLEAN_SIGS = {"clk", "rst_n", "en", "count"}
 
 
-def test_applied_input_vs_forced_state_classification():
-    # a, b, en are input ports -> applied; count is not a port -> forced (state)
-    w = G.parse_witness("a == 8'hDE with b == 8'hAD and en=1", PORTS)
-    assert w["inputs"] == {"a": 0xDE, "b": 0xAD, "en": 1}
-    assert w["forces"] == {}
-    assert w["method"] == "input_driven"
-
-    w2 = G.parse_witness("count == 8'hC7 with en=1", PORTS)
-    assert w2["inputs"] == {"en": 1}
-    assert w2["forces"] == {"count": 0xC7}           # internal -> force
-    assert w2["method"] == "state_injection"
+def test_drive_witness_splits_held_reach_internal():
+    w = G.parse_drive_witness("count == 8'hA5 with en=1", PORTS, CLEAN_SIGS)
+    assert w["held_inputs"] == {"en": 1}             # data input held during the drive
+    assert w["reach"] == ("count", 0xA5)             # host-observable predicate to drive to
+    assert w["internal_refs"] == []
 
 
-def test_unparseable_witness_fails_loud():
+def test_drive_witness_drops_clk_rst_and_flags_internal():
+    w = G.parse_drive_witness("rst_n=0 then count == 8'hAA with en=1 and trojan_cnt == 2'b11",
+                              PORTS, CLEAN_SIGS)
+    assert "rst_n" not in w["held_inputs"]           # reset is TB-owned, not a held stimulus
+    assert w["held_inputs"] == {"en": 1}
+    assert w["reach"] == ("count", 0xAA)             # host predicate preferred
+    assert w["internal_refs"] == ["trojan_cnt"]      # Trojan-internal flagged, not driven to
+
+
+def test_extract_settle_is_consecutive_not_drive_length():
+    assert G._extract_settle("keep en=1 for 3 consecutive rising clock edges") == 3
+    assert G._extract_settle("apply en=1 for 254 clock cycles") == 0   # drive length, NOT settle
+    assert G._extract_settle("count reaches 8'hA5 after 165 increments") == 0
+    assert G._extract_settle("hold for 9000 more cycles", cap=64) == 64  # capped
+
+
+def test_drive_witness_unparseable_fails_loud():
     with pytest.raises(ValueError):
-        G.parse_witness("fires on a rare magic condition", PORTS)
-
-
-def test_witness_tb_windowed_vs_single_sample():
-    # The decision TB (observe_cycles=1) is unchanged: one sample. The diagnostic TB
-    # (observe_cycles>1, clocked) samples every cycle for the divergence-window probe.
-    ports = G.parse_ports(
-        "module c(input clk, input rst_n, output reg [7:0] q);\n"
-        "  always @(posedge clk or negedge rst_n) if(!rst_n) q<=0; else q<=q+1;\n"
-        "endmodule\n", "c")
-    single = G._gen_witness_tb("c", ports, {}, {"q": 0xC7})
-    windowed = G._gen_witness_tb("c", ports, {}, {"q": 0xC7}, observe_cycles=8)
-    assert "repeat(" not in single and single.count("$display") == 1   # decision TB unchanged
-    assert "repeat(8)" in windowed                                     # per-cycle observation
+        G.parse_drive_witness("fires on a rare magic condition", PORTS, CLEAN_SIGS)

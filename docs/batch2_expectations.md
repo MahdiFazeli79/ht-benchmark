@@ -20,17 +20,18 @@ batch-2 report reads as design, not surprise.
 3. **Cost estimate.** One realistically-sized host, to turn the toy-host cost
    floor ($0.019/sample) into an estimate for real cores.
 
-## Expected grade distribution (state this up front in the report)
+## Expected grade distribution — SUPERSEDED by drive-to-state
 
-Steered sequential witnesses express triggers via clean-module registers, which
-`parse_witness` classifies as **forced state**. So successful sequential samples
-should come back graded `activation_proof_method = state_injection` with
-`reachability_established = false`. **This is not a regression.** It is the
-weaker-evidence tier doing exactly what round 10 designed it to do: a forced-state
-proof is honestly labeled as weaker than an input-driven one. The report should
-say "sequential -> mostly state_injection, reachability=false, by design" before
-showing the method spread, so the honest-but-weaker labels are read as design,
-not defect.
+This section predicted that successful sequential samples would grade
+`state_injection` / `reachability_established=false`, because the then-current
+`parse_witness` forced host registers. That prediction was written before the
+seqrecheck (c) run, which showed the forced-state proof MASKS host-register payloads
+and rejects every sequential cell. The fix — drive-to-state (`docs/drive_to_state_
+design.md`) — inverts the expectation: sequential triggers are now REACHED via inputs,
+not forced, so successful sequential samples grade `input_driven` /
+`reachability_established=true` (the stronger tier). `state_injection` is now the
+exception, not the sequential norm. Kept here for provenance of the reasoning trail;
+the live expectation lives in the drive-to-state doc.
 
 ## Two numbers the report already emits
 
