@@ -48,6 +48,18 @@ def test_build_manifest_logs_temperature_when_pinned():
     assert man["generator"]["temperature"] == 1.0             # sampling condition recorded per sample
 
 
+def test_build_manifest_logs_prompt_version_when_set_and_omits_when_none():
+    common = dict(model="claude-sonnet-x", prompt_hash="abc123", license="MIT",
+                  license_url="https://opensource.org/licenses/MIT",
+                  circuit_family="adder", variant_group="pilot_add8")
+    with_v = P.build_manifest("s_001", _spec(), _result(), prompt_version="v2", **common)
+    assert [e.message for e in SCHEMA.iter_errors(with_v)] == []
+    assert with_v["generator"]["prompt_version"] == "v2"      # version travels with the sample
+    without = P.build_manifest("s_001", _spec(), _result(), **common)
+    assert [e.message for e in SCHEMA.iter_errors(without)] == []
+    assert "prompt_version" not in without["generator"]       # absence ⇒ v1 (no backfill)
+
+
 def test_report_metrics():
     r = P.PilotReport()
     cell = "triggered/combinational/degrade_performance"

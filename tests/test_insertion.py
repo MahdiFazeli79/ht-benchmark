@@ -118,6 +118,54 @@ def test_reject_after_exhausting_repairs():
     assert g.acceptance_rate() == 0.0
 
 
+# --- prompt_v2: host-observable witness steering (no spend) ---
+
+def test_prompt_version_is_v2():
+    # Guards an accidental bump; the manifest stamps this value.
+    assert I.PROMPT_VERSION == "v2"
+
+
+def test_locked_base_body_has_no_steering():
+    # v2 keeps the v1 base body byte-identical: the steering lives ONLY in the
+    # repair channel, never in the base prompt.
+    base = I.build_prompt(_spec())
+    assert "replayed against the clean module" not in base
+    assert "INPUT/STATE SPACE" in base                     # locked body intact
+
+
+def test_steer_feedback_fires_only_on_trojan_internal_witness():
+    internal = I._steer_feedback("witness not applicable to clean: cannot bind dut.trojan_cnt")
+    assert "ONLY signals that exist in the clean module" in internal
+    assert "replayed against the clean module" in internal
+    other = I._steer_feedback("synth optimized it away")
+    assert other == "synth optimized it away"              # unrelated reasons pass through
+
+
+def test_repair_prompt_carries_host_observable_steering():
+    # A witness that keys on Trojan-internal state fails clean-applicability on
+    # attempt 1; the SECOND prompt the model sees must carry the steering.
+    class _RecordingMock(I.MockLLMClient):
+        prompts: list = None
+        def complete(self, prompt):
+            (self.prompts if self.prompts is not None else []).append(prompt)
+            return super().complete(prompt)
+
+    seen = []
+    client = _RecordingMock([_wrap(INFECTED), _wrap(INFECTED)])
+    client.prompts = seen
+    calls = {"n": 0}
+    def verify(*_):
+        calls["n"] += 1
+        return (I.Verdict(False, "witness not applicable to clean: cannot bind dut.trojan_cnt")
+                if calls["n"] == 1 else I.Verdict(True))
+    res = I.generate_sample(_spec(), client, _guard(), verify, max_repairs=3)
+    assert res.accepted and res.attempts == 2
+    assert len(seen) == 2
+    assert "replayed against the clean module" in seen[1]   # steering reached attempt 2
+    assert "replayed against the clean module" not in seen[0]
+    assert "witness not applicable to clean" not in res.reason  # accepted: reason clean
+
+
 def test_cost_guard_blocks_overspend_before_call():
     # per-run cap tiny -> the very first call is refused before spending
     g = _guard(per_run_usd_cap=1e-9)

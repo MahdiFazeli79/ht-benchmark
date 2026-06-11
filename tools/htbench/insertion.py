@@ -157,6 +157,40 @@ class InsertionSpec:
             raise ValueError(f"activation must be 'always_on' or 'triggered': {self.activation!r}")
 
 
+# Prompt-construction logic version, recorded in generator.prompt_version so the
+# version travels with each sample and v1/v2 corpora coexist. The LOCKED base body
+# below is byte-identical to v1; v2 adds ONLY the host-observable repair steering
+# (_steer_feedback), which fires on the Trojan-internal-witness failure. So
+# prompt_hash (the per-spec base-body hash) is unchanged from v1; prompt_version
+# distinguishes the repair policy. Absence of the field on a sample ⇒ the pre-
+# versioning v1 locked prompt (the ten first-pilot manifests).
+PROMPT_VERSION = "v2"
+
+
+# Host-observable repair steering (prompt_v2, OUTSIDE the locked base body). A
+# witness that keys on Trojan-internal state cannot be replayed against the clean
+# module (the gauntlet returns "witness not applicable to clean"); this one
+# instruction steers the retry toward state the clean module actually has.
+_HOST_OBSERVABLE_STEERING = (
+    " To fix this, express the trigger using ONLY signals that exist in the clean "
+    "module: its input ports and its own registers/state. Do not key the trigger on "
+    "Trojan-internal signals, and do not force internal state the clean module lacks. "
+    "The witness is replayed against the clean module, so a trigger naming Trojan-only "
+    "signals cannot be evaluated there."
+)
+
+
+def _steer_feedback(reason: str) -> str:
+    """Map a gauntlet reject reason to the repair message the next attempt sees.
+    On the Trojan-internal-witness failure (stable reason substring), append the
+    host-observable steering; otherwise pass the reason through unchanged. This is
+    the whole of the v2 change to what the model sees, and it lives in the repair
+    channel, never in the locked base body."""
+    if "witness not applicable to clean" in reason:
+        return reason + "." + _HOST_OBSERVABLE_STEERING
+    return reason
+
+
 def build_prompt(spec: InsertionSpec, repair_feedback: str | None = None) -> str:
     """Structured insertion prompt (§2.1) — LOCKED 2026-06-11.
 
@@ -330,7 +364,8 @@ def generate_sample(
             guard.record_outcome(True)
             return InsertionResult(True, infected, gt, attempt, activation=activation,
                                    verification=verdict.detail)
-        feedback = last_reason = verdict.reason
+        last_reason = verdict.reason                    # recorded reject reason stays clean
+        feedback = _steer_feedback(verdict.reason)      # next attempt gets host-observable steering
 
     guard.record_outcome(False)
     return InsertionResult(False, None, None, max_repairs + 1, reason=last_reason)

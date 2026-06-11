@@ -50,7 +50,8 @@
         "model": { "type": "string" },
         "prompt_hash": { "type": "string" },
         "attempt_count": { "type": "integer", "minimum": 1 },
-        "temperature": { "type": "number", "minimum": 0.0, "maximum": 1.0, "description": "Sampling temperature actually sent to the model. OPTIONAL: absent for pre-pin runs that inherited the API default (1.0) without recording it; present from the temperature-pinned run on, so generation conditions are recoverable per sample." }
+        "temperature": { "type": "number", "minimum": 0.0, "maximum": 1.0, "description": "Sampling temperature actually sent to the model. OPTIONAL: absent for pre-pin runs that inherited the API default (1.0) without recording it; present from the temperature-pinned run on, so generation conditions are recoverable per sample." },
+        "prompt_version": { "type": "string", "description": "Prompt-construction logic version (e.g. 'v2'). OPTIONAL: absent ⇒ the pre-versioning v1 locked prompt (the first-pilot manifests); present from v2 on. Distinct from prompt_hash (the per-spec base-body hash): v2 keeps the v1 base body byte-identical and changes only the repair-steering policy, so prompt_version travels with each sample and v1/v2 corpora coexist." }
       }
     },
 

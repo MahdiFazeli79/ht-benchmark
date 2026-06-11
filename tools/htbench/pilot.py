@@ -80,7 +80,7 @@ def _structural_signature(text: str) -> str:
 
 def build_manifest(sample_id, spec, result, *, model, prompt_hash, license, license_url,
                    circuit_family, variant_group, sim_tool="iverilog", synth_tool="yosys",
-                   temperature=None):
+                   temperature=None, prompt_version=None):
     """Construct a schema-valid infected trojan_manifest.json. `inserted_rtl.line_ranges`
     comes from the SAME structural diff the validator's R6 uses, so it passes by
     construction; the round-10 grade rides in `verification`. `temperature` (when the
@@ -96,6 +96,8 @@ def build_manifest(sample_id, spec, result, *, model, prompt_hash, license, lice
     generator = {"model": model, "prompt_hash": prompt_hash, "attempt_count": result.attempts}
     if temperature is not None:
         generator["temperature"] = temperature
+    if prompt_version is not None:
+        generator["prompt_version"] = prompt_version
     return {
         "sample_id": sample_id, "class": "infected",
         "source": f"llm:{model}", "source_kind": "llm_generated",
@@ -283,7 +285,8 @@ def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_
         if res.accepted:
             write_sample(out_dir, sample_id, clean_rtl, spec, res,
                          model=api_model, prompt_hash=prompt_hash,
-                         temperature=sampling_temperature, **meta)
+                         temperature=sampling_temperature,
+                         prompt_version=I.PROMPT_VERSION, **meta)
             report.accepted.append({
                 "sample_id": sample_id, "cell": cell,
                 "sig": _structural_signature("\n".join(res.ground_truth["added_text"])),
