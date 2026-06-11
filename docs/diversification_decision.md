@@ -16,6 +16,20 @@ Mode collapse (the model emitting the same Trojan shape on identical prompts) is
 Two batches agree: some cells collapse, others produce diverse output under the
 same prompt at temperature 1.0.
 
+### Asterisk (2026-06-11, after seqrecheck) — sequential "collapse" was largely a parser ceiling
+
+The sequential repeat-probe's apparent behavior was substantially a parser-
+expressivity ceiling, NOT generator diversity. The seqrecheck (c) artifacts showed the
+model emitting correct, reachable, input-driven witnesses that `parse_witness`
+discarded at parse time (it forces non-input signals, masking host-register payloads).
+So the per-cell collapse-rate finding above is sound for the **combinational** cells
+(add8, cmp8, mux2x8) but carries an asterisk for sequential cells: their accept/reject
+behavior was dominated by the harness, not the generator. Consequence for this
+decision: **no diversification effort, including the multi-model escalation, will move
+a single sequential cell until drive-to-state lands** (`docs/drive_to_state_design.md`)
+— the generator was already producing distinct, valid witnesses. Diversification is a
+combinational-cell concern until the witness model is fixed.
+
 ## Decision
 
 **Over-generate-and-dedup is the v1 diversification mechanism.** It is the
