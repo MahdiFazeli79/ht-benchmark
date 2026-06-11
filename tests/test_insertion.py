@@ -19,8 +19,9 @@ def _spec():
                            payload="degrade_performance")
 
 
-def _wrap(rtl):
-    return f"Here you go.\n<INFECTED>\n{rtl}</INFECTED>\nDone."
+def _wrap(rtl, trigger="count == 8'hC7 with en=1", effect="count freezes"):
+    return (f"Sure.\n<INFECTED>\n{rtl}</INFECTED>\n"
+            f"<ACTIVATION>\ntrigger: {trigger}\nobservable_effect: {effect}\n</ACTIVATION>\n")
 
 
 def _guard(**kw):
@@ -32,10 +33,17 @@ def _guard(**kw):
 
 # --- prompt / parse / ground truth ---
 
-def test_prompt_encodes_taxonomy_and_demands_delimited_block():
+def test_prompt_defensive_framing_taxonomy_and_two_blocks():
     p = I.build_prompt(_spec())
-    assert "triggered" in p and "degrade_performance" in p
-    assert "<INFECTED>" in p
+    assert "DETECTORS" in p and "defensive" in p            # framing leads with defense
+    assert "triggered" in p and "degrade_performance" in p  # spec-driven taxonomy
+    assert "<INFECTED>" in p and "<ACTIVATION>" in p         # two-block contract
+    assert "INPUT/STATE SPACE" in p                          # rarity biased off time-depth
+
+
+def test_repair_addendum_mentions_both_blocks():
+    p = I.build_prompt(_spec(), repair_feedback="synth folded it away")
+    assert "both blocks again" in p and "synth folded it away" in p
 
 
 def test_parse_infected_extracts_block():
@@ -45,6 +53,34 @@ def test_parse_infected_extracts_block():
 def test_parse_infected_missing_block_raises():
     with pytest.raises(ValueError):
         I.parse_infected("no block here")
+
+
+def test_parse_activation_extracts_fields():
+    a = I.parse_activation(
+        "<ACTIVATION>\ntrigger: count==8'hC7 with en=1\nobservable_effect: count freezes\n</ACTIVATION>")
+    assert a["trigger"] == "count==8'hC7 with en=1"
+    assert a["observable_effect"] == "count freezes"
+
+
+def test_parse_activation_missing_or_incomplete_raises():
+    with pytest.raises(ValueError):
+        I.parse_activation("<INFECTED>x</INFECTED>")            # no witness block
+    with pytest.raises(ValueError):
+        I.parse_activation("<ACTIVATION>\ntrigger: x\n</ACTIVATION>")   # no effect
+
+
+def test_spec_feasibility_guard_blocks_forbidden_cells():
+    # R3: always_on payload must be leak/degrade
+    with pytest.raises(ValueError):
+        I.InsertionSpec(CLEAN, "m", "always_on", None, None, "change_functionality")
+    # R1: always_on must have null triggers
+    with pytest.raises(ValueError):
+        I.InsertionSpec(CLEAN, "m", "always_on", "internal", None, "leak_information")
+    # R2: triggered must have non-null triggers
+    with pytest.raises(ValueError):
+        I.InsertionSpec(CLEAN, "m", "triggered", None, None, "degrade_performance")
+    # a feasible always_on cell constructs fine
+    I.InsertionSpec(CLEAN, "m", "always_on", None, None, "leak_information")
 
 
 def test_ground_truth_is_structural_diff():
@@ -60,6 +96,7 @@ def test_accept_on_first_attempt():
     client = I.MockLLMClient([_wrap(INFECTED)])
     res = I.generate_sample(_spec(), client, g, lambda *_: I.Verdict(True), max_repairs=3)
     assert res.accepted and res.attempts == 1
+    assert res.activation["trigger"] == "count == 8'hC7 with en=1"   # witness carried
     assert g.spent_usd > 0 and g.acceptance_rate() == 1.0
 
 

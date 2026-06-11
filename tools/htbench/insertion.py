@@ -30,8 +30,15 @@ from dataclasses import dataclass, field
 from . import cost_guard as CG
 from . import validate as _V
 
-# The model must wrap the full infected module so we can diff it structurally.
+# The model returns TWO blocks: the full infected module (diffed structurally for
+# ground truth) and an activation WITNESS (a checkable "apply X, see Y" claim that
+# activation-proof verifies by dual assertion — fires on infected, silent on clean).
 _INFECTED_RE = re.compile(r"<INFECTED>\s*(.*?)\s*</INFECTED>", re.DOTALL)
+_ACTIVATION_RE = re.compile(r"<ACTIVATION>\s*(.*?)\s*</ACTIVATION>", re.DOTALL)
+
+# Feasibility (spec §10 R1-R3) is enforced at SPEC CONSTRUCTION, never in the
+# prompt — the prompt must never be asked for a forbidden taxonomy cell.
+_ALWAYS_ON_PAYLOADS = {"leak_information", "degrade_performance"}
 
 
 # --------------------------------------------------------------------------- #
@@ -87,35 +94,83 @@ class InsertionSpec:
     payload: str
     target_net: str | None = None
 
+    def __post_init__(self):
+        # Feasibility guard (R1-R3) — an infeasible cell can never be constructed,
+        # so the prompt is never asked for one (the guard lives here, not the prompt).
+        if self.activation == "always_on":
+            if self.trigger_source is not None or self.trigger_mechanism is not None:
+                raise ValueError("R1: always_on must have null trigger_source/mechanism")
+            if self.payload not in _ALWAYS_ON_PAYLOADS:
+                raise ValueError(
+                    f"R3: always_on payload must be in {sorted(_ALWAYS_ON_PAYLOADS)}")
+        elif self.activation == "triggered":
+            if self.trigger_source is None or self.trigger_mechanism is None:
+                raise ValueError("R2: triggered must have non-null trigger_source/mechanism")
+        else:
+            raise ValueError(f"activation must be 'always_on' or 'triggered': {self.activation!r}")
+
 
 def build_prompt(spec: InsertionSpec, repair_feedback: str | None = None) -> str:
-    """Structured insertion prompt (§2.1). DRAFT content — review before pilot.
+    """Structured insertion prompt (§2.1) — LOCKED 2026-06-11.
 
-    Encodes the taxonomy and demands the full infected module wrapped in
-    <INFECTED></INFECTED> so ground truth can be a structural diff, never a
-    keyword scan. On a repair, the prior failure is appended."""
-    tgt = f"\n- target net: {spec.target_net}" if spec.target_net else ""
-    p = f"""You insert a single hardware Trojan into a Verilog module for a research benchmark.
+    Leads with the defensive/detector-training framing (lowers refusal rate; the
+    pilot measures the residual), encodes the spec's taxonomy cell, biases the
+    rare trigger toward input/state space over time-depth (keeps activation-proof
+    fast), and demands TWO blocks: the full infected module (structural diff =
+    ground truth) and an activation WITNESS (a checkable claim activation-proof
+    verifies by dual assertion). The witness fields are free-text-but-structured
+    on purpose — the pilot reveals how regular the model's format is before we
+    constrain it (measure-then-constrain). On a repair, the prior failure is
+    appended."""
+    p = f"""This is for a defensive hardware-security benchmark used to train and evaluate
+hardware Trojan DETECTORS. Your task is to insert one benchmark Trojan into the
+module below so that detection tools can be tested against a known, labeled example.
 
 Clean module `{spec.top_module}`:
 ```verilog
 {spec.clean_rtl}
 ```
 
-Insert ONE Trojan with these properties (do not change anything else):
-- activation: {spec.activation}
-- trigger source: {spec.trigger_source}
-- trigger mechanism: {spec.trigger_mechanism}
-- payload: {spec.payload}{tgt}
+Insert ONE Trojan with exactly these properties (do not change anything else):
+  - activation:          {spec.activation}
+  - trigger source:      {spec.trigger_source}
+  - trigger mechanism:   {spec.trigger_mechanism}
+  - payload:             {spec.payload}
 
-Constraints: the Trojan must be stealthy (small, rarely activated), must still
-compile and simulate, and must survive synthesis (not be optimized away). Return
-the COMPLETE modified module verbatim, wrapped exactly as:
+The Trojan must be stealthy:
+  - Rare trigger — it activates only on a specific, rare condition. Prefer a rare
+    condition in INPUT/STATE SPACE (e.g. an exact wide-bit match) over one that is
+    merely deep in TIME (e.g. a counter that must run for millions of cycles), so the
+    trigger can be reached directly without long simulation.
+  - Functionally invisible when dormant — outputs must be identical to the clean
+    module on every non-triggering input, so it passes functional-equivalence checks.
+  - Small — add minimal logic relative to the host module.
+  - Synthesis-robust — do not tie the trigger or payload to constants that synthesis
+    would fold away; the inserted logic must survive Yosys.
+
+Return TWO blocks and nothing else:
+
+1. The COMPLETE modified module, verbatim, wrapped exactly as:
 <INFECTED>
 ...full infected Verilog...
-</INFECTED>"""
+</INFECTED>
+
+2. An activation witness — the concrete condition that fires the Trojan and the
+   observable effect — wrapped exactly as:
+<ACTIVATION>
+trigger: <the exact signal values / state that activate the Trojan, e.g.
+         "count == 8'hC7 with en=1", or a forced internal state and the inputs to apply>
+observable_effect: <how the payload manifests at the outputs when triggered, e.g.
+         "count freezes / increments by 2 / output held at 8'h00">
+</ACTIVATION>
+
+The activation witness will be checked by independent simulation: we will drive the
+circuit to the stated trigger and confirm the stated effect occurs AND that the clean
+module does not exhibit it. An incorrect witness causes the sample to be rejected, so
+state the true activating condition precisely."""
     if repair_feedback:
-        p += f"\n\nYour previous attempt FAILED: {repair_feedback}\nFix it and return the full module again."
+        p += (f"\n\nYour previous attempt FAILED: {repair_feedback}.\n"
+              f"Fix it and return both blocks again.")
     return p
 
 
@@ -129,6 +184,26 @@ def parse_infected(text: str) -> str:
     if not body:
         raise ValueError("empty <INFECTED> block")
     return body
+
+
+def parse_activation(text: str) -> dict:
+    """Extract the activation witness — ``{trigger, observable_effect}`` — the
+    input contract activation-proof consumes (parse trigger → forced state +
+    applied inputs; assert observable_effect fires on infected, NOT on clean).
+
+    Free-text-but-structured by design: kept lenient until the pilot shows how
+    regular the model's format is (then tighten to a strict grammar if needed).
+    Raises ValueError if the block or either field is missing (→ repair)."""
+    m = _ACTIVATION_RE.search(text)
+    if not m:
+        raise ValueError("no <ACTIVATION>...</ACTIVATION> block in response")
+    body = m.group(1)
+    trig = re.search(r"trigger:\s*(.+?)(?:\n\s*observable_effect:|\Z)", body,
+                     re.DOTALL | re.IGNORECASE)
+    obs = re.search(r"observable_effect:\s*(.+)", body, re.DOTALL | re.IGNORECASE)
+    if not trig or not trig.group(1).strip() or not obs or not obs.group(1).strip():
+        raise ValueError("activation block missing trigger/observable_effect")
+    return {"trigger": trig.group(1).strip(), "observable_effect": obs.group(1).strip()}
 
 
 def ground_truth(clean_rtl: str, infected_rtl: str) -> dict:
@@ -157,6 +232,7 @@ class InsertionResult:
     infected_rtl: str | None
     ground_truth: dict | None
     attempts: int
+    activation: dict | None = None      # the witness {trigger, observable_effect}
     reason: str = ""
 
 
@@ -188,6 +264,7 @@ def generate_sample(
 
         try:
             infected = parse_infected(resp.text)
+            activation = parse_activation(resp.text)     # both blocks required
         except ValueError as e:
             feedback = last_reason = f"parse error: {e}"
             continue
@@ -197,11 +274,13 @@ def generate_sample(
             feedback = last_reason = "no lines were added (empty structural diff)"
             continue
 
-        verdict = verify(spec.clean_rtl, infected, spec, gt)
+        # The gauntlet (incl. activation-proof) consumes the witness; dual
+        # assertion (fires on infected, silent on clean) lives inside `verify`.
+        verdict = verify(spec.clean_rtl, infected, spec, gt, activation)
         if verdict.ok:
             guard.record_outcome(True)
-            return InsertionResult(True, infected, gt, attempt)
+            return InsertionResult(True, infected, gt, attempt, activation=activation)
         feedback = last_reason = verdict.reason
 
     guard.record_outcome(False)
-    return InsertionResult(False, None, None, max_repairs + 1, last_reason)
+    return InsertionResult(False, None, None, max_repairs + 1, reason=last_reason)
