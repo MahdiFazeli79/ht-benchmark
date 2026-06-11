@@ -67,6 +67,11 @@ def parse_ports(rtl: str, top: str) -> dict:
     inputs = [(n, w) for n, (d, w) in seen.items() if d == "input"]
     outputs = [(n, w) for n, (d, w) in seen.items() if d == "output"]
     clk = next((n for n, _ in inputs if n.lower() in _CLOCK_NAMES), None)
+    # NAME-HEURISTIC reset detection (v1, disclosed in spec §15 round 10): a port
+    # named rst/reset_n/... is assumed to initialize state, which is what lets
+    # reachability_established=True for input-driven proofs. A name-matched input
+    # that doesn't actually reset could let that through; v1 discloses rather than
+    # behaviorally verifying post-reset state (the grade-and-disclose posture).
     rst = next((n for n, _ in inputs if n.lower() in _RESET_NAMES), None)
     rst_active_low = bool(rst and rst.lower().endswith(("_n", "n")) and rst.lower() not in ("reset",))
     data_inputs = [(n, w) for n, w in inputs if n not in (clk, rst)]
