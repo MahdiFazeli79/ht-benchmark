@@ -353,11 +353,12 @@ def activation_proof(clean: str, infected: str, top: str, witness: dict,
                      *, budget: int = DRIVE_BUDGET, observe: int = DRIVE_OBSERVE) -> GauntletVerdict:
     """Drive-to-state trigger proof (pure — no force). For a sequential trigger, DRIVE
     the inputs to a host-observable reach predicate within `budget` cycles, then observe
-    whether infected diverges from clean over `observe` cycles. No force, so forcing the
-    payload's own register can't mask it. Three reject classes self-classify:
-    `structural` (no host-observable trigger to drive to), `not-reachable-in-budget`
-    (the trigger is genuinely deep), `masking/unobservable` (reached but never surfaces).
-    An accept grades input_driven + reachability_established (the stronger tier)."""
+    whether infected diverges from clean over `observe` cycles. There is NO force, so
+    masking-by-force (the old failure mode) cannot occur. Three reject classes self-
+    classify: `structural` (no host-observable trigger to drive to),
+    `not-reachable-in-budget` (the trigger is genuinely deep), `payload_unobservable`
+    (the trigger is reached but the effect never surfaces at an output — e.g. a Trojan
+    that cannot fire). An accept grades input_driven + reachability_established."""
     ports = parse_ports(clean, top)
     clean_sigs = _clean_signals(clean, ports)
     try:
@@ -375,7 +376,7 @@ def activation_proof(clean: str, infected: str, top: str, witness: dict,
         grade.update(activation_proof_method="input_driven", reachability_established=True)
         if _mismatches(tc, ti):
             return GauntletVerdict(True, "", grade)
-        return GauntletVerdict(False, "masking/unobservable: trigger applied, no divergence at outputs", grade)
+        return GauntletVerdict(False, "payload_unobservable: trigger applied, no divergence at outputs", grade)
 
     # sequential: pure drive-to-state to a host-observable predicate
     if w["reach"] is None:
@@ -402,7 +403,7 @@ def activation_proof(clean: str, infected: str, top: str, witness: dict,
     for i in range(start, min(start + observe, len(rows_c), len(rows_i))):
         if rows_c[i][1:] != rows_i[i][1:]:                 # output columns (skip col 0 = reach)
             return GauntletVerdict(True, "", grade)
-    return GauntletVerdict(False, f"masking/unobservable: reached {reach_sig}=={reach_val} at cycle {T}, "
+    return GauntletVerdict(False, f"payload_unobservable: reached {reach_sig}=={reach_val} at cycle {T}, "
                            f"no divergence in {observe} cycles", grade)
 
 

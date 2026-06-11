@@ -112,11 +112,12 @@ def test_drive_to_state_not_reachable_in_budget():
     assert not v.ok and v.reason.startswith("not-reachable-in-budget")
 
 
-def test_drive_to_state_masking_when_reached_but_no_divergence():
-    # clean vs clean: the trigger is reached but nothing diverges -> masking/unobservable.
+def test_drive_to_state_payload_unobservable_when_reached_but_no_divergence():
+    # clean vs clean: the trigger is reached but nothing diverges -> payload_unobservable
+    # (a Trojan that cannot fire lands here too — the seqrecheck 002 case).
     v = G.activation_proof(_CTR_CLEAN, _CTR_CLEAN, "counter8",
                            {"trigger": "count == 8'hA5 with en=1", "observable_effect": "x"}, budget=256)
-    assert not v.ok and v.reason.startswith("masking")
+    assert not v.ok and v.reason.startswith("payload_unobservable")
 
 
 def test_activation_proof_unparseable_rejects():

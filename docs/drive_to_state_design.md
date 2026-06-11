@@ -78,23 +78,32 @@ Degeneracy is the regression guarantee: a combinational witness parses to
    - predicate true at cycle T → hold `settle_cycles` more, then observe `observe_
      cycles`, comparing clean vs infected (the SHARED `_mismatches`).
      - diverge → ACCEPT, grade `input_driven` + `reachability_established=true`.
-     - no divergence in the window → **masking / unobservable** reject (trigger reached
-       but the effect never surfaces at an output — degenerate witness or unobservable
-       payload).
+     - no divergence in the window → **payload_unobservable** reject (trigger reached
+       but the effect never surfaces at an output — degenerate witness, or a Trojan
+       that cannot fire).
 
 No `force` on the decision path → masking-by-force is gone by construction. Forced-
 state survives only as an explicitly-graded weaker fallback iff §0 keeps it.
 
 ## 3. Three distinct reject reasons (so the next quarantine round classifies itself)
 
-- `structural: witness names a signal absent from clean and not an input` — the schema
-  can't express this via the ports (Trojan-internal trigger).
-- `not-reachable-in-budget: predicate <P> not met within <B> cycles` — the trigger is
-  genuinely deep; a benchmark-admissibility reject, not a harness limit.
-- `masking/unobservable: trigger reached at cycle <T>, no divergence in <W>` — the
-  payload can't be witnessed at the outputs.
+As shipped (pure drive-to-state, no force). Masking-by-force is gone — it was a force
+artifact, and there is no force, so it is NOT a reject class.
+
+- `structural: witness names <refs> absent from clean and not an input` — no host-
+  observable predicate to drive to (Trojan-internal trigger). The generator must
+  express the trigger on the ports/host state.
+- `not-reachable-in-budget: <P> not reached within <B> cycles` — the drive never hit
+  the predicate; the trigger is genuinely deep. A benchmark-admissibility reject.
+- `payload_unobservable: reached <P> at cycle <T>, no divergence in <W>` — the trigger
+  is reached but the effect never surfaces at an output. Catches a Trojan that cannot
+  fire (seqrecheck 002: the counter's own increment resets the Trojan's arming counter
+  before it can assert — a self-defeating, non-functional Trojan).
 
 Each is a different action next round; conflating them is what cost us the first read.
+The seqrecheck (c) post-mortem confirmed the parser was 5/5 on real witnesses — every
+sequential reject was the generator (no host trigger, or a non-functional Trojan), not
+a parser mis-read — so prompt_v3 (structured witnesses) is deferred, not on the board.
 
 ## 4. Regression gate — don't trust the new path until the old corpus survives it
 
@@ -113,7 +122,7 @@ proof v2, assert the combinational set is unchanged and flag any divergence for 
 
 1. Schema v2 + lenient parser, with the v1 degenerate-case regression test (no toolchain).
 2. Drive-to-state activation-proof + the three reason strings (toolchain tests:
-   reach-and-diverge accept, not-reachable-in-budget, masking, structural).
+   reach-and-diverge accept, not-reachable-in-budget, payload_unobservable, structural).
 3. The corpus regression gate (§4).
 4. A re-run of seqrecheck (c) under v2 — Tier-3, gated — to confirm the 001/003 freeze
    Trojans now accept as `input_driven`/reachable, and to see how many of the 5 are
