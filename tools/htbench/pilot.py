@@ -430,6 +430,39 @@ def batch2_specs(license="CC-BY-4.0",
     return specs
 
 
+# --- targeted sequential re-run (c): just the 5 cells that failed batch 2, under --- #
+# full instrumentation, to confirm the mechanism (divergence-window vs Trojan-internal
+# witness) with the failing RTL in the quarantine dir. ~$0.15 at observed rates. The
+# RUN is Tier-3 (gated in the run session). Same hosts/cells as batch 2's sequential
+# subset, so variant_group still keys on host source.
+_SEQ_RECHECK_CELLS = [
+    # the 3 identical counter8 repeats (mechanism + collapse-on-sequential), the exact
+    # batch-2 reject cell — 3 independent attempts at the same wall
+    ("counter8", "triggered", "internal", "sequential_counter", "denial_of_service"),
+    ("counter8", "triggered", "internal", "sequential_counter", "denial_of_service"),
+    ("counter8", "triggered", "internal", "sequential_counter", "denial_of_service"),
+    # the second mechanism, and the second host — so the read isn't counter8-only
+    ("counter8", "triggered", "internal", "sequential_fsm", "modify_functionality"),
+    ("accum8", "triggered", "internal", "sequential_counter", "degrade_performance"),
+]
+
+
+def sequential_recheck_specs(license="CC-BY-4.0",
+                             license_url="https://creativecommons.org/licenses/by/4.0/"):
+    """The (c) re-run spec set (for review): batch 2's 5 sequential cells, nothing
+    else. Under full instrumentation (per-attempt trail, quarantine, divergence-cycle
+    diagnostic), each failure self-classifies and a divergence-window failure reports
+    its fix parameter. R1-R3-checked at construction. variant_group keys on host
+    source (pilot_<host>), shared with batch 1/2."""
+    specs = []
+    for i, (host, act, tsrc, tmech, payload) in enumerate(_SEQ_RECHECK_CELLS, 1):
+        spec = I.InsertionSpec(_HOSTS[host], host, act, tsrc, tmech, payload)
+        meta = {"license": license, "license_url": license_url,
+                "circuit_family": _FAMILY[host], "variant_group": f"pilot_{host}"}
+        specs.append((f"seqrecheck_{i:03d}_{host}", _HOSTS[host], spec, meta))
+    return specs
+
+
 def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_usd_cap,
               yield_floor=0.20, yield_window=10, min_attempts_before_floor=8,
               client=None, max_repairs=3, quarantine_dir=None) -> PilotReport:

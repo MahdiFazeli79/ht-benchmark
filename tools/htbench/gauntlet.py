@@ -260,7 +260,11 @@ def parse_witness(trigger_text: str, ports: dict) -> dict:
             "method": "state_injection" if forces else "input_driven"}
 
 
-def _gen_witness_tb(top: str, ports: dict, inputs: dict, forces: dict) -> str:
+def _gen_witness_tb(top: str, ports: dict, inputs: dict, forces: dict, observe_cycles: int = 1) -> str:
+    """`observe_cycles == 1` (default) samples outputs once, one edge after the force —
+    the DECISION testbench, unchanged. `observe_cycles > 1` (clocked designs only)
+    samples every cycle for that many cycles, for the divergence-window DIAGNOSTIC
+    (when does a sequential payload first surface after the trigger?)."""
     decls, conns = [], []
     for n, w in ports["inputs"]:
         decls.append(f"  reg [{w-1}:0] {n};")
@@ -289,8 +293,12 @@ def _gen_witness_tb(top: str, ports: dict, inputs: dict, forces: dict) -> str:
     body.append(f"    @(posedge {clk}); #1;" if clk else "    #2;")
     for n, v in forces.items():
         body.append(f"    force dut.{n} = {v};")     # state injection
-    body.append(f"    @(posedge {clk}); #1;" if clk else "    #2;")
-    body.append(f'    $display("{disp_fmt}", {disp_args});')
+    if clk and observe_cycles > 1:                   # divergence-window diagnostic: sample each cycle
+        body.append(f"    repeat({observe_cycles}) begin @(posedge {clk}); #1; "
+                    f'$display("{disp_fmt}", {disp_args}); end')
+    else:                                            # decision TB: one sample, one edge after the force
+        body.append(f"    @(posedge {clk}); #1;" if clk else "    #2;")
+        body.append(f'    $display("{disp_fmt}", {disp_args});')
     body.append("    $finish;")
     clk_drv = f"  always #5 {clk} = ~{clk};\n" if clk else ""
     return ("module tb;\n" + "\n".join(decls) + "\n"
@@ -324,17 +332,46 @@ def activation_proof(clean: str, infected: str, top: str, witness: dict) -> Gaun
     tb = _gen_witness_tb(top, ports, st["inputs"], st["forces"])
     tc, ec = _compile_run_extract(clean, tb)
     if tc is None:
-        # forcing a Trojan-only signal absent from clean lands here → can't
-        # establish "silent on clean" → reject (honest, lost yield not bad data).
-        return GauntletVerdict(False, f"witness not applicable to clean: {ec}", grade)
+        # Clean produced no trace. Carry the STAGE so the failure self-classifies:
+        # a compile (bind) failure ⇒ the witness names a signal absent from clean
+        # (structural / pre-sim — the Trojan-internal-witness case); a sim failure ⇒
+        # clean ran but crashed (a different bucket). Either way "silent on clean"
+        # can't be established → reject (honest, lost yield not bad data).
+        stage = "references a signal absent from clean (structural)" if ec.startswith("compile:") \
+            else "clean sim error (runtime)"
+        return GauntletVerdict(False, f"witness not applicable to clean — {stage}: {ec}", grade)
     ti, ei = _compile_run_extract(infected, tb)
     if ti is None:
         return GauntletVerdict(False, f"infected sim error: {ei}", grade)
     if not _mismatches(tc, ti):
+        # Post-sim: clean and infected matched at the single sample point. If the
+        # payload is sequential it may surface only later — measure WHEN with the
+        # divergence-window diagnostic. The cycle is the gauntlet-TB fix parameter
+        # (sample window = first divergence + margin); None ⇒ no divergence in cap.
+        dc = _divergence_cycle(clean, infected, top, ports, st["inputs"], st["forces"])
+        grade["divergence_cycle_diagnostic"] = dc
+        tail = (f"; diagnostic: diverges at cycle {dc} within window (TB-timing fix parameter)"
+                if dc is not None else "; diagnostic: no divergence within window cap")
         return GauntletVerdict(False,
-                               "witness produced no divergence (infected == clean under trigger)",
+                               "witness produced no divergence (infected == clean under trigger)" + tail,
                                grade)
     return GauntletVerdict(True, "", grade)
+
+
+def _divergence_cycle(clean, infected, top, ports, inputs, forces, *, cycles=16):
+    """Diagnostic ONLY — never changes a verdict. Re-runs the witness stimulus but
+    observes outputs every cycle for `cycles` after the trigger, and returns the first
+    cycle where infected diverges from clean (or None: no divergence within the cap).
+    That cycle IS the sample-window fix parameter for a sequential payload that the
+    single-sample decision TB observes too early. Combinational designs (no clk) have
+    no window, so this collapses to the single-sample answer."""
+    tb = _gen_witness_tb(top, ports, inputs, forces, observe_cycles=cycles)
+    tc, _ = _compile_run_extract(clean, tb)
+    ti, _ = _compile_run_extract(infected, tb)
+    if tc is None or ti is None:
+        return None
+    mism = _mismatches(tc, ti)
+    return mism[0] if mism else None
 
 
 def run_full(clean: str, infected: str, top: str, witness: dict) -> GauntletVerdict:

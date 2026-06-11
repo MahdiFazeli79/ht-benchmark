@@ -37,3 +37,16 @@ def test_applied_input_vs_forced_state_classification():
 def test_unparseable_witness_fails_loud():
     with pytest.raises(ValueError):
         G.parse_witness("fires on a rare magic condition", PORTS)
+
+
+def test_witness_tb_windowed_vs_single_sample():
+    # The decision TB (observe_cycles=1) is unchanged: one sample. The diagnostic TB
+    # (observe_cycles>1, clocked) samples every cycle for the divergence-window probe.
+    ports = G.parse_ports(
+        "module c(input clk, input rst_n, output reg [7:0] q);\n"
+        "  always @(posedge clk or negedge rst_n) if(!rst_n) q<=0; else q<=q+1;\n"
+        "endmodule\n", "c")
+    single = G._gen_witness_tb("c", ports, {}, {"q": 0xC7})
+    windowed = G._gen_witness_tb("c", ports, {}, {"q": 0xC7}, observe_cycles=8)
+    assert "repeat(" not in single and single.count("$display") == 1   # decision TB unchanged
+    assert "repeat(8)" in windowed                                     # per-cycle observation

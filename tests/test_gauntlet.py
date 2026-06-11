@@ -111,6 +111,52 @@ def test_activation_proof_unparseable_rejects():
     assert not v.ok and "un-parseable" in v.reason
 
 
+# divergence-window diagnostic: a sequential payload that surfaces N cycles after the
+# forced trigger, which the single-sample decision TB observes too early.
+_SEQ_CLEAN = ("module d(input clk, input rst_n, input [7:0] s_in, output reg [7:0] o);\n"
+              "  reg [7:0] s;\n"
+              "  always @(posedge clk or negedge rst_n)\n"
+              "    if(!rst_n) begin s<=0; o<=0; end else begin s<=s_in; o<=s; end\nendmodule\n")
+_SEQ_INF_NOW = ("module d(input clk, input rst_n, input [7:0] s_in, output reg [7:0] o);\n"
+                "  reg [7:0] s;\n"
+                "  always @(posedge clk or negedge rst_n)\n"
+                "    if(!rst_n) begin s<=0; o<=0; end else begin s<=s_in; o<=(s==8'hC7)?8'hFF:s; end\n"
+                "endmodule\n")
+_SEQ_INF_DELAY = ("module d(input clk, input rst_n, input [7:0] s_in, output reg [7:0] o);\n"
+                  "  reg [7:0] s; reg [2:0] dly;\n"
+                  "  always @(posedge clk or negedge rst_n)\n"
+                  "    if(!rst_n) begin s<=0; o<=0; dly<=0; end\n"
+                  "    else begin s<=s_in; o<=s; dly<={dly[1:0],(s==8'hC7)}; if(dly[2]) o<=8'hAA; end\n"
+                  "endmodule\n")
+
+
+def test_divergence_cycle_diagnostic_measures_latency():
+    ports = G.parse_ports(_SEQ_CLEAN, "d")
+    f = {"s": 0xC7}                                              # force the host register at the trigger
+    assert G._divergence_cycle(_SEQ_CLEAN, _SEQ_CLEAN, "d", ports, {}, f) is None    # identical
+    assert G._divergence_cycle(_SEQ_CLEAN, _SEQ_INF_NOW, "d", ports, {}, f) == 0     # immediate
+    assert G._divergence_cycle(_SEQ_CLEAN, _SEQ_INF_DELAY, "d", ports, {}, f) == 3   # 3-cycle latency
+
+
+def test_activation_proof_no_divergence_carries_diagnostic():
+    # the single-sample decision rejects (observes too early), but the diagnostic
+    # records WHEN the sequential payload would surface — the TB-timing fix parameter.
+    v = G.activation_proof(_SEQ_CLEAN, _SEQ_INF_DELAY, "d",
+                           {"trigger": "s=8'hC7", "observable_effect": "o=AA"})
+    assert not v.ok and "no divergence" in v.reason             # decision still rejects
+    assert v.detail["divergence_cycle_diagnostic"] == 3         # latency captured in the grade
+    assert "cycle 3" in v.reason                                # and surfaced in the reason/trail
+
+
+def test_activation_proof_not_applicable_self_classifies_structural():
+    # a Trojan-internal witness (net absent from clean) fails at COMPILE, and the
+    # reason marks it structural so (c) auto-classifies without RTL inspection.
+    v = G.activation_proof(CLEAN, INF_STEALTHY, "add8",
+                           {"trigger": "trojan_secret = 8'h01", "observable_effect": "x"})
+    assert not v.ok and "not applicable to clean" in v.reason
+    assert "structural" in v.reason
+
+
 def test_run_full_passes_and_carries_grade():
     v = G.run_full(CLEAN, INF_STEALTHY, "add8",
                    {"trigger": "a == 8'hDE with b == 8'hAD", "observable_effect": "sum=0"})

@@ -99,6 +99,18 @@ def test_attempt1_collapse_clusters_decouple_from_repair_path():
     assert "docs/batch2_expectations.md" in rendered          # expected grades cited up front
 
 
+def test_sequential_recheck_specs_is_batch2_sequential_subset():
+    specs = P.sequential_recheck_specs()
+    assert len(specs) == 5 and all(sid.startswith("seqrecheck_") for sid, *_ in specs)
+    cells = [(sp.top_module, sp.trigger_mechanism) for _, _, sp, _ in specs]
+    # every cell is sequential (the wall batch 2 hit), across both mechanisms and hosts
+    assert all(m in ("sequential_counter", "sequential_fsm") for _, m in cells)
+    assert {h for h, _ in cells} == {"counter8", "accum8"}
+    assert cells.count(("counter8", "sequential_counter")) == 3      # the 3 identical repeats
+    # variant_group still keys on host source, shared with batch 1/2
+    assert {meta["variant_group"] for *_, meta in specs} == {"pilot_counter8", "pilot_accum8"}
+
+
 def test_write_quarantine_persists_per_attempt_trail(tmp_path):
     AR = I.AttemptRecord
     trail = [
