@@ -270,6 +270,7 @@ def ground_truth(clean_rtl: str, infected_rtl: str) -> dict:
 class Verdict:
     ok: bool
     reason: str = ""
+    detail: dict = field(default_factory=dict)   # carries the gauntlet's round-10 grade
 
 
 @dataclass
@@ -279,6 +280,7 @@ class InsertionResult:
     ground_truth: dict | None
     attempts: int
     activation: dict | None = None      # the witness {trigger, observable_effect}
+    verification: dict | None = None    # the gauntlet's round-10 grade (on accept)
     reason: str = ""
 
 
@@ -325,7 +327,8 @@ def generate_sample(
         verdict = verify(spec.clean_rtl, infected, spec, gt, activation)
         if verdict.ok:
             guard.record_outcome(True)
-            return InsertionResult(True, infected, gt, attempt, activation=activation)
+            return InsertionResult(True, infected, gt, attempt, activation=activation,
+                                   verification=verdict.detail)
         feedback = last_reason = verdict.reason
 
     guard.record_outcome(False)
