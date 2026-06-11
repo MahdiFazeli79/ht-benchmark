@@ -39,10 +39,43 @@ def gauntlet_verify(clean, infected, spec, gt, activation):
     return I.Verdict(v.ok, v.reason, detail=v.detail or {})
 
 
-def _signature(text: str) -> str:
-    """Whitespace-normalized hash of the inserted Trojan text — exact/near-dup key
-    for clustering (fuzzy similarity is a documented follow-up)."""
-    return hashlib.sha256(re.sub(r"\s+", " ", text.strip()).encode()).hexdigest()[:16]
+# Verilog keywords kept verbatim in the structural signature (everything else that
+# looks like an identifier is a signal name and gets canonicalized).
+_VERILOG_KEYWORDS = frozenset({
+    "module", "endmodule", "input", "output", "inout", "wire", "reg", "logic",
+    "assign", "always", "always_comb", "always_ff", "begin", "end", "if", "else",
+    "case", "casez", "endcase", "posedge", "negedge", "or", "and", "not", "xor",
+    "xnor", "nand", "nor", "parameter", "localparam", "integer", "genvar",
+    "generate", "endgenerate", "for", "initial", "default", "signed", "unsigned"})
+
+
+def _structural_signature(text: str) -> str:
+    """Rename-robust signature of the inserted Trojan text — the near-dup key.
+
+    Verilog keywords/operators are kept; magic-constant literals (`8'hC7`) collapse
+    to LIT; IDENTIFIERS (signal names) are canonicalized to id0,id1,... by first
+    appearance. So two structurally-identical Trojans with renamed signals — and
+    with different trigger constants — hash the SAME, catching the mode collapse a
+    text hash would miss.
+
+    BLIND SPOTS (disclosed, not silently absorbed): it canonicalizes ALL identifiers
+    including host-signal refs, so structurally-identical Trojans keying *different*
+    host nets also cluster (acceptable for mode-collapse detection, but it over-merges
+    host targets); and deeper structural equivalence — statement reordering, logically
+    equal but different shape — is NOT caught. That needs DFG-isomorphism on the
+    insertion graph, a documented follow-up."""
+    norm = re.sub(r"\s+", " ", text.strip())
+    norm = re.sub(r"\d+'[sS]?[bodhBODH][0-9a-fA-FxzXZ?_]+", "LIT", norm)   # magic literals
+    mapping: dict[str, str] = {}
+
+    def repl(m):
+        tok = m.group(0)
+        if tok == "LIT" or tok.lower() in _VERILOG_KEYWORDS:
+            return tok
+        return mapping.setdefault(tok, f"id{len(mapping)}")
+
+    canon = re.sub(r"[A-Za-z_]\w*", repl, norm)
+    return hashlib.sha256(canon.encode()).hexdigest()[:16]
 
 
 def build_manifest(sample_id, spec, result, *, model, prompt_hash, license, license_url,
@@ -141,6 +174,59 @@ class PilotReport:
         return "\n".join(L)
 
 
+# --- proposed pilot spec set (for review; self-authored hosts, no download) ----- #
+
+_HOSTS = {
+    "add8": "module add8(input [7:0] a, input [7:0] b, output [8:0] sum);\n  assign sum = a + b;\nendmodule\n",
+    "mux2x8": "module mux2x8(input sel, input [7:0] a, input [7:0] b, output [7:0] y);\n  assign y = sel ? b : a;\nendmodule\n",
+    "cmp8": "module cmp8(input [7:0] a, input [7:0] b, output gt);\n  assign gt = (a > b);\nendmodule\n",
+    "shift8": "module shift8(input [7:0] d, input [2:0] sh, output [7:0] y);\n  assign y = d << sh;\nendmodule\n",
+    "counter8": ("module counter8(input clk, input rst_n, input en, output reg [7:0] count);\n"
+                 "  always @(posedge clk or negedge rst_n) if(!rst_n) count<=0; else if(en) count<=count+1;\n"
+                 "endmodule\n"),
+}
+_FAMILY = {"add8": "adder", "mux2x8": "mux", "cmp8": "comparator",
+           "shift8": "shifter", "counter8": "counter"}
+
+# (host, activation, trigger_source, trigger_mechanism, payload). Designed for a
+# ~12-sample budget: SPAN the taxonomy (2 activations, 3 trigger mechanisms, 4
+# payloads, 5 hosts) AND REPEAT one cell across 4 hosts so near-dup clustering can
+# detect mode collapse (the LLM emitting the same Trojan shape). All R1-R3 feasible.
+_PILOT_CELLS = [
+    # the repeated cell (×4, different hosts) — the mode-collapse probe
+    ("add8", "triggered", "internal", "combinational", "degrade_performance"),
+    ("mux2x8", "triggered", "internal", "combinational", "degrade_performance"),
+    ("cmp8", "triggered", "internal", "combinational", "degrade_performance"),
+    ("shift8", "triggered", "internal", "combinational", "degrade_performance"),
+    # breadth across payloads / trigger sources (combinational)
+    ("add8", "triggered", "internal", "combinational", "modify_functionality"),
+    ("mux2x8", "triggered", "external", "combinational", "leak_information"),
+    ("cmp8", "triggered", "internal", "combinational", "denial_of_service"),
+    # sequential trigger mechanisms (host-state → state-injection proofs)
+    ("counter8", "triggered", "internal", "sequential_counter", "denial_of_service"),
+    ("counter8", "triggered", "internal", "sequential_fsm", "modify_functionality"),
+    # always-on (R3-feasible payloads only)
+    ("add8", "always_on", None, None, "leak_information"),
+    ("shift8", "always_on", None, None, "degrade_performance"),
+    # one external-trigger combinational for trigger-source spread
+    ("shift8", "triggered", "external", "combinational", "modify_functionality"),
+]
+
+
+def default_pilot_specs(license="CC-BY-4.0",
+                        license_url="https://creativecommons.org/licenses/by/4.0/"):
+    """The proposed pilot spec set (for review). Self-authored small hosts, no
+    download. Each InsertionSpec is R1-R3-checked at construction, so an infeasible
+    cell would raise here, not reach the prompt."""
+    specs = []
+    for i, (host, act, tsrc, tmech, payload) in enumerate(_PILOT_CELLS, 1):
+        spec = I.InsertionSpec(_HOSTS[host], host, act, tsrc, tmech, payload)
+        meta = {"license": license, "license_url": license_url,
+                "circuit_family": _FAMILY[host], "variant_group": f"pilot_{host}"}
+        specs.append((f"pilot_{i:03d}_{host}", _HOSTS[host], spec, meta))
+    return specs
+
+
 def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_usd_cap,
               yield_floor=0.20, yield_window=10, min_attempts_before_floor=8,
               client=None, max_repairs=3) -> PilotReport:
@@ -173,7 +259,7 @@ def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_
                          model=api_model, prompt_hash=prompt_hash, **meta)
             report.accepted.append({
                 "sample_id": sample_id, "cell": cell,
-                "sig": _signature("\n".join(res.ground_truth["added_text"])),
+                "sig": _structural_signature("\n".join(res.ground_truth["added_text"])),
                 "method": (res.verification or {}).get("activation_proof_method"),
                 "witness": res.activation})
         else:
