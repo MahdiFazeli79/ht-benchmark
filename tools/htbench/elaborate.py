@@ -47,10 +47,19 @@ from pathlib import Path
 # defensive strip is the shim the sv2v canary identified. Usually a no-op here.
 _ATTR_RE = re.compile(r"\(\*.*?\*\)", re.DOTALL)
 
-# Synthetic intermediate nets Yosys auto-names during proc/flatten: `_0_` or
-# scoped `top._0_`. Deterministic within a pinned Yosys, never a manifest signal
-# (docs/phase1_sv2v_canary.md, Yosys-elaboration mini-spike).
-_SYNTHETIC_NET_RE = re.compile(r"(?:^|\.)_\d+_$")
+# Tool-generated (non-source-intrinsic) handle shapes. None correspond to a
+# manifest-inserted signal; all are deterministic within pinned tools. Widened
+# after the CVA6 canary (docs/phase1_sv2v_canary.md) surfaced sv2v temporaries
+# and inlined-function artifacts that the toy fixture never produced:
+#   - `_N_`        : Yosys proc/flatten intermediate nets (`top._0_`)
+#   - `_sv2v_N`    : sv2v lowering temporaries (`top.\i_mul._sv2v_0`)
+#   - `$`          : sv2v/yosys inlined-function & gensym symbols
+#                    (`...sext32to64$func$mul_flat.v:111$81.operand`)
+_SYNTHETIC_PATTERNS = (
+    re.compile(r"(?:^|\.)_\d+_$"),
+    re.compile(r"(?:^|\.)_sv2v_\d+$"),
+    re.compile(r"\$"),
+)
 
 
 class ElaborationError(RuntimeError):
@@ -72,11 +81,12 @@ def is_systemverilog(paths, override: bool | None = None) -> bool:
 def is_synthetic_net(handle: str) -> bool:
     """True if `handle` names a Yosys-introduced intermediate net (`_N_`).
 
-    Synthetic nets are valid handles (not forbidden), but they are not
-    source-intrinsic and a manifest-inserted signal never maps to one.
+    Synthetic handles are valid (not forbidden), but they are not source-intrinsic
+    and a manifest-inserted signal never maps to one. Covers Yosys `_N_` nets,
+    sv2v `_sv2v_N` temporaries, and `$`-bearing inlined-function artifacts.
     """
     base = handle.split("[", 1)[0]            # ignore an optional bit-select
-    return bool(_SYNTHETIC_NET_RE.search(base))
+    return any(p.search(base) for p in _SYNTHETIC_PATTERNS)
 
 
 def partition_synthetic(handles):

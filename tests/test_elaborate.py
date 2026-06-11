@@ -75,11 +75,18 @@ def test_provenance_records_reproducibility_fields():
 # force Yosys to mint a `_N_` net, so the predicate is tested directly) ---
 
 def test_is_synthetic_net():
+    # yosys _N_ intermediate nets
     assert elaborate.is_synthetic_net("top._0_")
     assert elaborate.is_synthetic_net("_3_")
     assert elaborate.is_synthetic_net("top.sub._12_")
+    # sv2v temporaries + inlined-function artifacts (CVA6 canary findings)
+    assert elaborate.is_synthetic_net("mul_top.\\i_mul._sv2v_0")
+    assert elaborate.is_synthetic_net(
+        "mul_top.\\i_mul.ariane_pkg_sext32to64$func$mul_flat.v:111$81.operand")
+    # real (intrinsic) signal names, including flattened hierarchical ones
     assert not elaborate.is_synthetic_net("top.combined")
-    assert not elaborate.is_synthetic_net("top._myreg")   # not the _N_ shape
+    assert not elaborate.is_synthetic_net("top._myreg")          # not the _N_ shape
+    assert not elaborate.is_synthetic_net("mul_top.\\i_mul.clk_i")  # flattened, real
 
 
 def test_synthetic_nets_are_not_forbidden_keys():
