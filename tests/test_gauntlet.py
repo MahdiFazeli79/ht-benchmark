@@ -88,6 +88,19 @@ def test_activation_proof_state_injection_pass():
     assert v.detail["reachability_established"] is False          # forced, not reached
 
 
+def test_activation_proof_input_driven_but_no_reset_is_not_reachable():
+    # Stateful module with NO reset: input-driven divergence, but the state starts
+    # at X -> reachability cannot be claimed even though method is input_driven.
+    clean = ("module lat(input clk, input [7:0] d, output reg [7:0] q);\n"
+             "  always @(posedge clk) q <= d;\nendmodule\n")
+    inf = ("module lat(input clk, input [7:0] d, output reg [7:0] q);\n"
+           "  always @(posedge clk) q <= (d == 8'h5A) ? 8'h00 : d;\nendmodule\n")
+    v = G.activation_proof(clean, inf, "lat", {"trigger": "d == 8'h5A", "observable_effect": "q=0"})
+    assert v.ok
+    assert v.detail["activation_proof_method"] == "input_driven"
+    assert v.detail["reachability_established"] is False        # no reset -> not established
+
+
 def test_activation_proof_no_divergence_rejects():
     v = G.activation_proof(CLEAN, INF_STEALTHY, "add8", {"trigger": "a == 8'h01 with b == 8'h02"})
     assert not v.ok and "no divergence" in v.reason

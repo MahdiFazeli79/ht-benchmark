@@ -306,8 +306,15 @@ def activation_proof(clean: str, infected: str, top: str, witness: dict) -> Gaun
         st = parse_witness(witness.get("trigger", ""), ports)
     except ValueError as e:
         return GauntletVerdict(False, f"activation-proof: {e}")
+    # reachability holds only if the trigger state was reached FROM RESET: a
+    # combinational design has no state, and a reset-driven design starts known.
+    # A stateful design with no detectable reset starts at X — input-driven is NOT
+    # enough to claim reachability there (it would overclaim). So:
+    combinational = ports["clk"] is None
+    reset_driven = ports["rst"] is not None
+    reachable = st["method"] == "input_driven" and (combinational or reset_driven)
     grade = {"activation_proof_method": st["method"],
-             "reachability_established": st["method"] == "input_driven",
+             "reachability_established": reachable,
              "divergence_attribution": "trigger_only"}
     tb = _gen_witness_tb(top, ports, st["inputs"], st["forces"])
     tc, ec = _compile_run_extract(clean, tb)
