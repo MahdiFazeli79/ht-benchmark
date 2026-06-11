@@ -99,6 +99,32 @@ def test_attempt1_collapse_clusters_decouple_from_repair_path():
     assert "docs/batch2_expectations.md" in rendered          # expected grades cited up front
 
 
+def test_write_quarantine_persists_per_attempt_trail(tmp_path):
+    AR = I.AttemptRecord
+    trail = [
+        AR(1, 100, 40, 0.0012, "witness not applicable to clean: cannot bind dut.trojan_cnt",
+           infected_rtl="module counter8; /*t1*/ endmodule\n",
+           witness={"trigger": "trojan_cnt==8'hC7", "observable_effect": "freeze"}),
+        AR(2, 110, 45, 0.0013, "witness produced no divergence (infected == clean under trigger)",
+           infected_rtl="module counter8; /*t2*/ endmodule\n",
+           witness={"trigger": "count==8'hC7", "observable_effect": "freeze"})]
+    res = I.InsertionResult(False, None, None, 3,
+                            reason="witness produced no divergence (infected == clean under trigger)",
+                            trail=trail)
+    qdir = tmp_path / "q"
+    d = P.write_quarantine(qdir, "batch2_001_counter8", "module counter8; endmodule\n", _spec(), res)
+    # per-attempt RTL + witness on disk for both attempts
+    assert (d / "clean.v").exists()
+    assert (d / "attempt1_infected.v").exists() and (d / "attempt2_infected.v").exists()
+    assert (d / "attempt1_witness.json").exists() and (d / "attempt2_witness.json").exists()
+    trailj = json.loads((d / "trail.json").read_text())
+    assert trailj["class"] == "rejected_noncorpus"           # never mistaken for corpus
+    assert len(trailj["attempts"]) == 2
+    assert trailj["attempts"][0]["reason"].startswith("witness not applicable")
+    assert trailj["cost_usd"] == round(0.0012 + 0.0013, 6)   # per-sample cost on the rejected path too
+    assert (qdir / "README_NOT_CORPUS.md").exists()          # quarantine root marked non-corpus
+
+
 def test_batch2_specs_feasible_and_composed():
     from collections import Counter
     specs = P.batch2_specs()

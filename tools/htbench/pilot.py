@@ -135,6 +135,48 @@ def write_sample(out_dir, sample_id, clean_rtl, spec, result, **manifest_kw) -> 
     return d
 
 
+_QUARANTINE_README = (
+    "# Rejected samples — NOT corpus\n\n"
+    "These samples failed the gauntlet and are NOT part of the benchmark. They are kept\n"
+    "as data about the GENERATOR (why insertion failed, per attempt) for diagnosis. A\n"
+    "corpus loader must never read this directory.\n")
+
+
+def write_quarantine(quarantine_dir, sample_id, clean_rtl, spec, result) -> Path:
+    """Persist a rejected sample's full per-attempt trail to a quarantine directory —
+    never the corpus dir. Each attempt's infected RTL and witness (or the raw response
+    when it did not parse) land on disk alongside a trail.json of reason + tokens +
+    cost per attempt, so the failure mechanism can be confirmed without paying to
+    regenerate it. Marked NOT-corpus by construction."""
+    qroot = Path(quarantine_dir)
+    qroot.mkdir(parents=True, exist_ok=True)
+    readme = qroot / "README_NOT_CORPUS.md"
+    if not readme.exists():
+        readme.write_text(_QUARANTINE_README)
+    d = qroot / sample_id
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "clean.v").write_text(clean_rtl)
+    attempts = []
+    for r in result.trail:
+        if r.infected_rtl is not None:
+            (d / f"attempt{r.attempt}_infected.v").write_text(r.infected_rtl)
+        if r.witness is not None:
+            (d / f"attempt{r.attempt}_witness.json").write_text(json.dumps(r.witness, indent=2))
+        if r.raw_text is not None:
+            (d / f"attempt{r.attempt}_raw.txt").write_text(r.raw_text)
+        attempts.append({"attempt": r.attempt, "reason": r.reason,
+                         "in_tokens": r.in_tokens, "out_tokens": r.out_tokens,
+                         "cost_usd": round(r.cost_usd, 6),
+                         "parsed": r.infected_rtl is not None})
+    (d / "trail.json").write_text(json.dumps({
+        "sample_id": sample_id, "class": "rejected_noncorpus",
+        "top_module": spec.top_module, "taxonomy_cell":
+            f"{spec.activation}/{spec.trigger_mechanism}/{spec.payload}",
+        "final_reason": result.reason, "cost_usd": round(result.cost_usd, 6),
+        "attempts": attempts}, indent=2))
+    return d
+
+
 @dataclass
 class PilotReport:
     accepted: list = field(default_factory=list)   # {sample_id, cell, sig, method, witness}
@@ -236,6 +278,12 @@ class PilotReport:
         L.append(f"\n## v2 steering conversion rate: {conv_str} "
                  f"(of {self.steered_count()} steered witnesses) — accepts after a Trojan-internal "
                  f"reject; low ⇒ escalate to the net-naming variant (v3)")
+        L.append("\n## Per-sample cost (USD)")
+        for s in (*self.accepted, *self.rejected):
+            c = s.get("cost_usd")
+            tag = "" if s in self.accepted else " (rejected)"
+            L.append(f"- {s.get('sample_id', s.get('cell'))}: "
+                     f"{'n/a' if c is None else f'${c:.4f}'}{tag}")
         if self.errors:
             L.append(f"\n## Infra/API errors (NOT model rejects): {len(self.errors)}")
             for e in self.errors:
@@ -384,14 +432,18 @@ def batch2_specs(license="CC-BY-4.0",
 
 def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_usd_cap,
               yield_floor=0.20, yield_window=10, min_attempts_before_floor=8,
-              client=None, max_repairs=3) -> PilotReport:
+              client=None, max_repairs=3, quarantine_dir=None) -> PilotReport:
     """METERED — makes paid calls. Invoke ONLY after the operator sets
     ANTHROPIC_API_KEY and re-confirms caps in the live session.
 
     `specs` is an iterable of ``(sample_id, clean_rtl, InsertionSpec, manifest_meta)``
     where manifest_meta carries license/license_url/circuit_family/variant_group.
-    Stops on YieldFloorAbort or BudgetExceeded (records the abort)."""
+    Stops on YieldFloorAbort or BudgetExceeded (records the abort). Rejected samples
+    are quarantined (full per-attempt trail) to `quarantine_dir`, defaulting to a
+    sibling ``<out_dir>_rejected`` — never the corpus dir."""
     I.load_env()
+    out_dir = str(out_dir)
+    quarantine_dir = quarantine_dir or (out_dir.rstrip("/") + "_rejected")
     Path(out_dir).mkdir(parents=True, exist_ok=True)     # always exists (for the report/cleanliness)
     guard = CG.CostGuard(total_usd_cap, per_run_usd_cap, yield_floor,
                          yield_window, min_attempts_before_floor)
@@ -424,9 +476,11 @@ def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_
                 "sig": _structural_signature("\n".join(res.ground_truth["added_text"])),
                 "attempt1_sig": _attempt1_sig(res),
                 "method": (res.verification or {}).get("activation_proof_method"),
-                "steered": res.steered, "witness": res.activation})
+                "steered": res.steered, "cost_usd": res.cost_usd, "witness": res.activation})
         else:
+            write_quarantine(quarantine_dir, sample_id, clean_rtl, spec, res)   # diagnosis, not corpus
             report.rejected.append({"sample_id": sample_id, "cell": cell, "reason": res.reason,
-                                    "attempt1_sig": _attempt1_sig(res), "steered": res.steered})
+                                    "attempt1_sig": _attempt1_sig(res), "steered": res.steered,
+                                    "cost_usd": res.cost_usd})
     report.spent_usd = guard.spent_usd
     return report

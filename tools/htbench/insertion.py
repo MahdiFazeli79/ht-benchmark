@@ -309,6 +309,21 @@ class Verdict:
 
 
 @dataclass
+class AttemptRecord:
+    """One pass of the repair loop, kept for diagnosis. A rejected sample's full
+    trail is quarantined to disk (never the corpus dir): rejects are data about the
+    generator even though they are not data in the benchmark."""
+    attempt: int
+    in_tokens: int
+    out_tokens: int
+    cost_usd: float
+    reason: str                          # "" on the accepted attempt; else parse/diff/verdict reason
+    infected_rtl: str | None = None      # parsed infected module (None if the response did not parse)
+    witness: dict | None = None          # parsed activation witness (None if it did not parse)
+    raw_text: str | None = None          # the raw response, kept ONLY when parsing failed
+
+
+@dataclass
 class InsertionResult:
     accepted: bool
     infected_rtl: str | None
@@ -321,6 +336,12 @@ class InsertionResult:
     attempt1_added_text: list | None = None  # attempt-1 inserted text (same-prompt collapse signal,
                                              # free of repair-path divergence); None if attempt 1
                                              # never produced a valid structural diff
+    trail: list = field(default_factory=list)  # per-attempt AttemptRecords (diagnosis + cost)
+
+    @property
+    def cost_usd(self):
+        """Total estimated spend for this sample, summed over every attempt."""
+        return sum(r.cost_usd for r in self.trail)
 
 
 def generate_sample(
@@ -343,24 +364,30 @@ def generate_sample(
     last_reason = "no attempt"
     steered = False                      # did the v2 steering fire at least once?
     attempt1_added = None                # attempt-1 inserted text, for the collapse cluster
+    trail = []                           # per-attempt records (diagnosis + cost)
     est_out = est_out_tokens if est_out_tokens is not None else _approx_tokens(spec.clean_rtl) + 256
 
     for attempt in range(1, max_repairs + 2):
         prompt = build_prompt(spec, feedback)
         guard.pre_call_check(CG.estimate_cost(model, _approx_tokens(prompt), est_out))
         resp = client.complete(prompt)
-        guard.record_spend(CG.estimate_cost(model, resp.in_tokens, resp.out_tokens))
+        cost = CG.estimate_cost(model, resp.in_tokens, resp.out_tokens)
+        guard.record_spend(cost)
+        rec = AttemptRecord(attempt, resp.in_tokens, resp.out_tokens, cost, reason="")
+        trail.append(rec)
 
         try:
             infected = parse_infected(resp.text)
             activation = parse_activation(resp.text)     # both blocks required
         except ValueError as e:
-            feedback = last_reason = f"parse error: {e}"
+            rec.reason = feedback = last_reason = f"parse error: {e}"
+            rec.raw_text = resp.text                      # keep the malformed output for diagnosis
             continue
+        rec.infected_rtl, rec.witness = infected, activation
 
         gt = ground_truth(spec.clean_rtl, infected)
         if not gt["line_ranges"]:
-            feedback = last_reason = "no lines were added (empty structural diff)"
+            rec.reason = feedback = last_reason = "no lines were added (empty structural diff)"
             continue
         if attempt == 1:                                # same-prompt collapse signal, captured
             attempt1_added = gt["added_text"]           # before any repair-path divergence
@@ -372,12 +399,12 @@ def generate_sample(
             guard.record_outcome(True)
             return InsertionResult(True, infected, gt, attempt, activation=activation,
                                    verification=verdict.detail, steered=steered,
-                                   attempt1_added_text=attempt1_added)
-        last_reason = verdict.reason                    # recorded reject reason stays clean
+                                   attempt1_added_text=attempt1_added, trail=trail)
+        rec.reason = last_reason = verdict.reason       # recorded reject reason stays clean
         feedback = _steer_feedback(verdict.reason)      # next attempt gets host-observable steering
         if feedback != verdict.reason:                  # steering actually fired this round
             steered = True
 
     guard.record_outcome(False)
     return InsertionResult(False, None, None, max_repairs + 1, reason=last_reason,
-                           steered=steered, attempt1_added_text=attempt1_added)
+                           steered=steered, attempt1_added_text=attempt1_added, trail=trail)

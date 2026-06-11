@@ -142,6 +142,19 @@ def test_attempt1_added_text_retains_attempt_one_not_final():
     assert not any("t2" in line for line in res.attempt1_added_text)     # not contaminated
 
 
+def test_attempt_trail_records_cost_and_reasons():
+    # attempt 1 garbage (parse fail, raw kept), attempt 2 good (accept)
+    client = I.MockLLMClient(["garbage", _wrap(INFECTED)])
+    res = I.generate_sample(_spec(), client, _guard(), lambda *_: I.Verdict(True), max_repairs=3)
+    assert res.accepted and len(res.trail) == 2
+    assert res.trail[0].reason.startswith("parse error")     # attempt-1 failure captured
+    assert res.trail[0].raw_text == "garbage"                # malformed output kept for diagnosis
+    assert res.trail[0].infected_rtl is None
+    assert res.trail[1].reason == "" and res.trail[1].infected_rtl is not None  # accepted attempt
+    assert all(r.cost_usd > 0 for r in res.trail)
+    assert res.cost_usd == sum(r.cost_usd for r in res.trail)  # per-sample cost sums the trail
+
+
 def test_prompt_version_is_v2():
     # Guards an accidental bump; the manifest stamps this value.
     assert I.PROMPT_VERSION == "v2"
