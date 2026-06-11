@@ -160,6 +160,22 @@ class PilotReport:
         n = sum(1 for r in self.rejected if "not applicable to clean" in r["reason"])
         return n / len(self.rejected)
 
+    def steered_count(self):
+        """Samples whose loop hit a Trojan-internal witness and got the v2 steering."""
+        return (sum(1 for a in self.accepted if a.get("steered"))
+                + sum(1 for r in self.rejected if r.get("steered")))
+
+    def steering_conversion_rate(self):
+        """Of the witnesses the v2 steering fired on (rejected Trojan-internal on an
+        early attempt), the fraction that converted to an accept. The decision input
+        for the v3 escalation: high ⇒ general steering suffices; low ⇒ the
+        net-naming variant is the next versioned change. Returns None when the
+        steering never fired (nothing to measure), distinct from a 0% conversion."""
+        total = self.steered_count()
+        if not total:
+            return None
+        return sum(1 for a in self.accepted if a.get("steered")) / total
+
     def render(self) -> str:
         L = ["# Phase-2 pilot report\n"]
         L.append("> SCOPE: hosts are toy self-authored modules (8-bit adder/mux/…). This"
@@ -182,6 +198,11 @@ class PilotReport:
             L.append(f"- {sig}: {ids}")
         L.append(f"\n## Trojan-only-signal reject rate: {self.trojan_only_reject_rate():.0%} "
                  f"(of {len(self.rejected)} rejects) — high ⇒ self-referential witnesses")
+        conv = self.steering_conversion_rate()
+        conv_str = "n/a (steering never fired)" if conv is None else f"{conv:.0%}"
+        L.append(f"\n## v2 steering conversion rate: {conv_str} "
+                 f"(of {self.steered_count()} steered witnesses) — accepts after a Trojan-internal "
+                 f"reject; low ⇒ escalate to the net-naming variant (v3)")
         if self.errors:
             L.append(f"\n## Infra/API errors (NOT model rejects): {len(self.errors)}")
             for e in self.errors:
@@ -291,8 +312,8 @@ def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_
                 "sample_id": sample_id, "cell": cell,
                 "sig": _structural_signature("\n".join(res.ground_truth["added_text"])),
                 "method": (res.verification or {}).get("activation_proof_method"),
-                "witness": res.activation})
+                "steered": res.steered, "witness": res.activation})
         else:
-            report.rejected.append({"cell": cell, "reason": res.reason})
+            report.rejected.append({"cell": cell, "reason": res.reason, "steered": res.steered})
     report.spent_usd = guard.spent_usd
     return report

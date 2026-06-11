@@ -98,6 +98,7 @@ def test_accept_on_first_attempt():
     assert res.accepted and res.attempts == 1
     assert res.activation["trigger"] == "count == 8'hC7 with en=1"   # witness carried
     assert g.spent_usd > 0 and g.acceptance_rate() == 1.0
+    assert res.steered is False                                      # no steering on a clean accept
 
 
 def test_repair_then_accept():
@@ -160,6 +161,7 @@ def test_repair_prompt_carries_host_observable_steering():
                 if calls["n"] == 1 else I.Verdict(True))
     res = I.generate_sample(_spec(), client, _guard(), verify, max_repairs=3)
     assert res.accepted and res.attempts == 2
+    assert res.steered is True                              # flag set for the conversion metric
     assert len(seen) == 2
     assert "replayed against the clean module" in seen[1]   # steering reached attempt 2
     assert "replayed against the clean module" not in seen[0]

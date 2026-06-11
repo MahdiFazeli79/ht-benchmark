@@ -76,6 +76,23 @@ def test_report_metrics():
     assert r.method_spread()["input_driven"] == 2
     assert r.trojan_only_reject_rate() == 0.5                    # 1 of 2 rejects
     assert "pilot report" in r.render().lower()
+    assert r.steering_conversion_rate() is None                 # no steered samples ⇒ nothing to measure
+
+
+def test_steering_conversion_rate():
+    r = P.PilotReport()
+    # 2 steered → accepted, 1 steered → rejected, 1 unsteered accept (ignored by the metric)
+    r.accepted = [
+        {"sample_id": "a", "cell": "c", "sig": "x", "method": "state_injection",
+         "steered": True, "witness": {}},
+        {"sample_id": "b", "cell": "c", "sig": "y", "method": "state_injection",
+         "steered": True, "witness": {}},
+        {"sample_id": "d", "cell": "c", "sig": "z", "method": "input_driven",
+         "steered": False, "witness": {}}]
+    r.rejected = [{"cell": "c", "reason": "witness not applicable to clean: ...", "steered": True}]
+    assert r.steered_count() == 3                               # 2 accepted + 1 rejected, all steered
+    assert r.steering_conversion_rate() == 2 / 3                # 2 of 3 steered converted
+    assert "steering conversion rate: 67%" in r.render().lower()
 
 
 # --- the structural near-dup signature (rename-robust) ---

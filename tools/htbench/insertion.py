@@ -317,6 +317,7 @@ class InsertionResult:
     activation: dict | None = None      # the witness {trigger, observable_effect}
     verification: dict | None = None    # the gauntlet's round-10 grade (on accept)
     reason: str = ""
+    steered: bool = False               # the v2 host-observable steering fired ≥1× in this loop
 
 
 def generate_sample(
@@ -337,6 +338,7 @@ def generate_sample(
     guard.new_run()
     feedback = None
     last_reason = "no attempt"
+    steered = False                      # did the v2 steering fire at least once?
     est_out = est_out_tokens if est_out_tokens is not None else _approx_tokens(spec.clean_rtl) + 256
 
     for attempt in range(1, max_repairs + 2):
@@ -363,9 +365,11 @@ def generate_sample(
         if verdict.ok:
             guard.record_outcome(True)
             return InsertionResult(True, infected, gt, attempt, activation=activation,
-                                   verification=verdict.detail)
+                                   verification=verdict.detail, steered=steered)
         last_reason = verdict.reason                    # recorded reject reason stays clean
         feedback = _steer_feedback(verdict.reason)      # next attempt gets host-observable steering
+        if feedback != verdict.reason:                  # steering actually fired this round
+            steered = True
 
     guard.record_outcome(False)
-    return InsertionResult(False, None, None, max_repairs + 1, reason=last_reason)
+    return InsertionResult(False, None, None, max_repairs + 1, reason=last_reason, steered=steered)
