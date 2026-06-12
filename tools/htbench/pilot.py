@@ -184,6 +184,14 @@ class PilotReport:
     errors: list = field(default_factory=list)     # {cell, error} — infra/API failure, NOT a reject
     spent_usd: float = 0.0
     aborted: str = ""                              # "" or the abort reason
+    cell_stats: list = field(default_factory=list) # dedup batch: per-cell {cell_id, K, distinct, ...}
+    discarded: list = field(default_factory=list)  # dedup batch: structural dupes {cell_id, sig, dropped}
+
+    def overall_discard_rate(self):
+        """Across the dedup batch: discarded dupes / total accepts. The corpus-level
+        input to the multi-model escalation. None when nothing was generated."""
+        acc = sum(c["accepted"] for c in self.cell_stats)
+        return (sum(c["discarded"] for c in self.cell_stats) / acc) if acc else None
 
     @property
     def attempted(self):
@@ -279,6 +287,16 @@ class PilotReport:
         L.append(f"\n## v2 steering conversion rate: {conv_str} "
                  f"(of {self.steered_count()} steered witnesses) — accepts after a Trojan-internal "
                  f"reject; low ⇒ escalate to the net-naming variant (v3)")
+        if self.cell_stats:
+            odr = self.overall_discard_rate()
+            L.append(f"\n## Per-cell dedup (over-generate→keep K distinct; discard rate is the "
+                     f"multi-model escalation input): overall {odr:.0%}" if odr is not None else
+                     "\n## Per-cell dedup: nothing generated")
+            for c in self.cell_stats:
+                short = "  ⚠ SHORTFALL" if c["distinct"] < c["K"] else ""
+                L.append(f"- {c['cell_id']}: {c['distinct']}/{c['K']} distinct, "
+                         f"{c['generated']} generated, {c['accepted']} accepted, "
+                         f"{c['discarded']} discarded (rate {c['discard_rate']:.0%}){short}")
         L.append("\n## Per-sample cost (USD)")
         for s in (*self.accepted, *self.rejected):
             c = s.get("cost_usd")
@@ -462,6 +480,110 @@ def sequential_recheck_specs(license="CC-BY-4.0",
                 "circuit_family": _FAMILY[host], "variant_group": f"pilot_{host}"}
         specs.append((f"seqrecheck_{i:03d}_{host}", _HOSTS[host], spec, meta))
     return specs
+
+
+# --- combinational scale batch (corpus build + over-generate-and-dedup) ----------- #
+# One entry per CELL; run_dedup_batch over-generates K distinct from each. Combinational
+# cells ride the degenerate apply-and-observe path (no parser heuristic), so they are
+# durable under any later prompt_v3. Spec: docs/combinational_scale_spec.md.
+_COMBINATIONAL_CELLS = [
+    # internal / combinational — payload spread across arithmetic/logic hosts
+    ("add8",   "triggered", "internal", "combinational", "degrade_performance"),
+    ("add8",   "triggered", "internal", "combinational", "modify_functionality"),
+    ("cmp8",   "triggered", "internal", "combinational", "denial_of_service"),
+    ("cmp8",   "triggered", "internal", "combinational", "degrade_performance"),
+    ("alu8",   "triggered", "internal", "combinational", "modify_functionality"),
+    ("alu8",   "triggered", "internal", "combinational", "denial_of_service"),
+    # external / combinational — trigger-source spread
+    ("mux2x8", "triggered", "external", "combinational", "leak_information"),
+    ("mux2x8", "triggered", "external", "combinational", "modify_functionality"),
+    ("shift8", "triggered", "external", "combinational", "modify_functionality"),
+    # always_on (R3-feasible payloads only)
+    ("add8",   "always_on", None, None, "leak_information"),
+    ("shift8", "always_on", None, None, "degrade_performance"),
+]
+
+
+def combinational_scale_specs(license="CC-BY-4.0",
+                              license_url="https://creativecommons.org/licenses/by/4.0/"):
+    """The combinational scale-batch cell set (for review): one entry per CELL; the dedup
+    loop over-generates K distinct from each. Self-authored combinational hosts, no
+    download, R1-R3-checked at construction. variant_group keys on host source."""
+    specs = []
+    for i, (host, act, tsrc, tmech, payload) in enumerate(_COMBINATIONAL_CELLS, 1):
+        spec = I.InsertionSpec(_HOSTS[host], host, act, tsrc, tmech, payload)
+        meta = {"license": license, "license_url": license_url,
+                "circuit_family": _FAMILY[host], "variant_group": f"pilot_{host}"}
+        specs.append((f"comb_{i:03d}_{host}", _HOSTS[host], spec, meta))
+    return specs
+
+
+def run_dedup_batch(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_usd_cap,
+                    K=4, N_cap=12, yield_floor=0.20, yield_window=10, min_attempts_before_floor=8,
+                    client=None, verify=None, max_repairs=3, quarantine_dir=None) -> PilotReport:
+    """METERED — the diversification mechanism. Per cell, over-generate up to N_cap times
+    and keep the first K accepts with DISTINCT rename-robust structural signatures (the
+    corpus). Structural dupes are discarded (logged, never stored) — the per-cell discard
+    rate is the multi-model escalation input. Rejected generations are quarantined. A cell
+    stops at K distinct or N_cap generations; the batch stops on Budget/YieldFloor abort.
+    `verify` defaults to the real gauntlet; inject a stub for no-spend tests."""
+    I.load_env()
+    out_dir = str(out_dir)
+    quarantine_dir = quarantine_dir or (out_dir.rstrip("/") + "_rejected")
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    guard = CG.CostGuard(total_usd_cap, per_run_usd_cap, yield_floor, yield_window, min_attempts_before_floor)
+    if client is None:
+        client = I.AnthropicClient(model=api_model)
+    verify = verify or gauntlet_verify
+    sampling_temperature = getattr(client, "temperature", None)
+    report = PilotReport()
+    aborted = None
+    for cell_id, clean_rtl, spec, meta in specs:
+        cell = f"{spec.activation}/{spec.trigger_mechanism}/{spec.payload}"
+        prompt_hash = hashlib.sha256(I.build_prompt(spec).encode()).hexdigest()[:16]
+        seen = {}                                    # sig -> sample_id of the first kept distinct
+        generated = accepted = discarded = 0
+        while len(seen) < K and generated < N_cap:
+            try:
+                res = I.generate_sample(spec, client, guard, verify, model=pricing_key, max_repairs=max_repairs)
+            except CG.YieldFloorAbort as e:
+                aborted = f"yield-floor: {e}"; break
+            except CG.BudgetExceeded as e:
+                aborted = f"budget: {e}"; break
+            except Exception as e:                   # API/SDK/infra error — record, keep going
+                report.errors.append({"cell": cell, "error": f"{type(e).__name__}: {e}"})
+                continue
+            generated += 1
+            if not res.accepted:
+                rid = f"{cell_id}_g{generated}"
+                write_quarantine(quarantine_dir, rid, clean_rtl, spec, res)
+                report.rejected.append({"sample_id": rid, "cell": cell, "reason": res.reason,
+                                        "attempt1_sig": _attempt1_sig(res), "steered": res.steered,
+                                        "cost_usd": res.cost_usd})
+                continue
+            accepted += 1
+            sig = _structural_signature("\n".join(res.ground_truth["added_text"]))
+            if sig in seen:
+                discarded += 1
+                report.discarded.append({"cell_id": cell_id, "sig": sig, "kept_as": seen[sig]})
+                continue
+            sid = f"{cell_id}_d{len(seen) + 1}"
+            write_sample(out_dir, sid, clean_rtl, spec, res, model=api_model, prompt_hash=prompt_hash,
+                         temperature=sampling_temperature, prompt_version=I.PROMPT_VERSION, **meta)
+            seen[sig] = sid
+            report.accepted.append({
+                "sample_id": sid, "cell": cell, "sig": sig, "attempt1_sig": _attempt1_sig(res),
+                "method": (res.verification or {}).get("activation_proof_method"),
+                "steered": res.steered, "cost_usd": res.cost_usd, "witness": res.activation})
+        report.cell_stats.append({"cell_id": cell_id, "K": K, "distinct": len(seen),
+                                  "generated": generated, "accepted": accepted, "discarded": discarded,
+                                  "discard_rate": (discarded / accepted) if accepted else 0.0})
+        if aborted:
+            break
+    report.spent_usd = guard.spent_usd
+    if aborted:
+        report.aborted = aborted
+    return report
 
 
 def run_pilot(specs, out_dir, *, api_model, pricing_key, total_usd_cap, per_run_usd_cap,

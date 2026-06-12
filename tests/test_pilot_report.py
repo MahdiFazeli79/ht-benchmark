@@ -111,6 +111,44 @@ def test_sequential_recheck_specs_is_batch2_sequential_subset():
     assert {meta["variant_group"] for *_, meta in specs} == {"pilot_counter8", "pilot_accum8"}
 
 
+def test_combinational_scale_specs_is_combinational_taxonomy_spread():
+    specs = P.combinational_scale_specs()
+    assert len(specs) == 11 and all(sid.startswith("comb_") for sid, *_ in specs)
+    cells = [(sp.activation, sp.trigger_mechanism) for _, _, sp, _ in specs]
+    # no sequential cells — every cell is combinational or always_on (R1-R3 feasible: no raise)
+    assert all(a == "always_on" or m == "combinational" for a, m in cells)
+    assert {sp.top_module for _, _, sp, _ in specs} == {"add8", "cmp8", "alu8", "mux2x8", "shift8"}
+    ao = [sp.payload for _, _, sp, _ in specs if sp.activation == "always_on"]
+    assert ao and all(p in ("leak_information", "degrade_performance") for p in ao)  # R3-feasible
+
+
+def test_run_dedup_batch_keeps_K_distinct_and_reports_discard(tmp_path):
+    clean = "module m(input [7:0] a, output [7:0] y);\n  assign y = a;\nendmodule\n"
+    spec = I.InsertionSpec(clean, "m", "triggered", "internal", "combinational", "degrade_performance")
+    meta = {"license": "MIT", "license_url": "https://opensource.org/licenses/MIT",
+            "circuit_family": "x", "variant_group": "x"}
+
+    def wrap(rtl):
+        return (f"<INFECTED>\n{rtl}</INFECTED>\n"
+                f"<ACTIVATION>\ntrigger: a==8'hFF\nobservable_effect: y flips\n</ACTIVATION>\n")
+    infA = ("module m(input [7:0] a, output [7:0] y);\n  wire t;\n  assign t = &a;\n"
+            "  assign y = a ^ {7'b0,t};\nendmodule\n")
+    infB = ("module m(input [7:0] a, output [7:0] y);\n  wire g;\n  assign g = |a;\n"
+            "  assign y = a | {7'b0,g};\nendmodule\n")
+    client = I.MockLLMClient([wrap(infA), wrap(infA), wrap(infB), wrap(infA)])   # A, A-dup, B, ...
+    report = P.run_dedup_batch([("comb_001_m", clean, spec, meta)], tmp_path,
+                               api_model="x", pricing_key="claude-sonnet-4",
+                               total_usd_cap=10, per_run_usd_cap=1, K=2, N_cap=6,
+                               client=client, verify=lambda *_: I.Verdict(True))
+    cs = report.cell_stats[0]
+    assert cs["distinct"] == 2 and cs["K"] == 2          # stopped at K distinct
+    assert cs["discarded"] >= 1                          # the structural dup was discarded
+    assert len(report.accepted) == 2                     # only distinct samples in the corpus
+    assert (tmp_path / "comb_001_m_d1").is_dir() and (tmp_path / "comb_001_m_d2").is_dir()
+    assert report.overall_discard_rate() == cs["discarded"] / cs["accepted"]
+    assert "Per-cell dedup" in report.render()
+
+
 def test_write_quarantine_persists_per_attempt_trail(tmp_path):
     AR = I.AttemptRecord
     trail = [
