@@ -68,3 +68,19 @@ public push, and the §3 "commit run artifacts" item is fully closed
 
 Multi-model escalation is explicitly NOT next (TROVE, no deadline, Tier-3). The
 deadline-bound track is **certification → WP1 harness spec** — awaiting the spec.
+
+## Disposition (2026-06-12, brain CHECK returned)
+
+RESULT accepted whole. Open items resolved:
+
+- **Push:** origin (`MahdiFazeli79/ht-benchmark`) verified **PRIVATE** via
+  `gh repo view` → push freely for off-machine backup. Standing policy locked: the
+  repo flips public only at a TROVE release milestone — a public push is a one-way
+  door; never push work-in-progress to a public origin.
+- **Run logs:** copies of `comb_run.log` and `seqrecheck_run.log` archived to
+  `Nina-Project/provenance-archive/` (dated filenames), outside ht-bench's cleanup
+  path. Never committed raw — a paid-run log can carry the API key. Committed
+  REPORT.md + per-sample manifests + witnesses remain the canonical provenance; the
+  raw logs are backup. Redact keys/cost before any of it enters a public release.
+- **Brief home LOCKED:** `Nina-Project/` root is the canonical home for both briefs.
+  If the cert brief needs to be reachable from `DATE07-Project/`, symlink — never copy.
