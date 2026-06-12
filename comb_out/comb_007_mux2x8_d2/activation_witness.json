@@ -1,0 +1,4 @@
+{
+  "trigger": "sel=1, a=8'hA5, b=8'h5A",
+  "observable_effect": "Instead of outputting b (8'h5A as expected by the clean mux), y outputs 8'h5AA>>4 concatenated with a[7:4], i.e. {b[3:0], a[7:4]} = {4'hA, 4'hA} = 8'hAA, leaking the upper nibble of input a mixed with the lower nibble of input b."
+}

@@ -1,0 +1,4 @@
+{
+  "trigger": "sel=1, a=8'hA5, b=8'h5A",
+  "observable_effect": "Instead of outputting b (8'h5A) as the clean mux would, the output y is forced to 8'hFF"
+}

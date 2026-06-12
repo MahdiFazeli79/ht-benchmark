@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hAA, b == 8'h55, op == 3'd0",
+  "observable_effect": "Instead of the correct addition result {cout,y} = 9'hFF (i.e., cout=0, y=8'hFF), the outputs are forced to y=8'h00 and cout=0, and zero=1. The clean module produces y=8'hFF, zero=0 for this input; the infected module produces y=8'h00, zero=1."
+}

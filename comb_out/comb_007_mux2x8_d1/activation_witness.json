@@ -1,0 +1,4 @@
+{
+  "trigger": "sel=1, a=8'hA5, b=8'hFF",
+  "observable_effect": "Instead of outputting b=8'hFF (as the clean module would with sel=1), the infected module outputs 8'hF5 \u2014 the upper nibble of b (8'hF) concatenated with the lower nibble of a (8'h5), leaking information from input a into the output."
+}

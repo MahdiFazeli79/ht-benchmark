@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h5A",
+  "observable_effect": "The clean module produces sum == 9'h0FF (carry bit = 0, since 0xA5 + 0x5A = 0xFF with no overflow). The infected module produces sum == 9'h1FF (carry bit = 1), because the Trojan replaces sum[8] with a[7] = 1, leaking the MSB of input 'a' into the carry-out position."
+}

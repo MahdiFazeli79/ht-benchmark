@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5, b == 8'h5A, op == 3'd4",
+  "observable_effect": "The XOR operation (op=4) with a=0xA5 and b=0x5A should produce y=0xFF (since 0xA5 ^ 0x5A = 0xFF), but instead the Trojan forces y=0x00. The zero output also changes from 0 to 1."
+}

@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h5A (the rare exact 16-bit input pattern where a=0xA5, b=0x5A)",
+  "observable_effect": "sum outputs 9'h100 (256) instead of the correct 9'hFF (255), i.e. the result is off by 1 (incremented by 1), degrading arithmetic correctness for this specific input combination"
+}

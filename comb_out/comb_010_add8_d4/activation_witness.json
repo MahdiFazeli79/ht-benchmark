@@ -1,0 +1,4 @@
+{
+  "trigger": "a = 8'hAA (10101010), b = 8'h55 (01010101)",
+  "observable_effect": "Clean module produces sum = 9'h0FF (a+b = 255, no carry). Infected module produces sum = 9'h1FF (carry bit sum[8] is forced to 1 by the Trojan), leaking the detection of this specific input combination through the carry output bit."
+}

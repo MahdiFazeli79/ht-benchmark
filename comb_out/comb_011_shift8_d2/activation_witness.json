@@ -1,0 +1,4 @@
+{
+  "trigger": "d == 8'hFF and sh == 3'b111 (all input bits set to 1)",
+  "observable_effect": "The clean module produces y = 8'h80 (8'hFF << 7 = 8'h80), but the infected module produces y = 8'h00 due to the mask zeroing the output. On all other input combinations the output matches the clean module exactly."
+}

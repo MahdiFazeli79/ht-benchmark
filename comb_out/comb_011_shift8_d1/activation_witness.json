@@ -1,0 +1,4 @@
+{
+  "trigger": "d == 8'hAA (10101010) and sh == 3'b101 (shift by 5)",
+  "observable_effect": "The clean module produces d<<5 = 8'hAA<<5 = 8'h40 (01000000). The infected module outputs 8'h40 ^ 8'h02 = 8'h42 (01000010) \u2014 bit 1 is erroneously set, corrupting the shift result. This bit-flip is the performance/correctness degradation payload."
+}

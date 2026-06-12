@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hAA (10101010) and b == 8'h56 (01010110)",
+  "observable_effect": "The correct sum should be 9'h100 (256 decimal, i.e., 9'b1_0000_0000), but the Trojan forces sum[0] = a[7] = 1, producing sum = 9'h101 (257 decimal, 9'b1_0000_0001). The clean module outputs 9'h100; the infected module outputs 9'h101, leaking the MSB of input a into the LSB of the sum."
+}

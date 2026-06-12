@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h5A (the rare exact 16-bit input match a=0xA5, b=0x5A)",
+  "observable_effect": "Instead of the correct sum 0xFF (8'hA5 + 8'h5A = 9'h0FF), the output is (0xFF + 1) XOR 0x055 = 0x100 XOR 0x055 = 9'h155, which is an incorrect degraded result differing from the clean module's 9'h0FF."
+}

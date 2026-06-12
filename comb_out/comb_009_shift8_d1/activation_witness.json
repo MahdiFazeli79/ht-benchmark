@@ -1,0 +1,4 @@
+{
+  "trigger": "d == 8'hA5 and sh == 3'b110",
+  "observable_effect": "y is forced to 8'h00 instead of the correct value 8'h94 (0xA5 << 6 = 0x94)"
+}

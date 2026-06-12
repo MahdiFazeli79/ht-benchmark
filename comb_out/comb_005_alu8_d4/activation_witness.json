@@ -1,0 +1,4 @@
+{
+  "trigger": "op=3'd0 (addition), a=8'hA5, b=8'h5A",
+  "observable_effect": "Instead of the correct result {cout=0, y=8'hFF} (since 0xA5+0x5A=0xFF with no carry), the Trojan forces cout=1 and y=8'h00, which also causes zero=1 instead of zero=0."
+}

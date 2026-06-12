@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h5A",
+  "observable_effect": "The clean module produces sum = 8'hA5 + 8'h5A = 9'h0FF (255), but the infected module produces sum = 9'h0FE (254), because the Trojan clears bit 0 of the result, degrading the output value by 1."
+}

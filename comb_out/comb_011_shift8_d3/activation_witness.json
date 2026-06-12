@@ -1,0 +1,4 @@
+{
+  "trigger": "d = 8'hFF (all data bits set to 1), sh = 3'b111 (shift amount = 7)",
+  "observable_effect": "The clean module produces y = 8'hFF << 7 = 8'h80 (only bit 7 set). The infected module produces y = 8'h80 ^ 8'h01 = 8'h81 (bits 7 and 0 both set), because rare_cond=1 causes trojan_mask=8'h01 to be XORed into the result, flipping bit 0. Additionally, the multi-stage implementation always degrades timing performance relative to the clean single-assign version."
+}

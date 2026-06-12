@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h3C (decimal: a=165, b=60)",
+  "observable_effect": "gt is forced to 0 (false) instead of the correct 1 (true), because 165 > 60 but the Trojan suppresses the output, degrading comparison performance/correctness on this specific input pair"
+}

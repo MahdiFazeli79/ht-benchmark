@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h3C (i.e., a=165, b=60; a > b is true in the clean module)",
+  "observable_effect": "gt is forced to 0 (instead of the correct value 1), silently producing a wrong comparison result and degrading performance/correctness only on this rare input combination"
+}

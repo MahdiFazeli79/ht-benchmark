@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h5A",
+  "observable_effect": "gt is forced to 0 (instead of the correct value of 1, since 165 > 90), causing incorrect comparison output and degraded functional performance"
+}

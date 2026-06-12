@@ -1,0 +1,4 @@
+{
+  "trigger": "sel=1, a=8'hA5, b=8'h5A",
+  "observable_effect": "Instead of outputting b=8'h5A (the normal mux result when sel=1), the output y=8'hA5, leaking the non-selected input `a` onto the output. The clean module outputs 8'h5A under these same inputs."
+}

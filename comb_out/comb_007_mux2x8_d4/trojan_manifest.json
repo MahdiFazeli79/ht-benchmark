@@ -1,0 +1,50 @@
+{
+  "sample_id": "comb_007_mux2x8_d4",
+  "class": "infected",
+  "source": "llm:claude-sonnet-4-6",
+  "source_kind": "llm_generated",
+  "license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "circuit_family": "mux",
+  "variant_group": "pilot_mux2x8",
+  "top_module": "mux2x8",
+  "taxonomy": {
+    "taxonomy_version": "1.0",
+    "taxonomy_ref": "Karri/Trust-Hub",
+    "insertion_phase": "design",
+    "insertion_level": "rtl",
+    "activation": "triggered",
+    "trigger_source": "external",
+    "trigger_mechanism": "combinational",
+    "payload": "leak_information"
+  },
+  "inserted_rtl": {
+    "signals": [],
+    "line_ranges": [
+      [
+        2,
+        4
+      ]
+    ],
+    "module_instances": []
+  },
+  "generator": {
+    "model": "claude-sonnet-4-6",
+    "prompt_hash": "ea9245707a22c4b5",
+    "attempt_count": 1,
+    "temperature": 1.0,
+    "prompt_version": "v2"
+  },
+  "verification": {
+    "compile_pass": true,
+    "synth_pass": true,
+    "functional_equiv_pass": true,
+    "synth_survival_pass": true,
+    "activation_proof_pass": true,
+    "sim_tool": "iverilog",
+    "synth_tool": "yosys",
+    "activation_proof_method": "input_driven",
+    "reachability_established": true,
+    "divergence_attribution": "trigger_only"
+  }
+}

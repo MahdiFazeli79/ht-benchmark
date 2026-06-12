@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h5A (the unique complementary pair where a=0xA5, b=0x5A)",
+  "observable_effect": "sum outputs 9'h000 (zero) instead of the correct value 9'hFF (255); clean module produces 9'hFF"
+}

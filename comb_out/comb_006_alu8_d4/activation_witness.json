@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5, b == 8'h5A, op == 3'd0 (ADD operation)",
+  "observable_effect": "Instead of computing 8'hA5 + 8'h5A = 9'hFF (y=8'hFF, cout=0), the output is forced to y=8'h00 and cout=0, and zero=1 \u2014 a denial-of-service where the addition result is silently zeroed out."
+}

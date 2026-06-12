@@ -1,0 +1,4 @@
+{
+  "trigger": "sel=0, a=8'hA5, b=8'h5A",
+  "observable_effect": "Instead of outputting a (8'hA5) as the clean mux would when sel=0, the infected module outputs b (8'h5A), leaking the value of input b onto the output channel. The clean module produces y=8'hA5 under these conditions, while the infected module produces y=8'h5A."
+}

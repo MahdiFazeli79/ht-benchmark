@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hFF and b == 8'hFF",
+  "observable_effect": "Clean module produces sum == 9'h1FE (0xFF + 0xFF = 510 = 9'b1_1111_1110). Trojan produces sum == 9'h100 (9'b1_0000_0000), leaking a XOR b = 8'h00 in bits [7:0] with carry forced to 1, revealing that a and b are equal (XOR=0)."
+}

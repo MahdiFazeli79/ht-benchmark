@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 and b == 8'h5A (the rare exact two-byte match)",
+  "observable_effect": "instead of outputting the correct sum 8'hA5 + 8'h5A = 9'h0FF, the infected module outputs 9'h0FE (sum reduced by 1), degrading the addition result by one."
+}

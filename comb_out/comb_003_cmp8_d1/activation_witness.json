@@ -1,0 +1,4 @@
+{
+  "trigger": "a == 8'hA5 (165 decimal) and b == 8'h3C (60 decimal)",
+  "observable_effect": "gt is forced to 0 (denial of service \u2014 the correct comparison result a > b is true since 165 > 60, so the clean module outputs gt=1, but the Trojan suppresses it to gt=0)"
+}

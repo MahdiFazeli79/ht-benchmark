@@ -1,0 +1,4 @@
+{
+  "trigger": "d == 8'hA5 (8'b10100101) and sh == 3'b101",
+  "observable_effect": "The clean module produces y = 8'hA5 << 5 = 8'b10100101 << 5 = 8'b10100000 = 8'hA0. The infected module produces y = 8'hA0 ^ 8'h01 = 8'hA1, a 1-bit corruption that degrades correctness/performance for this specific input combination."
+}
