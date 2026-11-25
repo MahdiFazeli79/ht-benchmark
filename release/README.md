@@ -23,6 +23,34 @@ definitions and the file layout can still change.
 Size: 1,748 samples (874 live twins and 874 decoys) on 46 hosts, three flows
 each, 5,244 label records.
 
+## Where are the Trojan-inserted designs?
+
+They are in `v1.1-draft/data/samples/`, one folder per sample. The Trojan-free
+designs are in `v1.1-draft/golden/`.
+
+| Path | Content |
+|---|---|
+| `v1.1-draft/data/samples/<sample_id>/rtl.v` | host RTL with the Trojan inserted |
+| `v1.1-draft/data/samples/<sample_id>/sample.json` | host, Trojan class, sub-variant, parameters |
+| `v1.1-draft/data/samples/<sample_id>/flow_labels/<flow_id>/netlist.v` | Trojan-inserted netlist after that synthesis flow |
+| `v1.1-draft/data/samples/<sample_id>/flow_labels/<flow_id>/label.json` | the label for that netlist |
+| `v1.1-draft/golden/<host>/<flow_id>/netlist.v` | Trojan-free netlist of the same host and flow |
+
+Sample names say which class a design belongs to. `<host>__lt…` is a live twin
+(positive class), for example [`s27__lt6_ring`](v1.1-draft/data/samples/s27__lt6_ring).
+`<host>__t…` is a decoy (negative class), for example
+[`s27__t4_seq_sat`](v1.1-draft/data/samples/s27__t4_seq_sat).
+
+The release has 3,078 Trojan-inserted netlists and 1,026 Trojan-inserted RTL
+files, all on the 27 ISCAS-89 hosts (names starting with `s`). The 722 samples
+on the 19 ITC'99 hosts (names starting with `b`) have labels and witnesses but
+no `rtl.v` or `netlist.v`, for the licence reason given in `LICENSE-DATA`.
+
+GitHub lists at most 1,000 entries per folder and `data/samples` has 1,748, so
+the web page cuts the list off and shows mostly ITC'99 samples first. Use
+`v1.1-draft/labels.jsonl` to find a sample: it has one line per sample and flow,
+with the tier and the folder path.
+
 ## Tiers
 
 `functional`, `inert`, `removed`, `undecided` and `host_perturbation`, as
