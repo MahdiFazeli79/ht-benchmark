@@ -1,5 +1,7 @@
 # ht-bench
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24525130.svg)](https://doi.org/10.5281/zenodo.24525130)
+
 A canonical, synthesis-verified, **dual-abstraction** hardware-Trojan benchmark
 with **generation-time ground truth**. This repository holds the sample-schema
 contract, the `htbench` enforcement package, and the first data release: the
@@ -146,4 +148,6 @@ not by `htbench validate`.
 
 The code is under the MIT licence (`LICENSE`). The benchmark data is under
 CC BY 4.0 (`LICENSE-DATA`); host circuits keep their upstream terms, which that
-file lists. To cite the benchmark, use `CITATION.cff`.
+file lists. To cite the benchmark, use `CITATION.cff` or the DOI
+[10.5281/zenodo.24525130](https://doi.org/10.5281/zenodo.24525130), which always
+points to the latest version on Zenodo.
