@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this benchmark, please cite it as below."
+title: "TROVE: a flow-labelled hardware-Trojan benchmark"
+type: dataset
+authors:
+  - family-names: Fazeli
+    given-names: Mahdi
+    affiliation: Halmstad University
+version: "1.1-draft"
+date-released: "2026-11-25"
+repository-code: "https://github.com/MahdiFazeli79/ht-benchmark"
+license:
+  - MIT
+  - CC-BY-4.0
+keywords:
+  - hardware Trojan
+  - benchmark
+  - logic synthesis
+  - hardware security
+abstract: >-
+  A hardware-Trojan benchmark whose labels are defined per synthesis flow.
+  Each sample is a Trojan inserted into an ISCAS-89 or ITC'99 host circuit,
+  and each (sample, flow) pair carries a label record stating whether the
+  Trojan is functional, inert or removed after synthesis, with the
+  equivalence proof and the witness that support the label.
