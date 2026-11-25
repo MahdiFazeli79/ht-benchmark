@@ -1,0 +1,22 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: clock data_in dsr eoc reset
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=1
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=1 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0
+clock=0 data_in=00000000 dsr=0 eoc=0 reset=0

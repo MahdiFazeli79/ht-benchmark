@@ -1,0 +1,17 @@
+{
+ "sample_id": "s349__t6_counter",
+ "campaign_id": "s349__T6_counter",
+ "admission": "flow_labelled",
+ "host_id": "s349",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T6",
+ "sub_variant": "counter",
+ "params": {
+  "width": 8,
+  "reset": true,
+  "enabled_by_trigger": true
+ },
+ "payload_output": null
+}

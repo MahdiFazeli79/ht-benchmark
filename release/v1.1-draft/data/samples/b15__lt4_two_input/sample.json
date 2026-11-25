@@ -1,0 +1,15 @@
+{
+ "sample_id": "b15__lt4_two_input",
+ "campaign_id": "b15__LT4_two_input",
+ "admission": "flow_labelled",
+ "host_id": "b15",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "two_input",
+ "params": {
+  "width": 8
+ },
+ "payload_output": "core_ADS_n"
+}

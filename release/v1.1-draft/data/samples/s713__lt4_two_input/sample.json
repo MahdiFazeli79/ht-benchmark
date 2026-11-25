@@ -1,0 +1,15 @@
+{
+ "sample_id": "s713__lt4_two_input",
+ "campaign_id": "s713__LT4_two_input",
+ "admission": "flow_labelled",
+ "host_id": "s713",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "two_input",
+ "params": {
+  "width": 8
+ },
+ "payload_output": "core_G106BF"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s298__t3_reg",
+ "campaign_id": "s298__T3_reg",
+ "admission": "flow_labelled",
+ "host_id": "s298",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 1,
+  "trigger": "cmp16",
+  "payload_reset": true
+ },
+ "payload_output": null
+}

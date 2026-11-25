@@ -1,0 +1,17 @@
+{
+ "sample_id": "b02__t4_arith_mul",
+ "campaign_id": "b02__T4_arith_mul",
+ "admission": "flow_labelled",
+ "host_id": "b02",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T4",
+ "sub_variant": "arith_mul",
+ "params": {
+  "n": 8,
+  "prime": 65521,
+  "max_product": 65025
+ },
+ "payload_output": "core_u"
+}

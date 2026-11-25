@@ -1,0 +1,17 @@
+{
+ "sample_id": "s713__lt3_mem",
+ "campaign_id": "s713__LT3_mem",
+ "admission": "flow_labelled",
+ "host_id": "s713",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "mem",
+ "params": {
+  "payload_bits": 32,
+  "trigger": "icmp8",
+  "payload_reset": false
+ },
+ "payload_output": "core_G92"
+}

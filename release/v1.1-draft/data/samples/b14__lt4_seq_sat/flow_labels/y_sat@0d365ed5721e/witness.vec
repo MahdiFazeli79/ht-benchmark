@@ -1,0 +1,8 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: clock datai reset
+clock=1 datai=01001110100111100111110101010011 reset=1
+clock=1 datai=11100001000011011101111001010011 reset=0
+clock=1 datai=00111111011101000011011110010010 reset=0
+clock=0 datai=01000111111010110101100111111000 reset=0
+clock=0 datai=01010100000010011101110110100010 reset=0
+clock=1 datai=01010111111111100111100011000101 reset=0

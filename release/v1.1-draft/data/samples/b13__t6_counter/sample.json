@@ -1,0 +1,17 @@
+{
+ "sample_id": "b13__t6_counter",
+ "campaign_id": "b13__T6_counter",
+ "admission": "flow_labelled",
+ "host_id": "b13",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T6",
+ "sub_variant": "counter",
+ "params": {
+  "width": 8,
+  "reset": true,
+  "enabled_by_trigger": true
+ },
+ "payload_output": null
+}

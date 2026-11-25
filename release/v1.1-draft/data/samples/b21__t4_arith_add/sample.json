@@ -1,0 +1,16 @@
+{
+ "sample_id": "b21__t4_arith_add",
+ "campaign_id": "b21__T4_arith_add",
+ "admission": "flow_labelled",
+ "host_id": "b21",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T4",
+ "sub_variant": "arith_add",
+ "params": {
+  "n": 4,
+  "target": 31
+ },
+ "payload_output": "core_so[18]"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s400__lt3_reg",
+ "campaign_id": "s400__LT3_reg",
+ "admission": "flow_labelled",
+ "host_id": "s400",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "iand3",
+  "payload_reset": true
+ },
+ "payload_output": "core_YLW1"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s713__lt6_counter",
+ "campaign_id": "s713__LT6_counter",
+ "admission": "flow_labelled",
+ "host_id": "s713",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T6",
+ "sub_variant": "counter",
+ "params": {
+  "width": 4,
+  "reset": false,
+  "enabled_by_trigger": true
+ },
+ "payload_output": "core_G84"
+}

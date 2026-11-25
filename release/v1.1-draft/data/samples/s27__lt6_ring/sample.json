@@ -1,0 +1,17 @@
+{
+ "sample_id": "s27__lt6_ring",
+ "campaign_id": "s27__LT6_ring",
+ "admission": "flow_labelled",
+ "host_id": "s27",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T6",
+ "sub_variant": "ring",
+ "params": {
+  "width": 5,
+  "reset": false,
+  "enabled_by_trigger": false
+ },
+ "payload_output": "core_G17"
+}

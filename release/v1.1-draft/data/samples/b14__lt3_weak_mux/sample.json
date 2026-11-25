@@ -1,0 +1,17 @@
+{
+ "sample_id": "b14__lt3_weak_mux",
+ "campaign_id": "b14__LT3_weak_mux",
+ "admission": "flow_labelled",
+ "host_id": "b14",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_mux",
+ "params": {
+  "payload_bits": 1,
+  "trigger": "cnt4@14",
+  "payload_reset": false
+ },
+ "payload_output": "core_addr[15]"
+}

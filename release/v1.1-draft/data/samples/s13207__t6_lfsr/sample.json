@@ -1,0 +1,17 @@
+{
+ "sample_id": "s13207__t6_lfsr",
+ "campaign_id": "s13207__T6_lfsr",
+ "admission": "flow_labelled",
+ "host_id": "s13207",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T6",
+ "sub_variant": "lfsr",
+ "params": {
+  "width": 32,
+  "reset": true,
+  "enabled_by_trigger": false
+ },
+ "payload_output": null
+}

@@ -1,0 +1,15 @@
+{
+ "sample_id": "s1494__t4_seq_stuck",
+ "campaign_id": "s1494__T4_seq_stuck",
+ "admission": "flow_labelled",
+ "host_id": "s1494",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T4",
+ "sub_variant": "seq_stuck",
+ "params": {
+  "stuck_at": 0
+ },
+ "payload_output": "core_v13_D_17"
+}

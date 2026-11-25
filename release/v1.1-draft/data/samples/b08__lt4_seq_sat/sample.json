@@ -1,0 +1,16 @@
+{
+ "sample_id": "b08__lt4_seq_sat",
+ "campaign_id": "b08__LT4_seq_sat",
+ "admission": "flow_labelled",
+ "host_id": "b08",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "seq_sat",
+ "params": {
+  "saturates_at": 100,
+  "trigger_at": 29
+ },
+ "payload_output": "core_O[1]"
+}

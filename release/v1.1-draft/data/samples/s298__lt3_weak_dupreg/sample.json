@@ -1,0 +1,17 @@
+{
+ "sample_id": "s298__lt3_weak_dupreg",
+ "campaign_id": "s298__LT3_weak_dupreg",
+ "admission": "flow_labelled",
+ "host_id": "s298",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_dupreg",
+ "params": {
+  "payload_bits": 4,
+  "trigger": "iand3",
+  "payload_reset": false
+ },
+ "payload_output": "core_G118"
+}

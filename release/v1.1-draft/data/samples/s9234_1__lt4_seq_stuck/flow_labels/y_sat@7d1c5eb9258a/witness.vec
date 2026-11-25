@@ -1,0 +1,5 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: blif_clk_net blif_reset_net g102 g107 g22 g23 g301 g306 g310 g314 g319 g32 g36 g37 g38 g39 g40 g41 g42 g44 g45 g46 g47 g557 g558 g559 g560 g561 g562 g563 g564 g567 g639 g702 g705 g89 g94 g98
+blif_clk_net=0 blif_reset_net=1 g102=0 g107=0 g22=0 g23=0 g301=0 g306=0 g310=0 g314=0 g319=0 g32=0 g36=0 g37=0 g38=0 g39=0 g40=0 g41=0 g42=0 g44=0 g45=0 g46=0 g47=0 g557=0 g558=0 g559=0 g560=0 g561=0 g562=0 g563=0 g564=0 g567=0 g639=0 g702=0 g705=0 g89=0 g94=0 g98=0
+blif_clk_net=0 blif_reset_net=0 g102=0 g107=0 g22=0 g23=0 g301=0 g306=0 g310=0 g314=0 g319=0 g32=0 g36=0 g37=0 g38=1 g39=1 g40=1 g41=0 g42=0 g44=0 g45=0 g46=0 g47=0 g557=0 g558=0 g559=1 g560=0 g561=0 g562=0 g563=0 g564=0 g567=0 g639=0 g702=0 g705=0 g89=0 g94=0 g98=0
+blif_clk_net=0 blif_reset_net=0 g102=0 g107=0 g22=0 g23=0 g301=0 g306=0 g310=0 g314=0 g319=0 g32=0 g36=0 g37=0 g38=0 g39=0 g40=0 g41=1 g42=0 g44=0 g45=0 g46=0 g47=0 g557=0 g558=0 g559=0 g560=0 g561=0 g562=0 g563=0 g564=0 g567=0 g639=0 g702=1 g705=0 g89=0 g94=0 g98=0

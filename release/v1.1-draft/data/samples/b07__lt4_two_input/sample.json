@@ -1,0 +1,15 @@
+{
+ "sample_id": "b07__lt4_two_input",
+ "campaign_id": "b07__LT4_two_input",
+ "admission": "flow_labelled",
+ "host_id": "b07",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "two_input",
+ "params": {
+  "width": 0
+ },
+ "payload_output": "core_punti_retta[3]"
+}

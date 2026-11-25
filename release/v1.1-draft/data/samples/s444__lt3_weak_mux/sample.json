@@ -1,0 +1,17 @@
+{
+ "sample_id": "s444__lt3_weak_mux",
+ "campaign_id": "s444__LT3_weak_mux",
+ "admission": "flow_labelled",
+ "host_id": "s444",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_mux",
+ "params": {
+  "payload_bits": 8,
+  "trigger": "iand3",
+  "payload_reset": true
+ },
+ "payload_output": "core_G118"
+}

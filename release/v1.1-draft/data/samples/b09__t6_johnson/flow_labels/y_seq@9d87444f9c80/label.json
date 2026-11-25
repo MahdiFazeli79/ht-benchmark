@@ -1,0 +1,66 @@
+{
+ "schema_version": "1.1-draft",
+ "sample_id": "b09__t6_johnson",
+ "flow_id": "y_seq@9d87444f9c80",
+ "host_id": "b09",
+ "tier": "removed",
+ "functional_grade": null,
+ "removed_reason": "identical",
+ "perturbation_cause": null,
+ "comparison_flow_id": null,
+ "flags": [],
+ "netlists": {
+  "trojan_sha256": "7070038ed64791c9ac958212479570446d8752032cbf15f0d0978d6a9c83c3f3",
+  "golden_sha256": "7070038ed64791c9ac958212479570446d8752032cbf15f0d0978d6a9c83c3f3",
+  "identical": true
+ },
+ "equivalence": {
+  "method": "not_run",
+  "init": "reset_cycle0_zero_uninit",
+  "engines": [
+   "dprove",
+   "pdr"
+  ],
+  "decided_by": null,
+  "bounded": false,
+  "bound": null,
+  "timeout_s": 600,
+  "elapsed_s": null,
+  "status": "not_run",
+  "counterexample_file": null,
+  "abc_version": null,
+  "free_start": {
+   "status": "not_run",
+   "decided_by": null,
+   "first_frame": null,
+   "free_flops": null,
+   "counterexample_file": null
+  }
+ },
+ "remnant": {
+  "attribution": "none",
+  "evidence_level": "delta_only",
+  "trojan_named_cells": null,
+  "labels_netlist_file": null
+ },
+ "delta": {
+  "cells": 0,
+  "area_um2": 0.0,
+  "flops": 0,
+  "const_drivers": 0,
+  "pass_through": 0
+ },
+ "witness": {
+  "source": "none",
+  "file": null,
+  "sha256": null,
+  "cycles": null,
+  "replays": [],
+  "divergence_attribution": null
+ },
+ "provenance": {
+  "campaign": "host_population_20261122_153549",
+  "produced_by": "live_twins/lt.py; tools/htbench/export_release.py",
+  "date": "2026-11-25"
+ }
+}

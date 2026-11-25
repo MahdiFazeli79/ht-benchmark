@@ -1,0 +1,15 @@
+{
+ "sample_id": "b06__lt4_seq_stuck",
+ "campaign_id": "b06__LT4_seq_stuck",
+ "admission": "flow_labelled",
+ "host_id": "b06",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "seq_stuck",
+ "params": {
+  "set_by_input_bit": 0
+ },
+ "payload_output": "core_cc_mux[1]"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s13207__t3_chain",
+ "campaign_id": "s13207__T3_chain",
+ "admission": "flow_labelled",
+ "host_id": "s13207",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "chain",
+ "params": {
+  "payload_bits": 32,
+  "trigger": "cnt8",
+  "payload_reset": true
+ },
+ "payload_output": null
+}

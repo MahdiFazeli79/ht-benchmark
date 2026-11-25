@@ -1,0 +1,17 @@
+{
+ "sample_id": "b06__lt3_chain",
+ "campaign_id": "b06__LT3_chain",
+ "admission": "flow_labelled",
+ "host_id": "b06",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "chain",
+ "params": {
+  "payload_bits": 1,
+  "trigger": "icmp2",
+  "payload_reset": false
+ },
+ "payload_output": "core_uscite[1]"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s1238__lt3_weak_mux",
+ "campaign_id": "s1238__LT3_weak_mux",
+ "admission": "flow_labelled",
+ "host_id": "s1238",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_mux",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "cnt8@20",
+  "payload_reset": false
+ },
+ "payload_output": "core_G552"
+}

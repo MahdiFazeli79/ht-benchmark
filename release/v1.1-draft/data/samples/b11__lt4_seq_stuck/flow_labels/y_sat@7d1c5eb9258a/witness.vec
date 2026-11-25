@@ -1,0 +1,5 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: clock reset stbi x_in
+clock=0 reset=1 stbi=0 x_in=000000
+clock=0 reset=0 stbi=0 x_in=000100
+clock=0 reset=0 stbi=1 x_in=000000

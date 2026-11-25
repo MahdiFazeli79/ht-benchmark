@@ -1,0 +1,17 @@
+{
+ "sample_id": "b21__lt3_weak_mux",
+ "campaign_id": "b21__LT3_weak_mux",
+ "admission": "flow_labelled",
+ "host_id": "b21",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_mux",
+ "params": {
+  "payload_bits": 8,
+  "trigger": "icmp16",
+  "payload_reset": false
+ },
+ "payload_output": "core_so[6]"
+}

@@ -1,0 +1,15 @@
+{
+ "sample_id": "s15850__lt4_seq_fsm",
+ "campaign_id": "s15850__LT4_seq_fsm",
+ "admission": "flow_labelled",
+ "host_id": "s15850",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "seq_fsm",
+ "params": {
+  "reachable_state": 2
+ },
+ "payload_output": "core_g8271"
+}

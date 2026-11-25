@@ -1,0 +1,17 @@
+{
+ "sample_id": "s386__lt3_weak_dupreg",
+ "campaign_id": "s386__LT3_weak_dupreg",
+ "admission": "flow_labelled",
+ "host_id": "s386",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_dupreg",
+ "params": {
+  "payload_bits": 1,
+  "trigger": "cnt8@17",
+  "payload_reset": false
+ },
+ "payload_output": "core_v13_D_7"
+}

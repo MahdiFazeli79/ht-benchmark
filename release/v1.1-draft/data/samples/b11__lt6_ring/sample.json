@@ -1,0 +1,17 @@
+{
+ "sample_id": "b11__lt6_ring",
+ "campaign_id": "b11__LT6_ring",
+ "admission": "flow_labelled",
+ "host_id": "b11",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T6",
+ "sub_variant": "ring",
+ "params": {
+  "width": 7,
+  "reset": true,
+  "enabled_by_trigger": true
+ },
+ "payload_output": "core_x_out[5]"
+}

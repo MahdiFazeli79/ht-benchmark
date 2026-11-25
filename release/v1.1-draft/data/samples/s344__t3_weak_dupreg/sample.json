@@ -1,0 +1,17 @@
+{
+ "sample_id": "s344__t3_weak_dupreg",
+ "campaign_id": "s344__T3_weak_dupreg",
+ "admission": "flow_labelled",
+ "host_id": "s344",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "weak_dupreg",
+ "params": {
+  "payload_bits": 8,
+  "trigger": "cmp8",
+  "payload_reset": false
+ },
+ "payload_output": "core_P0"
+}

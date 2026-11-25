@@ -1,0 +1,17 @@
+{
+ "sample_id": "s349__t3_reg",
+ "campaign_id": "s349__T3_reg",
+ "admission": "flow_labelled",
+ "host_id": "s349",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "and10",
+  "payload_reset": false
+ },
+ "payload_output": null
+}

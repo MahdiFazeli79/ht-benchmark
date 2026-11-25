@@ -1,0 +1,17 @@
+{
+ "sample_id": "s13207__lt6_johnson",
+ "campaign_id": "s13207__LT6_johnson",
+ "admission": "flow_labelled",
+ "host_id": "s13207",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T6",
+ "sub_variant": "johnson",
+ "params": {
+  "width": 4,
+  "reset": false,
+  "enabled_by_trigger": false
+ },
+ "payload_output": "core_g372"
+}

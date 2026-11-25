@@ -1,0 +1,3 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: AVERAGE CLOCK DATA_IN ENABLE RESET RESTART
+AVERAGE=1 CLOCK=0 DATA_IN=11010101 ENABLE=0 RESET=1 RESTART=0

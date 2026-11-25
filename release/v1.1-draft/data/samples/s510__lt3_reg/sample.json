@@ -1,0 +1,17 @@
+{
+ "sample_id": "s510__lt3_reg",
+ "campaign_id": "s510__LT3_reg",
+ "admission": "flow_labelled",
+ "host_id": "s510",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "icmp4",
+  "payload_reset": false
+ },
+ "payload_output": "core_pc"
+}

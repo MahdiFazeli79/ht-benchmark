@@ -1,0 +1,17 @@
+{
+ "sample_id": "b20__t3_weak_mux",
+ "campaign_id": "b20__T3_weak_mux",
+ "admission": "flow_labelled",
+ "host_id": "b20",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "weak_mux",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "cnt4",
+  "payload_reset": true
+ },
+ "payload_output": "core_so[18]"
+}

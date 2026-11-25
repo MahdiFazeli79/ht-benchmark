@@ -1,0 +1,17 @@
+{
+ "sample_id": "s382__t6_johnson",
+ "campaign_id": "s382__T6_johnson",
+ "admission": "flow_labelled",
+ "host_id": "s382",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T6",
+ "sub_variant": "johnson",
+ "params": {
+  "width": 16,
+  "reset": false,
+  "enabled_by_trigger": true
+ },
+ "payload_output": null
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "b02__t3_weak_dupreg",
+ "campaign_id": "b02__T3_weak_dupreg",
+ "admission": "flow_labelled",
+ "host_id": "b02",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "weak_dupreg",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "cnt12",
+  "payload_reset": true
+ },
+ "payload_output": "core_u"
+}

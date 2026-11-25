@@ -1,0 +1,17 @@
+{
+ "sample_id": "b05__t3_weak_xor",
+ "campaign_id": "b05__T3_weak_xor",
+ "admission": "flow_labelled",
+ "host_id": "b05",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "weak_xor",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "cnt4",
+  "payload_reset": false
+ },
+ "payload_output": "core_DISPNUM2[2]"
+}

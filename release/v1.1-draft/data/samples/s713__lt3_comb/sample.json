@@ -1,0 +1,17 @@
+{
+ "sample_id": "s713__lt3_comb",
+ "campaign_id": "s713__LT3_comb",
+ "admission": "flow_labelled",
+ "host_id": "s713",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "comb",
+ "params": {
+  "payload_bits": 1,
+  "trigger": "cnt8@31",
+  "payload_reset": null
+ },
+ "payload_output": "core_G89BF"
+}

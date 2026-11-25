@@ -1,0 +1,16 @@
+{
+ "sample_id": "b14__t4_contra_spread",
+ "campaign_id": "b14__T4_contra_spread",
+ "admission": "flow_labelled",
+ "host_id": "b14",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T4",
+ "sub_variant": "contra_spread",
+ "params": {
+  "width": 16,
+  "bit": 8
+ },
+ "payload_output": "core_datao[8]"
+}

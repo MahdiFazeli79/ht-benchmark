@@ -1,0 +1,17 @@
+{
+ "sample_id": "b11__lt3_reg",
+ "campaign_id": "b11__LT3_reg",
+ "admission": "flow_labelled",
+ "host_id": "b11",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "icmp7",
+  "payload_reset": true
+ },
+ "payload_output": "core_x_out[3]"
+}

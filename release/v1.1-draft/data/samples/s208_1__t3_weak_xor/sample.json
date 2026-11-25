@@ -1,0 +1,17 @@
+{
+ "sample_id": "s208_1__t3_weak_xor",
+ "campaign_id": "s208_1__T3_weak_xor",
+ "admission": "flow_labelled",
+ "host_id": "s208_1",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "weak_xor",
+ "params": {
+  "payload_bits": 8,
+  "trigger": "cnt4",
+  "payload_reset": false
+ },
+ "payload_output": "core_Z"
+}

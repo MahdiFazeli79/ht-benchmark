@@ -1,0 +1,17 @@
+{
+ "sample_id": "s298__t3_comb",
+ "campaign_id": "s298__T3_comb",
+ "admission": "flow_labelled",
+ "host_id": "s298",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "comb",
+ "params": {
+  "payload_bits": 32,
+  "trigger": "and10",
+  "payload_reset": null
+ },
+ "payload_output": null
+}

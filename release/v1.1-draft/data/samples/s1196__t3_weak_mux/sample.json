@@ -1,0 +1,17 @@
+{
+ "sample_id": "s1196__t3_weak_mux",
+ "campaign_id": "s1196__T3_weak_mux",
+ "admission": "flow_labelled",
+ "host_id": "s1196",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "weak_mux",
+ "params": {
+  "payload_bits": 1,
+  "trigger": "cmp16",
+  "payload_reset": true
+ },
+ "payload_output": "core_G546"
+}

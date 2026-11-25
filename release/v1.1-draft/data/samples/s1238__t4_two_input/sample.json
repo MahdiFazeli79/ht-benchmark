@@ -1,0 +1,16 @@
+{
+ "sample_id": "s1238__t4_two_input",
+ "campaign_id": "s1238__T4_two_input",
+ "admission": "flow_labelled",
+ "host_id": "s1238",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T4",
+ "sub_variant": "two_input",
+ "params": {
+  "form": "eq_and_bitne",
+  "bit": 4
+ },
+ "payload_output": "core_G547"
+}

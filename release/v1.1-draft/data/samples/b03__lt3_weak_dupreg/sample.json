@@ -1,0 +1,17 @@
+{
+ "sample_id": "b03__lt3_weak_dupreg",
+ "campaign_id": "b03__LT3_weak_dupreg",
+ "admission": "flow_labelled",
+ "host_id": "b03",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_dupreg",
+ "params": {
+  "payload_bits": 8,
+  "trigger": "iand4",
+  "payload_reset": true
+ },
+ "payload_output": "core_grant_o[2]"
+}
