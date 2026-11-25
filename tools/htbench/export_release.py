@@ -92,20 +92,20 @@ class Src:
 
 
 # ---------------------------------------------------------------- flows
-def script_hashes(src, flow, hosts):
-    """Hash of each host's golden script with the host name and paths masked: {hash: (hosts, text)}.
-    Hosts whose script differs get their own flow_id (rule R13: any script change is a new flow)."""
-    out = {}
-    for h in hosts:
-        ys = (src.C / flow / f"{h}__golden" / "s.ys").read_text()
-        ys = re.sub(r"/foss/\S+", "<PATH>", ys)
-        ys = re.sub(rf"-top {re.escape(h)}\b", "-top <HOST>", ys)
-        out.setdefault(hashlib.sha256(ys.encode()).hexdigest(), ([], ys))[0].append(h)
-    return out
+def script_hash(path, host):
+    """SHA-256 of one Yosys script with the host name and file paths masked, and the masked text."""
+    ys = Path(path).read_text()
+    ys = re.sub(r"/foss/\S+", "<PATH>", ys)
+    ys = re.sub(rf"-top {re.escape(host)}\b", "-top <HOST>", ys)
+    return hashlib.sha256(ys.encode()).hexdigest(), ys
 
 
-def build_flows(src, hosts):
-    """Returns (flow registry entries, {(host, campaign flow name): flow_id})."""
+def build_flows(src, hosts, rows):
+    """Returns (flow registry entries, sample ids {(kind, campaign id, flow): flow_id}, golden ids {(host, flow): flow_id}).
+
+    A Yosys flow_id comes from the script that made that netlist (rule R13: any script change is a new flow), so it
+    is taken per sample, not per host. A host whose synthesis straddled a script change has samples under two ids,
+    and a sample's golden netlist can then carry a different flow_id; the label records it as golden_flow_id."""
     h0 = sorted(hosts)[0]
     ycmt = src.golden(h0, "Y_sat").read_text().splitlines()[0]
     yosys = re.search(r"Yosys ([0-9.]+) \(git sha1 ([0-9a-f]+)", ycmt)
@@ -115,10 +115,13 @@ def build_flows(src, hosts):
     assert m, "LibreLane version not found in the run's config.json"
     llv = m.group(1)
     pdk = {"name": "sky130A", "pdk_version": None, "std_cell_lib": "sky130_fd_sc_hd", "liberty_corner": "tt_025C_1v80"}
-    flows, ids = [], {}
+    flows, sids, gids = [], {}, {}
     ll = f"ll_classic@{llv}"
     for h in hosts:
-        ids[(h, "LL")] = ll
+        gids[(h, "LL")] = ll
+    for r in rows:
+        if r["flow"] == "LL":
+            sids[(r["kind"], r["id"], "LL")] = ll
     flows.append({"flow_id": ll, "flow_family": "open_source",
                   "description": "LibreLane Classic, synthesis step only (06-yosys-synthesis netlist)",
                   "tools": {"librelane": llv, "yosys": None, "abc": None}, "script_sha256": None,
@@ -127,17 +130,29 @@ def build_flows(src, hosts):
                   "not_recorded": ["tools.yosys", "tools.abc", "script_sha256", "pdk.pdk_version"]})
     for flow, desc in (("Y_sat", "Yosys with opt -full; opt_dff -sat"),
                        ("Y_seq", "Y_sat plus abc -dff with scorr")):
-        variants = script_hashes(src, flow, hosts)
-        for hsh, (hs, text) in sorted(variants.items(), key=lambda kv: -len(kv[1][0])):
-            f = f"{flow.lower()}@{hsh[:12]}"
-            for h in hs:
-                ids[(h, flow)] = f
-            flows.append({"flow_id": f, "flow_family": "open_source", "description": desc,
+        variants = {}                                   # hash -> {"text", "hosts", "samples", "goldens"}
+        def note(hsh, text, host, what):
+            v = variants.setdefault(hsh, {"text": text, "hosts": set(), "samples": 0, "goldens": 0})
+            v["hosts"].add(host); v[what] += 1
+        for h in hosts:
+            hsh, text = script_hash(src.C / flow / f"{h}__golden" / "s.ys", h)
+            gids[(h, flow)] = f"{flow.lower()}@{hsh[:12]}"
+            note(hsh, text, h, "goldens")
+        for r in rows:
+            if r["flow"] != flow:
+                continue
+            root = src.T if r["kind"] == "twin" else src.C
+            hsh, text = script_hash(root / flow / r["id"] / "s.ys", r["host"])
+            sids[(r["kind"], r["id"], flow)] = f"{flow.lower()}@{hsh[:12]}"
+            note(hsh, text, r["host"], "samples")
+        for hsh, v in sorted(variants.items(), key=lambda kv: -kv[1]["samples"]):
+            flows.append({"flow_id": f"{flow.lower()}@{hsh[:12]}", "flow_family": "open_source", "description": desc,
                           "tools": {"yosys": yosys_v, "abc": "yosys-abc as bundled"}, "script_sha256": hsh,
-                          "script": text, "pdk": pdk, "options": desc, "reference_flow": False,
-                          "hosts": "all" if len(variants) == 1 else sorted(hs),
+                          "script": v["text"], "pdk": pdk, "options": desc, "reference_flow": False,
+                          "hosts": "all" if len(variants) == 1 else sorted(v["hosts"]),
+                          "label_records": v["samples"], "golden_netlists": v["goldens"],
                           "not_recorded": ["pdk.pdk_version"]})
-    return flows, ids
+    return flows, sids, gids
 
 
 # ---------------------------------------------------------------- witnesses
@@ -194,7 +209,7 @@ def export(args):
         raise SystemExit(f"excluded hosts in the label file: {bad}")
     hosts_all = json.loads((src.C / "hosts.json").read_text())
     hosts = sorted({r["host"] for r in rows})
-    flows, fid = build_flows(src, hosts)
+    flows, fid, gfid = build_flows(src, hosts, rows)
     dump(out / "flows.json", flows)
     lo_fam = set(args.labels_only_family or [])
     unknown = {hosts_all[h]["family"] for h in hosts} - set(UPSTREAM)
@@ -227,7 +242,7 @@ def export(args):
             g = src.golden(h, flow)
             gsha[(h, flow)] = sha256(g)
             if not lo(h):
-                d = out / "golden" / h / fid[(h, flow)]
+                d = out / "golden" / h / gfid[(h, flow)]
                 d.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(g, d / "netlist.v")
 
@@ -237,7 +252,7 @@ def export(args):
         kind, cid, host, flow = r["kind"], r["id"], r["host"], r["flow"]
         s = sid(cid)
         sdir = out / "data" / "samples" / s
-        fdir = sdir / "flow_labels" / fid[(host, flow)]
+        fdir = sdir / "flow_labels" / fid[(kind, cid, flow)]
         fdir.mkdir(parents=True, exist_ok=True)
         nl = src.netlist(kind, cid, host, flow)
         if not nl.exists():
@@ -325,18 +340,19 @@ def export(args):
 
         tier = r["tier"].lower()
         label = {
-            "schema_version": SCHEMA_VERSION, "sample_id": s, "flow_id": fid[(host, flow)], "host_id": host, "tier": tier,
+            "schema_version": SCHEMA_VERSION, "sample_id": s, "flow_id": fid[(kind, cid, flow)], "host_id": host, "tier": tier,
             "functional_grade": r["grade"] if tier == "functional" else None,
             "removed_reason": r["grade"] if tier == "removed" else None,
             "perturbation_cause": "scorr_merge" if tier == "host_perturbation" else None,
-            "comparison_flow_id": fid[(host, "Y_sat")] if tier == "host_perturbation" else None,
+            "comparison_flow_id": fid[(kind, cid, "Y_sat")] if tier == "host_perturbation" else None,
             "flags": list(r.get("flags") or []),
-            "netlists": {"trojan_sha256": tsha, "golden_sha256": gsha[(host, flow)], "identical": ident},
+            "netlists": {"trojan_sha256": tsha, "golden_sha256": gsha[(host, flow)],
+                         "golden_flow_id": gfid[(host, flow)], "identical": ident},
             "equivalence": eqv, "remnant": remnant, "delta": delta, "witness": wit,
             "provenance": {"campaign": src.T.name if kind == "twin" else src.C.name,
                            "produced_by": "live_twins/lt.py; tools/htbench/export_release.py", "date": today}}
         dump(fdir / "label.json", label)
-        index.append({"sample_id": s, "flow_id": fid[(host, flow)], "host_id": host,
+        index.append({"sample_id": s, "flow_id": fid[(kind, cid, flow)], "host_id": host,
                       "population": "live_twin" if kind == "twin" else "decoy", "tier": tier,
                       "functional_grade": label["functional_grade"], "removed_reason": label["removed_reason"],
                       "flags": label["flags"], "path": str(fdir.relative_to(out))})
@@ -391,6 +407,7 @@ def check(root):
     idx = jl(root / "labels.jsonl")
     flows = {f["flow_id"] for f in json.loads((root / "flows.json").read_text())}
     tiers = collections.Counter()
+    mixed = collections.Counter()
     seen = set()
     for x in idx:
         d = root / x["path"]
@@ -400,8 +417,12 @@ def check(root):
             fails["duplicate label"].append(key)
         seen.add(key)
         tiers[(x["population"], L["flow_id"].split("@")[0], L["tier"], L["functional_grade"] or L["removed_reason"])] += 1
-        if L["flow_id"] not in flows:
+        if L["flow_id"] not in flows or L["netlists"]["golden_flow_id"] not in flows:
             fails["R12 unknown flow_id"].append(key)
+        if L["flow_id"].split("@")[0] != L["netlists"]["golden_flow_id"].split("@")[0]:
+            fails["golden netlist is from another flow family"].append(key)
+        if L["flow_id"] != L["netlists"]["golden_flow_id"]:
+            mixed[(L["host_id"], L["flow_id"], L["netlists"]["golden_flow_id"])] += 1
         if L["host_id"] in EXCLUDED_HOSTS:
             fails["excluded host present"].append(key)
         if L["host_id"] in labels_only_hosts:
@@ -414,7 +435,7 @@ def check(root):
                 fails["netlist missing"].append(key)
             elif sha256(nl) != L["netlists"]["trojan_sha256"]:
                 fails["netlist hash mismatch"].append(key)
-            g = root / "golden" / L["host_id"] / L["flow_id"] / "netlist.v"
+            g = root / "golden" / L["host_id"] / L["netlists"]["golden_flow_id"] / "netlist.v"
             if not g.exists() or sha256(g) != L["netlists"]["golden_sha256"]:
                 fails["golden missing or hash mismatch"].append(key)
             if not (root / "data" / "samples" / L["sample_id"] / "rtl.v").exists():
@@ -471,6 +492,8 @@ def check(root):
     print(f"label records: {len(idx)}   samples: {len({x['sample_id'] for x in idx})}   flows: {sorted(flows)}")
     for k in sorted(tiers):
         print(f"  {k[0]:9s} {k[1]:10s} {k[2]:17s} {str(k[3]):18s} {tiers[k]}")
+    for k, v in sorted(mixed.items()):
+        print(f"note: {v} records on {k[0]} have flow {k[1]} and a golden netlist of flow {k[2]}")
     print(f"note: {verilog_with_container_path} Verilog files have the container path inside Yosys net names (kept as proved)")
     if not fails:
         print("ALL CHECKS PASSED")
