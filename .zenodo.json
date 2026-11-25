@@ -1,0 +1,28 @@
+{
+  "title": "TROVE: a flow-labelled hardware-Trojan benchmark",
+  "upload_type": "dataset",
+  "version": "1.1-draft",
+  "access_right": "open",
+  "license": "cc-by-4.0",
+  "creators": [
+    {
+      "name": "Fazeli, Mahdi",
+      "affiliation": "Halmstad University"
+    }
+  ],
+  "description": "<p>TROVE is a hardware-Trojan benchmark whose labels are defined per synthesis flow. Each sample is a Trojan inserted into an ISCAS-89 or ITC'99 host circuit, and each (sample, flow) pair carries a label record stating whether the Trojan is functional, inert or removed after synthesis, with the equivalence proof and the witness that support the label.</p><p>This version (1.1-draft) holds 1,748 samples (874 live twins and 874 decoys) on 46 hosts and three open-source synthesis flows, 5,244 label records in total. The 27 ISCAS-89 hosts come with netlists and RTL. The 19 ITC'99 hosts come with labels, netlist hashes and witnesses only, because ITC'99 is licensed under EUPL-1.2.</p><p>The benchmark data is licensed under CC BY 4.0 (file LICENSE-DATA); host circuits keep their upstream terms, which that file lists. The code in the repository is licensed under MIT (file LICENSE). Start with release/README.md.</p>",
+  "keywords": [
+    "hardware Trojan",
+    "benchmark",
+    "logic synthesis",
+    "hardware security",
+    "formal equivalence checking"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/MahdiFazeli79/ht-benchmark",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ]
+}
