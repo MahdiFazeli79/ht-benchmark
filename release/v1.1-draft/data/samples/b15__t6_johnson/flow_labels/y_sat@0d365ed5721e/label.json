@@ -1,7 +1,7 @@
 {
  "schema_version": "1.1-draft",
- "sample_id": "b15__t4_two_input",
- "flow_id": "y_sat@7d1c5eb9258a",
+ "sample_id": "b15__t6_johnson",
+ "flow_id": "y_sat@0d365ed5721e",
  "host_id": "b15",
  "tier": "removed",
  "functional_grade": null,
@@ -10,8 +10,9 @@
  "comparison_flow_id": null,
  "flags": [],
  "netlists": {
-  "trojan_sha256": "1d1fe99b4b419790300e19733e476d2aea32cc831c6eb25a4fd8ffacd9e07909",
+  "trojan_sha256": "7f94383378fadef3d19c397efa958194c06c9f7776d6eaeaffb9893a76831d50",
   "golden_sha256": "748100fcedd99036fbbc7effb8c62452a7075a493039c93302dfce46ff9ffbff",
+  "golden_flow_id": "y_sat@7d1c5eb9258a",
   "identical": false
  },
  "equivalence": {
@@ -25,7 +26,7 @@
   "bounded": false,
   "bound": null,
   "timeout_s": 600,
-  "elapsed_s": 6.2,
+  "elapsed_s": 4.3,
   "status": "proved",
   "counterexample_file": null,
   "abc_version": null,
@@ -44,8 +45,8 @@
   "labels_netlist_file": null
  },
  "delta": {
-  "cells": -10,
-  "area_um2": 42.54,
+  "cells": 8,
+  "area_um2": -48.797,
   "flops": 0,
   "const_drivers": 0,
   "pass_through": 0

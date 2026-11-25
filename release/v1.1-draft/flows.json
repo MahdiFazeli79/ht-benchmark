@@ -87,6 +87,8 @@
    "s838_1",
    "s9234_1"
   ],
+  "label_records": 1583,
+  "golden_netlists": 42,
   "not_recorded": [
    "pdk.pdk_version"
   ]
@@ -111,10 +113,13 @@
   "reference_flow": false,
   "hosts": [
    "b14",
+   "b15",
    "b17",
    "b20",
    "b21"
   ],
+  "label_records": 165,
+  "golden_netlists": 4,
   "not_recorded": [
    "pdk.pdk_version"
   ]
@@ -138,6 +143,8 @@
   "options": "Y_sat plus abc -dff with scorr",
   "reference_flow": false,
   "hosts": "all",
+  "label_records": 1748,
+  "golden_netlists": 46,
   "not_recorded": [
    "pdk.pdk_version"
   ]

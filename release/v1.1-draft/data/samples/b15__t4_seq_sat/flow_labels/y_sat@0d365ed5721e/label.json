@@ -1,17 +1,18 @@
 {
  "schema_version": "1.1-draft",
- "sample_id": "b15__t4_arith_mul",
- "flow_id": "y_sat@7d1c5eb9258a",
+ "sample_id": "b15__t4_seq_sat",
+ "flow_id": "y_sat@0d365ed5721e",
  "host_id": "b15",
- "tier": "removed",
+ "tier": "inert",
  "functional_grade": null,
- "removed_reason": "no_remnant_proved",
+ "removed_reason": null,
  "perturbation_cause": null,
  "comparison_flow_id": null,
  "flags": [],
  "netlists": {
-  "trojan_sha256": "ff5699a4c028a35be5eae29f95de77588b9a096e1c97ab8edab2111c4058666b",
+  "trojan_sha256": "c3b701055c5c3663ced725eeb14246417888a7e1ab4bf361af992dc3ef23eb6d",
   "golden_sha256": "748100fcedd99036fbbc7effb8c62452a7075a493039c93302dfce46ff9ffbff",
+  "golden_flow_id": "y_sat@7d1c5eb9258a",
   "identical": false
  },
  "equivalence": {
@@ -25,7 +26,7 @@
   "bounded": false,
   "bound": null,
   "timeout_s": 600,
-  "elapsed_s": 5.9,
+  "elapsed_s": 13.5,
   "status": "proved",
   "counterexample_file": null,
   "abc_version": null,
@@ -38,15 +39,15 @@
   }
  },
  "remnant": {
-  "attribution": "none",
+  "attribution": "trojan",
   "evidence_level": "delta_only",
   "trojan_named_cells": null,
   "labels_netlist_file": null
  },
  "delta": {
-  "cells": -60,
-  "area_um2": -188.932,
-  "flops": 0,
+  "cells": 17,
+  "area_um2": 281.52,
+  "flops": 8,
   "const_drivers": 0,
   "pass_through": 0
  },

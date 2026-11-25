@@ -1,7 +1,7 @@
 {
  "schema_version": "1.1-draft",
  "sample_id": "b15__t6_ring",
- "flow_id": "y_sat@7d1c5eb9258a",
+ "flow_id": "y_sat@0d365ed5721e",
  "host_id": "b15",
  "tier": "removed",
  "functional_grade": null,
@@ -12,6 +12,7 @@
  "netlists": {
   "trojan_sha256": "7f94383378fadef3d19c397efa958194c06c9f7776d6eaeaffb9893a76831d50",
   "golden_sha256": "748100fcedd99036fbbc7effb8c62452a7075a493039c93302dfce46ff9ffbff",
+  "golden_flow_id": "y_sat@7d1c5eb9258a",
   "identical": false
  },
  "equivalence": {

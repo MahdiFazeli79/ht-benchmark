@@ -48,8 +48,15 @@ states no licence; `hosts.json` records this as `NOASSERTION`.
 - Remnant evidence is `delta_only` for every record (spec section 3.3), so
   `inert` and `removed (no_remnant_proved)` are separated by a structural
   heuristic.
-- Hosts b14, b17, b20 and b21 ran the Y_sat flow with one extra `techmap`
-  step and therefore have their own flow id.
+- Y_sat is two flow ids. One `techmap` step was added to the Y_sat script
+  during the campaign. Hosts b14, b17, b20 and b21, and 13 decoys of b15, were
+  made with the new script (`y_sat@0d365ed5721e`); everything else with the
+  old one (`y_sat@7d1c5eb9258a`). A re-run of 1,625 old-script netlists with
+  the new script gave 1,555 byte-identical netlists and 70 that differ but are
+  proved equivalent (spec section 9).
+- `netlists.golden_flow_id` in each label names the flow of the golden
+  netlist the comparison used. It differs from `flow_id` only for those 13 b15
+  decoys, whose golden netlist has the same bytes under both scripts.
 - The PDK version, the ABC version and the Yosys version inside LibreLane were
   not recorded by the runs. They are `null` in `flows.json`.
 - Every `x_init` replay has `x_model_checked: false` (spec section 10, item 3).
