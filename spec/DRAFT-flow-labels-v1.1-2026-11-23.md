@@ -190,6 +190,7 @@ Schema `spec/schemas/flow_label.schema.json`, draft 2020-12 (sketch; the `$defs`
       "properties": {
         "trojan_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
         "golden_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "golden_flow_id": { "type": "string", "description": "flow_id of the golden netlist the comparison used. Equal to flow_id except where a host's synthesis straddled a script change (section 9)." },
         "identical": { "type": "boolean" }
       }
     },
@@ -450,12 +451,12 @@ Registered now (open-source, reference flow first):
 | flow_id | Flow | Hosts | Notes |
 |---|---|---|---|
 | `ll_classic@3.1.0.dev3` | LibreLane Classic, synthesis only | all | reference flow |
-| `y_sat@7d1c5eb9258a` | Yosys with `opt -full; opt_dff -sat` | 42 of the 46 release hosts | |
-| `y_sat@0d365ed5721e` | the same script with one `techmap` before cell mapping | b14, b17, b20, b21 | see below |
+| `y_sat@7d1c5eb9258a` | Yosys with `opt -full; opt_dff -sat` | 42 of the 46 release hosts (on b15: golden, twins and 6 decoys) | |
+| `y_sat@0d365ed5721e` | the same script with one `techmap` before cell mapping | b14, b17, b20, b21, and 13 decoys of b15 | see below |
 | `y_seq@9d87444f9c80` | Y_sat plus `abc -dff` with `scorr` | all | renames all nets; remnant evidence `delta_only` |
 | `y_seq_k<k>@<hash>` | Y_seq with `scorr -F k` | E1b hosts | E1b only; one flow_id per k; not in the release |
 
-The hash in a Yosys flow_id is the first 12 hex digits of the SHA-256 of the host's golden synthesis script, with the host name and file paths masked. `tools/htbench/export_release.py` computes it and writes the full script into `flows.json`.
+The hash in a Yosys flow_id is the first 12 hex digits of the SHA-256 of the synthesis script that made that netlist, with the host name and file paths masked. It is taken per netlist, not per host. `tools/htbench/export_release.py` computes it and writes the full script into `flows.json`.
 
 Y_sat is two flows (found when the release was exported, 25 November 2026). During the campaign run of 22 November 2026, one `techmap` step was added to the Y_sat script before cell mapping, because on b14, b20 and b21 the final `opt -full` rebuilt coarse `$mux` cells that `abc -liberty` does not map, and the probe rejected those netlists (notebook 11, cell 3). The four hosts synthesized after that change, b14, b17, b20 and b21, used the new script; the other 42 release hosts used the old one. b18, which is outside the release, is not covered by this table. Under R13 a script change is a new flow_id, so their Y_sat labels carry `y_sat@0d365ed5721e`. The notebook argues that the two scripts give the same netlist on the 42 earlier hosts, because techmap changes nothing when only fine-grained gate cells remain. That was checked on 25 November 2026 and holds only in part (next paragraph). The Y_seq script already had the `techmap` step for every host, so Y_seq is one flow. For the b17 HOST_PERTURBATION labels, the comparison flow is `y_sat@0d365ed5721e`.
 
@@ -468,7 +469,7 @@ Re-run check of the two Y_sat scripts (25 November 2026, Yosys 0.70, results in 
 
 The 70 lie on 11 small hosts: s444 (21), s400 (11), s510 (10), s713 (8), s420_1 (5), b03, s344, s349 and s641 (3 each), s382 (2) and b08 (1). One of them is a golden netlist (s444). Each of the 70 has the same count of every cell type as its original, and each is proved equivalent to its original by `dprove` with the eq_rst miter of section 3.2. A control run of the old script on these 70 and on 70 unchanged netlists reproduced the original bytes in all 140 cases, so the difference comes from the `techmap` step and not from run-to-run variation. The two scripts are therefore equivalent on every netlist checked but not netlist-identical, and they stay two flow_ids. Labels are not copied from one to the other (R13).
 
-Host b15 straddled the script change. Its golden netlist, 6 decoys and all 19 twins were made with the old script, and 13 decoys with the new one. The b15 golden and the 25 old-script Trojan netlists are byte-identical under both scripts. The 13 new-script decoys are compared with a golden netlist that was made with the old script; because that golden netlist has the same bytes under the new script, the comparison is the same one a new-script golden would give.
+Host b15 straddled the script change. Its golden netlist, 6 decoys and all 19 twins were made with the old script, and 13 decoys with the new one. The b15 golden and the 25 old-script Trojan netlists are byte-identical under both scripts. The 13 new-script decoys are compared with a golden netlist that was made with the old script; because that golden netlist has the same bytes under the new script, the comparison is the same one a new-script golden would give. These 13 records carry `flow_id: y_sat@0d365ed5721e` and `netlists.golden_flow_id: y_sat@7d1c5eb9258a`.
 
 Current campaign mapped onto the tiers (47 hosts, b19 excluded, 893 Trojan netlists per flow):
 

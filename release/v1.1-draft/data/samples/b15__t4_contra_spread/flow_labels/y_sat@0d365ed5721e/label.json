@@ -1,7 +1,7 @@
 {
  "schema_version": "1.1-draft",
- "sample_id": "b15__t6_counter",
- "flow_id": "y_sat@7d1c5eb9258a",
+ "sample_id": "b15__t4_contra_spread",
+ "flow_id": "y_sat@0d365ed5721e",
  "host_id": "b15",
  "tier": "removed",
  "functional_grade": null,
@@ -10,8 +10,9 @@
  "comparison_flow_id": null,
  "flags": [],
  "netlists": {
-  "trojan_sha256": "0f5a8e30ffcfd728e786e89e13a8cd225628965baaefa4a6d857cef9eec9e787",
+  "trojan_sha256": "f4d5e61e61f9c33506dcf5f0169bd629e7e0eeb8e74994ea5cc27c514e84cbf3",
   "golden_sha256": "748100fcedd99036fbbc7effb8c62452a7075a493039c93302dfce46ff9ffbff",
+  "golden_flow_id": "y_sat@7d1c5eb9258a",
   "identical": false
  },
  "equivalence": {
@@ -25,7 +26,7 @@
   "bounded": false,
   "bound": null,
   "timeout_s": 600,
-  "elapsed_s": 7.1,
+  "elapsed_s": 6.6,
   "status": "proved",
   "counterexample_file": null,
   "abc_version": null,
@@ -44,8 +45,8 @@
   "labels_netlist_file": null
  },
  "delta": {
-  "cells": -2,
-  "area_um2": 75.072,
+  "cells": -46,
+  "area_um2": -510.49,
   "flops": 0,
   "const_drivers": 0,
   "pass_through": 0

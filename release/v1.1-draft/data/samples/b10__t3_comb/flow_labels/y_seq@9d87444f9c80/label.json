@@ -12,6 +12,7 @@
  "netlists": {
   "trojan_sha256": "c527ef4034365904e6fc8147df3e5da56175f0d18e527ceaae9b57ffe2a0f9cf",
   "golden_sha256": "f36d9cfa654f096a7dddfd789eedb5bf0c2279a831cb3962df72797f138e4ad5",
+  "golden_flow_id": "y_seq@9d87444f9c80",
   "identical": false
  },
  "equivalence": {
