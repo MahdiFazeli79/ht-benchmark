@@ -1,21 +1,48 @@
 # ht-bench
 
 A canonical, synthesis-verified, **dual-abstraction** hardware-Trojan benchmark
-with **generation-time ground truth**. This repository currently holds the
-frozen sample-schema contract and the `htbench` enforcement package; the corpus,
-the LLM insertion engine, and the production extractor are later work units.
+with **generation-time ground truth**. This repository holds the sample-schema
+contract, the `htbench` enforcement package, and the first data release: the
+flow-labelled Trojan population (TROVE, v1.1 draft) under `release/`. The LLM
+insertion engine and the production extractor are later work units.
 
 The one rule the whole project protects: **ground truth is recorded at the
 moment of insertion, never reconstructed afterward by keyword heuristics.**
 
+## Get the benchmark
+
+The data is in `release/v1.1-draft/`. Start with `release/README.md`, which
+describes the layout, the tiers and the known limits, and with
+`release/v1.1-draft/labels.jsonl`, which has one line per (sample, flow).
+
+- 1,748 samples (874 live twins and 874 decoys) on 46 ISCAS-89 and ITC'99
+  hosts, synthesized with three flows: 5,244 label records.
+- Each record states whether the Trojan is functional, inert or removed after
+  synthesis, with the equivalence proof and the witness behind the label.
+- The 27 ISCAS-89 hosts come with netlists and RTL. The 19 ITC'99 hosts come
+  with labels, netlist hashes and witnesses only, because ITC'99 is licensed
+  under EUPL-1.2.
+
+Check a copy of the release with:
+
+```bash
+python tools/htbench/export_release.py --check release/v1.1-draft
+```
+
+The label definitions are in `spec/DRAFT-flow-labels-v1.1-2026-11-23.md`. That
+spec is a draft, so tiers and layout can still change.
+
 ## What is in here
 
-- `spec/SCHEMA_SPEC_v1.0.md` — the frozen contract for one benchmark *sample*.
-- `spec/schemas/*.json` — JSON Schemas for the manifest, labels, metadata, graphs.
-- `spec/taxonomy.json` — closed Karri/Trust-Hub trigger and payload vocabulary.
-- `tools/htbench/` — the enforcement package (validator, resolver, reference
-  extractor, HW2VEC converter, round-trip gate).
-- `tests/` — fixtures and the pytest suite.
+- `release/`: the flow-labelled data release and its README.
+- `spec/SCHEMA_SPEC_v1.0.md`: the frozen contract for one benchmark *sample*.
+- `spec/DRAFT-flow-labels-v1.1-2026-11-23.md`: the draft of the per-flow labels.
+- `spec/schemas/*.json`: JSON Schemas for the manifest, labels, metadata, graphs.
+- `spec/taxonomy.json`: closed Karri/Trust-Hub trigger and payload vocabulary.
+- `tools/htbench/`: the enforcement package (validator, resolver, reference
+  extractor, HW2VEC converter, round-trip gate) and the release exporter.
+- `live_twins/`: the scripts that produced the v1.1 labels.
+- `tests/`: fixtures and the pytest suite.
 
 ## The four inversions (store intrinsic truth, derive the rest)
 
@@ -110,3 +137,13 @@ v1 operates in `--rtl-only` mode. Netlist extraction and netlist round-trip are
 deferred to the Phase-0.3 labeling-method spike (`hierarchy_path` vs
 `structural_fingerprint`); the netlist schema, validator support, and converter
 are already in place.
+
+The flow-labelled release under `release/` is separate from this v1 pipeline:
+it follows the v1.1 draft spec and is checked by `export_release.py --check`,
+not by `htbench validate`.
+
+## Licence and citation
+
+The code is under the MIT licence (`LICENSE`). The benchmark data is under
+CC BY 4.0 (`LICENSE-DATA`); host circuits keep their upstream terms, which that
+file lists. To cite the benchmark, use `CITATION.cff`.
