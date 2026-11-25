@@ -1,0 +1,17 @@
+{
+ "sample_id": "b03__t3_chain",
+ "campaign_id": "b03__T3_chain",
+ "admission": "flow_labelled",
+ "host_id": "b03",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "chain",
+ "params": {
+  "payload_bits": 32,
+  "trigger": "and3",
+  "payload_reset": true
+ },
+ "payload_output": null
+}

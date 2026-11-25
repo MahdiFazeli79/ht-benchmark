@@ -1,0 +1,78 @@
+{
+ "schema_version": "1.1-draft",
+ "sample_id": "s713__lt4_arith_add",
+ "flow_id": "ll_classic@3.1.0.dev3",
+ "host_id": "s713",
+ "tier": "functional",
+ "functional_grade": "x_init",
+ "removed_reason": null,
+ "perturbation_cause": null,
+ "comparison_flow_id": null,
+ "flags": [],
+ "netlists": {
+  "trojan_sha256": "3e86508ebdb54a8d2d50da6709316a8562ed3bd3de0fab278645ab2635fbcf59",
+  "golden_sha256": "aacfedbb2f2dad8c91ae0367a93a21903bc6c36d34e311e0bd5ffd00a5d64315",
+  "identical": false
+ },
+ "equivalence": {
+  "method": "abc_miter_reset",
+  "init": "reset_cycle0_zero_uninit",
+  "engines": [
+   "dprove",
+   "pdr"
+  ],
+  "decided_by": "dprove",
+  "bounded": false,
+  "bound": null,
+  "timeout_s": 600,
+  "elapsed_s": 0.0,
+  "status": "different",
+  "counterexample_file": "witness.vec",
+  "abc_version": null
+ },
+ "remnant": {
+  "attribution": "none",
+  "evidence_level": "delta_only",
+  "trojan_named_cells": null,
+  "labels_netlist_file": null
+ },
+ "delta": {
+  "cells": 27,
+  "area_um2": null,
+  "flops": 0,
+  "const_drivers": 0,
+  "pass_through": 0
+ },
+ "witness": {
+  "source": "eq_counterexample",
+  "file": "witness.vec",
+  "sha256": "3014522cb5956fa4377dace504564fdc9a1b1fe5afbaa3d4dd18ee9cfb596028",
+  "cycles": 1,
+  "replays": [
+   {
+    "mode": "reset",
+    "simulator": "icarus",
+    "cell_models": "liberty_function_flattened",
+    "x_model_checked": false,
+    "result": "diverged",
+    "first_divergence_cycle": 0,
+    "diverging_output": "G98BF"
+   },
+   {
+    "mode": "x_init",
+    "simulator": "icarus",
+    "cell_models": "liberty_function_flattened",
+    "x_model_checked": false,
+    "result": "diverged",
+    "first_divergence_cycle": 0,
+    "diverging_output": "G98BF"
+   }
+  ],
+  "divergence_attribution": "trigger_only"
+ },
+ "provenance": {
+  "campaign": "live_twins_20261124",
+  "produced_by": "live_twins/lt.py; tools/htbench/export_release.py",
+  "date": "2026-11-25"
+ }
+}

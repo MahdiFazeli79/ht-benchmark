@@ -1,0 +1,17 @@
+{
+ "sample_id": "s298__lt3_reg",
+ "campaign_id": "s298__LT3_reg",
+ "admission": "flow_labelled",
+ "host_id": "s298",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 4,
+  "trigger": "icmp3",
+  "payload_reset": false
+ },
+ "payload_output": "core_G133"
+}

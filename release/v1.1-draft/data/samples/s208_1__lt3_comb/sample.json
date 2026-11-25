@@ -1,0 +1,17 @@
+{
+ "sample_id": "s208_1__lt3_comb",
+ "campaign_id": "s208_1__LT3_comb",
+ "admission": "flow_labelled",
+ "host_id": "s208_1",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "comb",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "iand6",
+  "payload_reset": null
+ },
+ "payload_output": "core_Z"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s400__lt3_comb",
+ "campaign_id": "s400__LT3_comb",
+ "admission": "flow_labelled",
+ "host_id": "s400",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "comb",
+ "params": {
+  "payload_bits": 1,
+  "trigger": "cnt4@1",
+  "payload_reset": null
+ },
+ "payload_output": "core_GRN1"
+}

@@ -1,0 +1,3 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: A0 A1 A2 A3 B0 B1 B2 B3 START blif_clk_net blif_reset_net
+A0=1 A1=0 A2=1 A3=0 B0=1 B1=1 B2=0 B3=0 START=0 blif_clk_net=0 blif_reset_net=1

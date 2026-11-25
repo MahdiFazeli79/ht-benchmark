@@ -1,0 +1,145 @@
+[
+ {
+  "flow_id": "ll_classic@3.1.0.dev3",
+  "flow_family": "open_source",
+  "description": "LibreLane Classic, synthesis step only (06-yosys-synthesis netlist)",
+  "tools": {
+   "librelane": "3.1.0.dev3",
+   "yosys": null,
+   "abc": null
+  },
+  "script_sha256": null,
+  "pdk": {
+   "name": "sky130A",
+   "pdk_version": null,
+   "std_cell_lib": "sky130_fd_sc_hd",
+   "liberty_corner": "tt_025C_1v80"
+  },
+  "options": "LibreLane defaults; per-design config.json in the run directory",
+  "reference_flow": true,
+  "hosts": "all",
+  "not_recorded": [
+   "tools.yosys",
+   "tools.abc",
+   "script_sha256",
+   "pdk.pdk_version"
+  ]
+ },
+ {
+  "flow_id": "y_sat@7d1c5eb9258a",
+  "flow_family": "open_source",
+  "description": "Yosys with opt -full; opt_dff -sat",
+  "tools": {
+   "yosys": "0.70 (git 28ba3cb92)",
+   "abc": "yosys-abc as bundled"
+  },
+  "script_sha256": "7d1c5eb9258add4253dab8c61a6b617667eb485eab3432752f90a9c90d3d0831",
+  "script": "read_verilog -sv <PATH>\nsynth -flatten -top <HOST> -run begin:fine\nopt -full\nopt_dff -sat\nsynth -top <HOST> -run fine:\nopt_dff -sat\nopt -full\ndfflibmap -liberty <PATH>\nabc -liberty <PATH>\nopt_clean -purge\nhilomap -hicell sky130_fd_sc_hd__conb_1 HI -locell sky130_fd_sc_hd__conb_1 LO\nopt_clean -purge\nwrite_verilog -noattr <PATH>\n",
+  "pdk": {
+   "name": "sky130A",
+   "pdk_version": null,
+   "std_cell_lib": "sky130_fd_sc_hd",
+   "liberty_corner": "tt_025C_1v80"
+  },
+  "options": "Yosys with opt -full; opt_dff -sat",
+  "reference_flow": false,
+  "hosts": [
+   "b01",
+   "b02",
+   "b03",
+   "b04",
+   "b05",
+   "b06",
+   "b07",
+   "b08",
+   "b09",
+   "b10",
+   "b11",
+   "b12",
+   "b13",
+   "b15",
+   "b22",
+   "s1196",
+   "s1238",
+   "s13207",
+   "s1423",
+   "s1488",
+   "s1494",
+   "s15850",
+   "s208_1",
+   "s27",
+   "s298",
+   "s344",
+   "s349",
+   "s382",
+   "s386",
+   "s400",
+   "s420_1",
+   "s444",
+   "s510",
+   "s526",
+   "s526n",
+   "s5378",
+   "s641",
+   "s713",
+   "s820",
+   "s832",
+   "s838_1",
+   "s9234_1"
+  ],
+  "not_recorded": [
+   "pdk.pdk_version"
+  ]
+ },
+ {
+  "flow_id": "y_sat@0d365ed5721e",
+  "flow_family": "open_source",
+  "description": "Yosys with opt -full; opt_dff -sat",
+  "tools": {
+   "yosys": "0.70 (git 28ba3cb92)",
+   "abc": "yosys-abc as bundled"
+  },
+  "script_sha256": "0d365ed5721ec4747045d9aa24c8ce9d2e26d826e2d0d85e1987960dbc072c04",
+  "script": "read_verilog -sv <PATH>\nsynth -flatten -top <HOST> -run begin:fine\nopt -full\nopt_dff -sat\nsynth -top <HOST> -run fine:\nopt_dff -sat\nopt -full\ntechmap\ndfflibmap -liberty <PATH>\nabc -liberty <PATH>\nopt_clean -purge\nhilomap -hicell sky130_fd_sc_hd__conb_1 HI -locell sky130_fd_sc_hd__conb_1 LO\nopt_clean -purge\nwrite_verilog -noattr <PATH>\n",
+  "pdk": {
+   "name": "sky130A",
+   "pdk_version": null,
+   "std_cell_lib": "sky130_fd_sc_hd",
+   "liberty_corner": "tt_025C_1v80"
+  },
+  "options": "Yosys with opt -full; opt_dff -sat",
+  "reference_flow": false,
+  "hosts": [
+   "b14",
+   "b17",
+   "b20",
+   "b21"
+  ],
+  "not_recorded": [
+   "pdk.pdk_version"
+  ]
+ },
+ {
+  "flow_id": "y_seq@9d87444f9c80",
+  "flow_family": "open_source",
+  "description": "Y_sat plus abc -dff with scorr",
+  "tools": {
+   "yosys": "0.70 (git 28ba3cb92)",
+   "abc": "yosys-abc as bundled"
+  },
+  "script_sha256": "9d87444f9c80a7335dd131bf9bc16c4f73c660679617f4aa129697961eed8f6e",
+  "script": "read_verilog -sv <PATH>\nsynth -flatten -top <HOST> -run begin:fine\nopt -full\nopt_dff -sat\nsynth -top <HOST> -run fine:\nopt_dff -sat\nopt -full\nasync2sync\ndfflegalize -cell $_DFF_P_ 01\nabc -dff -script +strash;scorr;dc2;strash\ntechmap\nopt -fast\nopt_clean -purge\ndfflibmap -liberty <PATH>\nabc -liberty <PATH>\nopt_clean -purge\nhilomap -hicell sky130_fd_sc_hd__conb_1 HI -locell sky130_fd_sc_hd__conb_1 LO\nopt_clean -purge\nwrite_verilog -noattr <PATH>\n",
+  "pdk": {
+   "name": "sky130A",
+   "pdk_version": null,
+   "std_cell_lib": "sky130_fd_sc_hd",
+   "liberty_corner": "tt_025C_1v80"
+  },
+  "options": "Y_sat plus abc -dff with scorr",
+  "reference_flow": false,
+  "hosts": "all",
+  "not_recorded": [
+   "pdk.pdk_version"
+  ]
+ }
+]

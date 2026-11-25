@@ -1,0 +1,17 @@
+{
+ "sample_id": "b04__t3_reg",
+ "campaign_id": "b04__T3_reg",
+ "admission": "flow_labelled",
+ "host_id": "b04",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "cnt8",
+  "payload_reset": false
+ },
+ "payload_output": null
+}

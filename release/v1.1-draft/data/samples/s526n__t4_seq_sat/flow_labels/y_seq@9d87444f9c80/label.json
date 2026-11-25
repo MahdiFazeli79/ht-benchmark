@@ -1,0 +1,66 @@
+{
+ "schema_version": "1.1-draft",
+ "sample_id": "s526n__t4_seq_sat",
+ "flow_id": "y_seq@9d87444f9c80",
+ "host_id": "s526n",
+ "tier": "inert",
+ "functional_grade": null,
+ "removed_reason": null,
+ "perturbation_cause": null,
+ "comparison_flow_id": null,
+ "flags": [],
+ "netlists": {
+  "trojan_sha256": "fb8d7078bbfb0ca756d59d82978b8600ab054078b95f0ef81928df39e3a95527",
+  "golden_sha256": "1620c4bc2912d3e58e5714294680e994013deac1bfeb829af6229ece1c4ca023",
+  "identical": false
+ },
+ "equivalence": {
+  "method": "abc_miter_reset",
+  "init": "reset_cycle0_zero_uninit",
+  "engines": [
+   "dprove",
+   "pdr"
+  ],
+  "decided_by": "dprove",
+  "bounded": false,
+  "bound": null,
+  "timeout_s": 600,
+  "elapsed_s": 4.2,
+  "status": "proved",
+  "counterexample_file": null,
+  "abc_version": null,
+  "free_start": {
+   "status": "proved",
+   "decided_by": "dprove",
+   "first_frame": null,
+   "free_flops": 50,
+   "counterexample_file": null
+  }
+ },
+ "remnant": {
+  "attribution": "trojan",
+  "evidence_level": "delta_only",
+  "trojan_named_cells": null,
+  "labels_netlist_file": null
+ },
+ "delta": {
+  "cells": 33,
+  "area_um2": 309.047,
+  "flops": 8,
+  "const_drivers": 0,
+  "pass_through": 0
+ },
+ "witness": {
+  "source": "none",
+  "file": null,
+  "sha256": null,
+  "cycles": null,
+  "replays": [],
+  "divergence_attribution": null
+ },
+ "provenance": {
+  "campaign": "host_population_20261122_153549",
+  "produced_by": "live_twins/lt.py; tools/htbench/export_release.py",
+  "date": "2026-11-25"
+ }
+}

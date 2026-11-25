@@ -1,0 +1,26 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: bs16 clock datai hold na ready1 ready2 reset
+bs16=1 clock=0 datai=01110000100101010110010001101111 hold=1 na=0 ready1=0 ready2=1 reset=1
+bs16=0 clock=0 datai=01111001111101100010011001100000 hold=0 na=1 ready1=1 ready2=0 reset=1
+bs16=1 clock=0 datai=10000000011011101110000000000011 hold=0 na=0 ready1=0 ready2=0 reset=1
+bs16=0 clock=0 datai=01110101110010110010110101001001 hold=1 na=0 ready1=1 ready2=1 reset=0
+bs16=1 clock=1 datai=10101001011000111010110001110011 hold=1 na=0 ready1=1 ready2=0 reset=0
+bs16=0 clock=1 datai=10010010101000111011101000001010 hold=1 na=0 ready1=0 ready2=0 reset=1
+bs16=1 clock=1 datai=11000110010110010110110111111100 hold=0 na=0 ready1=0 ready2=1 reset=0
+bs16=0 clock=0 datai=01101001001100000100000011111011 hold=1 na=1 ready1=0 ready2=0 reset=0
+bs16=1 clock=1 datai=10100010101010110011001101001010 hold=1 na=1 ready1=1 ready2=1 reset=1
+bs16=0 clock=1 datai=10010000100000111111100000110100 hold=0 na=1 ready1=1 ready2=0 reset=0
+bs16=0 clock=0 datai=00010100010110101011111111011111 hold=1 na=0 ready1=0 ready2=0 reset=0
+bs16=1 clock=1 datai=11000101011011001111010100011000 hold=1 na=1 ready1=0 ready2=1 reset=0
+bs16=0 clock=0 datai=10111000111010100000111100011001 hold=0 na=0 ready1=1 ready2=0 reset=0
+bs16=0 clock=0 datai=10010010100011001110000111110101 hold=1 na=0 ready1=0 ready2=0 reset=0
+bs16=1 clock=1 datai=01011001000001100010000000100100 hold=0 na=1 ready1=0 ready2=1 reset=0
+bs16=0 clock=0 datai=01000110001111101110001000000000 hold=0 na=1 ready1=0 ready2=0 reset=0
+bs16=0 clock=1 datai=11001100010000010010011101001111 hold=0 na=0 ready1=0 ready2=1 reset=0
+bs16=0 clock=1 datai=11110110111101100010100000011110 hold=0 na=1 ready1=0 ready2=1 reset=0
+bs16=0 clock=1 datai=10110101011101100000110100111110 hold=0 na=1 ready1=0 ready2=1 reset=0
+bs16=0 clock=0 datai=11010001011101101001110111011110 hold=0 na=0 ready1=0 ready2=1 reset=0
+bs16=0 clock=0 datai=11101000001001110111110100000000 hold=0 na=1 ready1=1 ready2=1 reset=0
+bs16=1 clock=0 datai=10101010110000111001100101110010 hold=1 na=0 ready1=1 ready2=1 reset=0
+bs16=1 clock=0 datai=11100011000101011000101110101100 hold=0 na=1 ready1=1 ready2=1 reset=0
+bs16=1 clock=0 datai=00000000110101011111100000101011 hold=0 na=1 ready1=1 ready2=0 reset=0

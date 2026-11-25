@@ -1,0 +1,17 @@
+{
+ "sample_id": "b02__lt3_comb",
+ "campaign_id": "b02__LT3_comb",
+ "admission": "flow_labelled",
+ "host_id": "b02",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "comb",
+ "params": {
+  "payload_bits": 4,
+  "trigger": "iand1",
+  "payload_reset": null
+ },
+ "payload_output": "core_u"
+}

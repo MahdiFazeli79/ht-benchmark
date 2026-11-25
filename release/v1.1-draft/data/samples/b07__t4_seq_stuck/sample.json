@@ -1,0 +1,15 @@
+{
+ "sample_id": "b07__t4_seq_stuck",
+ "campaign_id": "b07__T4_seq_stuck",
+ "admission": "flow_labelled",
+ "host_id": "b07",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T4",
+ "sub_variant": "seq_stuck",
+ "params": {
+  "stuck_at": 0
+ },
+ "payload_output": "core_punti_retta[0]"
+}

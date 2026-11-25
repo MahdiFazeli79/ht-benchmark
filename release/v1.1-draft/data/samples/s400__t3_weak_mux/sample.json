@@ -1,0 +1,17 @@
+{
+ "sample_id": "s400__t3_weak_mux",
+ "campaign_id": "s400__T3_weak_mux",
+ "admission": "flow_labelled",
+ "host_id": "s400",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "weak_mux",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "cmp8",
+  "payload_reset": false
+ },
+ "payload_output": "core_RED1"
+}

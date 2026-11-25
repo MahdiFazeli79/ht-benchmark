@@ -1,0 +1,16 @@
+{
+ "sample_id": "b10__t4_seq_sat",
+ "campaign_id": "b10__T4_seq_sat",
+ "admission": "flow_labelled",
+ "host_id": "b10",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T4",
+ "sub_variant": "seq_sat",
+ "params": {
+  "saturates_at": 150,
+  "trigger_at": 222
+ },
+ "payload_output": "core_ctr"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "b13__lt3_mem",
+ "campaign_id": "b13__LT3_mem",
+ "admission": "flow_labelled",
+ "host_id": "b13",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "mem",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "icmp10",
+  "payload_reset": false
+ },
+ "payload_output": "core_load_dato"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s832__lt3_weak_dupreg",
+ "campaign_id": "s832__LT3_weak_dupreg",
+ "admission": "flow_labelled",
+ "host_id": "s832",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_dupreg",
+ "params": {
+  "payload_bits": 8,
+  "trigger": "icmp4",
+  "payload_reset": true
+ },
+ "payload_output": "core_G53"
+}

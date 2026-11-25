@@ -1,0 +1,69 @@
+{
+ "description": "Frame-0 value of each flop that has no reset, on the <cell>.IQ register of the flattened Liberty-function model of netlist.v; all other flops start X.",
+ "deposits": [
+  {
+   "register": "_13323_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13324_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13325_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13326_.IQ",
+   "value": "1"
+  },
+  {
+   "register": "_13327_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13328_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13329_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13330_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13331_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13332_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13333_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13334_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13335_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13336_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13338_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_13337_.IQ",
+   "value": "0"
+  }
+ ]
+}

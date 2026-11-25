@@ -1,0 +1,5 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: C_0 C_1 C_10 C_11 C_12 C_13 C_14 C_15 C_16 C_17 C_18 C_19 C_2 C_20 C_21 C_22 C_23 C_24 C_25 C_26 C_27 C_28 C_29 C_3 C_30 C_31 C_32 C_4 C_5 C_6 C_7 C_8 C_9 P_0 blif_clk_net blif_reset_net
+C_0=0 C_1=0 C_10=0 C_11=0 C_12=0 C_13=0 C_14=0 C_15=0 C_16=0 C_17=0 C_18=0 C_19=0 C_2=0 C_20=0 C_21=0 C_22=0 C_23=0 C_24=0 C_25=0 C_26=0 C_27=0 C_28=0 C_29=0 C_3=0 C_30=0 C_31=0 C_32=0 C_4=0 C_5=0 C_6=0 C_7=0 C_8=0 C_9=0 P_0=0 blif_clk_net=0 blif_reset_net=1
+C_0=0 C_1=0 C_10=0 C_11=0 C_12=0 C_13=0 C_14=0 C_15=0 C_16=0 C_17=0 C_18=0 C_19=0 C_2=0 C_20=0 C_21=0 C_22=0 C_23=0 C_24=0 C_25=0 C_26=0 C_27=0 C_28=0 C_29=0 C_3=0 C_30=0 C_31=0 C_32=0 C_4=0 C_5=0 C_6=0 C_7=0 C_8=0 C_9=0 P_0=0 blif_clk_net=0 blif_reset_net=0
+C_0=0 C_1=0 C_10=0 C_11=0 C_12=0 C_13=0 C_14=0 C_15=0 C_16=0 C_17=0 C_18=0 C_19=0 C_2=0 C_20=0 C_21=0 C_22=0 C_23=0 C_24=0 C_25=0 C_26=0 C_27=0 C_28=0 C_29=0 C_3=0 C_30=0 C_31=0 C_32=0 C_4=0 C_5=0 C_6=0 C_7=0 C_8=0 C_9=0 P_0=1 blif_clk_net=0 blif_reset_net=0

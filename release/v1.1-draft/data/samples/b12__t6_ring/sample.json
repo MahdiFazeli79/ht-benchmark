@@ -1,0 +1,17 @@
+{
+ "sample_id": "b12__t6_ring",
+ "campaign_id": "b12__T6_ring",
+ "admission": "flow_labelled",
+ "host_id": "b12",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T6",
+ "sub_variant": "ring",
+ "params": {
+  "width": 5,
+  "reset": false,
+  "enabled_by_trigger": false
+ },
+ "payload_output": null
+}

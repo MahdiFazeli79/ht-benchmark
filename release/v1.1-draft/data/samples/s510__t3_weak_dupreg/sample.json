@@ -1,0 +1,17 @@
+{
+ "sample_id": "s510__t3_weak_dupreg",
+ "campaign_id": "s510__T3_weak_dupreg",
+ "admission": "flow_labelled",
+ "host_id": "s510",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "weak_dupreg",
+ "params": {
+  "payload_bits": 2,
+  "trigger": "cnt12",
+  "payload_reset": false
+ },
+ "payload_output": "core_cclr"
+}

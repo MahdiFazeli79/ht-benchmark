@@ -1,0 +1,17 @@
+{
+ "sample_id": "s820__t3_mem",
+ "campaign_id": "s820__T3_mem",
+ "admission": "flow_labelled",
+ "host_id": "s820",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "mem",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "cnt12",
+  "payload_reset": true
+ },
+ "payload_output": null
+}

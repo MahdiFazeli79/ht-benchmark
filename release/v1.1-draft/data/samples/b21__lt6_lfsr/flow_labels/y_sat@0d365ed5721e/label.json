@@ -1,0 +1,85 @@
+{
+ "schema_version": "1.1-draft",
+ "sample_id": "b21__lt6_lfsr",
+ "flow_id": "y_sat@0d365ed5721e",
+ "host_id": "b21",
+ "tier": "functional",
+ "functional_grade": "power_up_only",
+ "removed_reason": null,
+ "perturbation_cause": null,
+ "comparison_flow_id": null,
+ "flags": [],
+ "netlists": {
+  "trojan_sha256": "ad40a317640df5abf850ebec11c998668199544d1a82352f8dcfb9f8c03882fe",
+  "golden_sha256": "9e0deb3731e0d289da86e00e8917f2316b00e0f765c94cc8a604baed7499e683",
+  "identical": false
+ },
+ "equivalence": {
+  "method": "abc_miter_reset",
+  "init": "reset_cycle0_zero_uninit",
+  "engines": [
+   "dprove",
+   "pdr"
+  ],
+  "decided_by": "dprove",
+  "bounded": false,
+  "bound": null,
+  "timeout_s": 600,
+  "elapsed_s": 11.9,
+  "status": "proved",
+  "counterexample_file": null,
+  "abc_version": null,
+  "free_start": {
+   "status": "different",
+   "decided_by": "dprove",
+   "first_frame": 1,
+   "free_flops": 16,
+   "counterexample_file": "witness.vec"
+  }
+ },
+ "remnant": {
+  "attribution": "trojan",
+  "evidence_level": "delta_only",
+  "trojan_named_cells": null,
+  "labels_netlist_file": null
+ },
+ "delta": {
+  "cells": -9,
+  "area_um2": null,
+  "flops": 16,
+  "const_drivers": 0,
+  "pass_through": 0
+ },
+ "witness": {
+  "source": "eq_free_counterexample",
+  "file": "witness.vec",
+  "sha256": "16e2eafe73927230e189ce2f3ec1c8ffa2d0acc103a17ff75f68f5540cdbc68d",
+  "cycles": 2,
+  "replays": [
+   {
+    "mode": "power_up",
+    "simulator": "icarus",
+    "cell_models": "liberty_function_flattened",
+    "x_model_checked": false,
+    "result": "diverged",
+    "first_divergence_cycle": 1,
+    "diverging_output": "so"
+   },
+   {
+    "mode": "x_init",
+    "simulator": "icarus",
+    "cell_models": "liberty_function_flattened",
+    "x_model_checked": false,
+    "result": "x_blocked",
+    "first_divergence_cycle": null,
+    "diverging_output": null
+   }
+  ],
+  "divergence_attribution": "trigger_only"
+ },
+ "provenance": {
+  "campaign": "live_twins_20261124",
+  "produced_by": "live_twins/lt.py; tools/htbench/export_release.py",
+  "date": "2026-11-25"
+ }
+}

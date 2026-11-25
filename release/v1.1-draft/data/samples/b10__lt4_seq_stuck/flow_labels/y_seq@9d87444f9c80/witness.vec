@@ -1,0 +1,5 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: clock g_button key r_button reset rtr rts start test v_in
+clock=0 g_button=0 key=0 r_button=0 reset=1 rtr=0 rts=0 start=0 test=0 v_in=0000
+clock=0 g_button=0 key=0 r_button=0 reset=0 rtr=0 rts=1 start=0 test=1 v_in=0000
+clock=0 g_button=0 key=0 r_button=0 reset=0 rtr=0 rts=0 start=0 test=0 v_in=0000

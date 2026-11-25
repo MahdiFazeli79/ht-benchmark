@@ -1,0 +1,16 @@
+{
+ "sample_id": "s386__t4_contra_bit",
+ "campaign_id": "s386__T4_contra_bit",
+ "admission": "flow_labelled",
+ "host_id": "s386",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T4",
+ "sub_variant": "contra_bit",
+ "params": {
+  "width": 16,
+  "bit": 2
+ },
+ "payload_output": "core_v13_D_11"
+}

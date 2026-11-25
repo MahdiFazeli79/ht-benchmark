@@ -1,0 +1,15 @@
+{
+ "sample_id": "b14__lt4_seq_stuck",
+ "campaign_id": "b14__LT4_seq_stuck",
+ "admission": "flow_labelled",
+ "host_id": "b14",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "seq_stuck",
+ "params": {
+  "set_by_input_bit": 2
+ },
+ "payload_output": "core_addr[19]"
+}

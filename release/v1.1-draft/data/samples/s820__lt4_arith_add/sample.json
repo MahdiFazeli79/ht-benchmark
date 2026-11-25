@@ -1,0 +1,16 @@
+{
+ "sample_id": "s820__lt4_arith_add",
+ "campaign_id": "s820__LT4_arith_add",
+ "admission": "flow_labelled",
+ "host_id": "s820",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "arith_add",
+ "params": {
+  "n": 4,
+  "target": 14
+ },
+ "payload_output": "core_G53"
+}

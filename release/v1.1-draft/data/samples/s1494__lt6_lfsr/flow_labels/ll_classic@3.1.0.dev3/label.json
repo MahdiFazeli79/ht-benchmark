@@ -1,0 +1,85 @@
+{
+ "schema_version": "1.1-draft",
+ "sample_id": "s1494__lt6_lfsr",
+ "flow_id": "ll_classic@3.1.0.dev3",
+ "host_id": "s1494",
+ "tier": "functional",
+ "functional_grade": "power_up_only",
+ "removed_reason": null,
+ "perturbation_cause": null,
+ "comparison_flow_id": null,
+ "flags": [],
+ "netlists": {
+  "trojan_sha256": "d1bccb53c354665606c6c4013e57ff69f7df6ad952d534da1c146b59ef04fde5",
+  "golden_sha256": "d46d87d96149fc4c8746014460951f00ac5b5d2a4156c40d998b50d1ee6eec3b",
+  "identical": false
+ },
+ "equivalence": {
+  "method": "abc_miter_reset",
+  "init": "reset_cycle0_zero_uninit",
+  "engines": [
+   "dprove",
+   "pdr"
+  ],
+  "decided_by": "dprove",
+  "bounded": false,
+  "bound": null,
+  "timeout_s": 600,
+  "elapsed_s": 0.3,
+  "status": "proved",
+  "counterexample_file": null,
+  "abc_version": null,
+  "free_start": {
+   "status": "different",
+   "decided_by": "dprove",
+   "first_frame": 1,
+   "free_flops": 16,
+   "counterexample_file": "witness.vec"
+  }
+ },
+ "remnant": {
+  "attribution": "trojan",
+  "evidence_level": "delta_only",
+  "trojan_named_cells": null,
+  "labels_netlist_file": null
+ },
+ "delta": {
+  "cells": 15,
+  "area_um2": null,
+  "flops": 16,
+  "const_drivers": 0,
+  "pass_through": 0
+ },
+ "witness": {
+  "source": "eq_free_counterexample",
+  "file": "witness.vec",
+  "sha256": "2558d7a8b74417f7e51c3bfdffde4f11e799709cad82e4d2d91a81f81940dc47",
+  "cycles": 2,
+  "replays": [
+   {
+    "mode": "power_up",
+    "simulator": "icarus",
+    "cell_models": "liberty_function_flattened",
+    "x_model_checked": false,
+    "result": "diverged",
+    "first_divergence_cycle": 1,
+    "diverging_output": "v13_D_20"
+   },
+   {
+    "mode": "x_init",
+    "simulator": "icarus",
+    "cell_models": "liberty_function_flattened",
+    "x_model_checked": false,
+    "result": "x_blocked",
+    "first_divergence_cycle": null,
+    "diverging_output": null
+   }
+  ],
+  "divergence_attribution": "trigger_only"
+ },
+ "provenance": {
+  "campaign": "live_twins_20261124",
+  "produced_by": "live_twins/lt.py; tools/htbench/export_release.py",
+  "date": "2026-11-25"
+ }
+}

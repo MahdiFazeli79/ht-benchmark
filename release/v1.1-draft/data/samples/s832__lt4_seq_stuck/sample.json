@@ -1,0 +1,15 @@
+{
+ "sample_id": "s832__lt4_seq_stuck",
+ "campaign_id": "s832__LT4_seq_stuck",
+ "admission": "flow_labelled",
+ "host_id": "s832",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "seq_stuck",
+ "params": {
+  "set_by_input_bit": 11
+ },
+ "payload_output": "core_G298"
+}

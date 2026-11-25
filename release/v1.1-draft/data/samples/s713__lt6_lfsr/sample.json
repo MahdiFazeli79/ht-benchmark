@@ -1,0 +1,17 @@
+{
+ "sample_id": "s713__lt6_lfsr",
+ "campaign_id": "s713__LT6_lfsr",
+ "admission": "flow_labelled",
+ "host_id": "s713",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T6",
+ "sub_variant": "lfsr",
+ "params": {
+  "width": 8,
+  "reset": false,
+  "enabled_by_trigger": true
+ },
+ "payload_output": "core_G106BF"
+}

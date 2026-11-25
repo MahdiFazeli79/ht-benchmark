@@ -1,0 +1,12 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: bs16 clock datai hold na ready1 ready2 reset
+bs16=0 clock=1 datai=10010001110000011111001001110011 hold=0 na=0 ready1=0 ready2=0 reset=1
+bs16=1 clock=0 datai=01100010000111001100011101010001 hold=1 na=1 ready1=0 ready2=1 reset=0
+bs16=0 clock=1 datai=00011010101100110110101010111001 hold=0 na=0 ready1=1 ready2=0 reset=0
+bs16=0 clock=0 datai=10111000000000110001101101101001 hold=0 na=0 ready1=0 ready2=0 reset=0
+bs16=0 clock=1 datai=11100111011101110110001000010001 hold=0 na=0 ready1=0 ready2=1 reset=0
+bs16=0 clock=1 datai=11000111101100110100110111000011 hold=1 na=1 ready1=1 ready2=0 reset=0
+bs16=1 clock=0 datai=00101010111111010001110011000001 hold=0 na=0 ready1=0 ready2=1 reset=0
+bs16=0 clock=0 datai=00001101100001111100110000000100 hold=0 na=0 ready1=1 ready2=0 reset=0
+bs16=0 clock=0 datai=10000000001010111101100010000010 hold=0 na=0 ready1=0 ready2=0 reset=0
+bs16=1 clock=1 datai=00011010100010110001111100111000 hold=1 na=0 ready1=0 ready2=0 reset=0

@@ -1,0 +1,16 @@
+{
+ "sample_id": "s526__lt4_contra_bit",
+ "campaign_id": "s526__LT4_contra_bit",
+ "admission": "flow_labelled",
+ "host_id": "s526",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "contra_bit",
+ "params": {
+  "width": 3,
+  "key": 7
+ },
+ "payload_output": "core_G199"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s400__lt6_johnson",
+ "campaign_id": "s400__LT6_johnson",
+ "admission": "flow_labelled",
+ "host_id": "s400",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T6",
+ "sub_variant": "johnson",
+ "params": {
+  "width": 8,
+  "reset": true,
+  "enabled_by_trigger": true
+ },
+ "payload_output": "core_YLW2"
+}

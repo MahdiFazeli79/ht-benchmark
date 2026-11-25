@@ -1,0 +1,85 @@
+{
+ "schema_version": "1.1-draft",
+ "sample_id": "s208_1__lt6_lfsr",
+ "flow_id": "ll_classic@3.1.0.dev3",
+ "host_id": "s208_1",
+ "tier": "functional",
+ "functional_grade": "power_up_only",
+ "removed_reason": null,
+ "perturbation_cause": null,
+ "comparison_flow_id": null,
+ "flags": [],
+ "netlists": {
+  "trojan_sha256": "ba4347048918219e6bf3912e2e5f1c56a81774e7ae1a6e4fd0b7bbdf7f9913c9",
+  "golden_sha256": "935e2b8207f8ec9492671741c5a869d18afb8cb4e4a33d40e31f0fcca63b2798",
+  "identical": false
+ },
+ "equivalence": {
+  "method": "abc_miter_reset",
+  "init": "reset_cycle0_zero_uninit",
+  "engines": [
+   "dprove",
+   "pdr"
+  ],
+  "decided_by": "dprove",
+  "bounded": false,
+  "bound": null,
+  "timeout_s": 600,
+  "elapsed_s": 0.0,
+  "status": "proved",
+  "counterexample_file": null,
+  "abc_version": null,
+  "free_start": {
+   "status": "different",
+   "decided_by": "dprove",
+   "first_frame": 1,
+   "free_flops": 8,
+   "counterexample_file": "witness.vec"
+  }
+ },
+ "remnant": {
+  "attribution": "trojan",
+  "evidence_level": "delta_only",
+  "trojan_named_cells": null,
+  "labels_netlist_file": null
+ },
+ "delta": {
+  "cells": 16,
+  "area_um2": null,
+  "flops": 8,
+  "const_drivers": 0,
+  "pass_through": 0
+ },
+ "witness": {
+  "source": "eq_free_counterexample",
+  "file": "witness.vec",
+  "sha256": "40a49e14fac02de65003a770dc0cff7108a6839507f46b136972d89a1075f2cc",
+  "cycles": 2,
+  "replays": [
+   {
+    "mode": "power_up",
+    "simulator": "icarus",
+    "cell_models": "liberty_function_flattened",
+    "x_model_checked": false,
+    "result": "diverged",
+    "first_divergence_cycle": 1,
+    "diverging_output": "Z"
+   },
+   {
+    "mode": "x_init",
+    "simulator": "icarus",
+    "cell_models": "liberty_function_flattened",
+    "x_model_checked": false,
+    "result": "x_blocked",
+    "first_divergence_cycle": null,
+    "diverging_output": null
+   }
+  ],
+  "divergence_attribution": "trigger_only"
+ },
+ "provenance": {
+  "campaign": "live_twins_20261124",
+  "produced_by": "live_twins/lt.py; tools/htbench/export_release.py",
+  "date": "2026-11-25"
+ }
+}

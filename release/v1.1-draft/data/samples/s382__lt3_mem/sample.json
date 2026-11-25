@@ -1,0 +1,17 @@
+{
+ "sample_id": "s382__lt3_mem",
+ "campaign_id": "s382__LT3_mem",
+ "admission": "flow_labelled",
+ "host_id": "s382",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "mem",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "cnt4@11",
+  "payload_reset": true
+ },
+ "payload_output": "core_YLW2"
+}

@@ -1,0 +1,17 @@
+{
+ "sample_id": "s420_1__lt3_weak_xor",
+ "campaign_id": "s420_1__LT3_weak_xor",
+ "admission": "flow_labelled",
+ "host_id": "s420_1",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_xor",
+ "params": {
+  "payload_bits": 32,
+  "trigger": "icmp4",
+  "payload_reset": false
+ },
+ "payload_output": "core_Z"
+}

@@ -1,0 +1,133 @@
+{
+ "description": "Frame-0 value of each flop that has no reset, on the <cell>.IQ register of the flattened Liberty-function model of netlist.v; all other flops start X.",
+ "deposits": [
+  {
+   "register": "_213_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_212_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_211_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_210_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_209_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_208_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_207_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_206_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_205_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_214_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_204_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_215_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_216_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_217_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_218_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_219_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_220_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_221_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_222_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_223_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_224_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_225_.IQ",
+   "value": "1"
+  },
+  {
+   "register": "_226_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_227_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_228_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_229_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_230_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_231_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_232_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_233_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_235_.IQ",
+   "value": "0"
+  },
+  {
+   "register": "_234_.IQ",
+   "value": "0"
+  }
+ ]
+}

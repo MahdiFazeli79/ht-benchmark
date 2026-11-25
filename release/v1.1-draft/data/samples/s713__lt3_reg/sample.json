@@ -1,0 +1,17 @@
+{
+ "sample_id": "s713__lt3_reg",
+ "campaign_id": "s713__LT3_reg",
+ "admission": "flow_labelled",
+ "host_id": "s713",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 8,
+  "trigger": "icmp8",
+  "payload_reset": false
+ },
+ "payload_output": "core_G86BF"
+}

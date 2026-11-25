@@ -1,0 +1,17 @@
+{
+ "sample_id": "b05__lt6_counter",
+ "campaign_id": "b05__LT6_counter",
+ "admission": "flow_labelled",
+ "host_id": "b05",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T6",
+ "sub_variant": "counter",
+ "params": {
+  "width": 8,
+  "reset": false,
+  "enabled_by_trigger": true
+ },
+ "payload_output": "core_DISPMAX1[3]"
+}

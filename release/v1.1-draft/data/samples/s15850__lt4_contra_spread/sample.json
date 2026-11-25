@@ -1,0 +1,16 @@
+{
+ "sample_id": "s15850__lt4_contra_spread",
+ "campaign_id": "s15850__LT4_contra_spread",
+ "admission": "flow_labelled",
+ "host_id": "s15850",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "contra_spread",
+ "params": {
+  "wa": 7,
+  "wb": 7
+ },
+ "payload_output": "core_g8340"
+}

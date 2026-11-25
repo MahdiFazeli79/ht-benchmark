@@ -1,0 +1,16 @@
+{
+ "sample_id": "b08__lt4_contra_bit",
+ "campaign_id": "b08__LT4_contra_bit",
+ "admission": "flow_labelled",
+ "host_id": "b08",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T4",
+ "sub_variant": "contra_bit",
+ "params": {
+  "width": 8,
+  "key": 7
+ },
+ "payload_output": "core_O[3]"
+}

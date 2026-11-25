@@ -1,0 +1,17 @@
+{
+ "sample_id": "b07__t6_johnson",
+ "campaign_id": "b07__T6_johnson",
+ "admission": "flow_labelled",
+ "host_id": "b07",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T6",
+ "sub_variant": "johnson",
+ "params": {
+  "width": 8,
+  "reset": true,
+  "enabled_by_trigger": false
+ },
+ "payload_output": null
+}

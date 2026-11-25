@@ -1,0 +1,17 @@
+{
+ "sample_id": "s15850__lt3_mem",
+ "campaign_id": "s15850__LT3_mem",
+ "admission": "flow_labelled",
+ "host_id": "s15850",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "mem",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "icmp14",
+  "payload_reset": true
+ },
+ "payload_output": "core_g3007"
+}

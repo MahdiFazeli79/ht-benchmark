@@ -1,0 +1,17 @@
+{
+ "sample_id": "b08__lt6_johnson",
+ "campaign_id": "b08__LT6_johnson",
+ "admission": "flow_labelled",
+ "host_id": "b08",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T6",
+ "sub_variant": "johnson",
+ "params": {
+  "width": 8,
+  "reset": true,
+  "enabled_by_trigger": true
+ },
+ "payload_output": "core_O[3]"
+}

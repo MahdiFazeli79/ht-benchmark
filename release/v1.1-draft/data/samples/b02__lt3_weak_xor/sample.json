@@ -1,0 +1,17 @@
+{
+ "sample_id": "b02__lt3_weak_xor",
+ "campaign_id": "b02__LT3_weak_xor",
+ "admission": "flow_labelled",
+ "host_id": "b02",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "live_twin",
+ "trojan_class": "T3",
+ "sub_variant": "weak_xor",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "iand1",
+  "payload_reset": false
+ },
+ "payload_output": "core_u"
+}

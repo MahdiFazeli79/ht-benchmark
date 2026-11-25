@@ -1,0 +1,17 @@
+{
+ "sample_id": "s838_1__t3_reg",
+ "campaign_id": "s838_1__T3_reg",
+ "admission": "flow_labelled",
+ "host_id": "s838_1",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "reg",
+ "params": {
+  "payload_bits": 16,
+  "trigger": "and6",
+  "payload_reset": false
+ },
+ "payload_output": null
+}

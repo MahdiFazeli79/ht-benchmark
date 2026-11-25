@@ -1,0 +1,17 @@
+{
+ "sample_id": "b22__t3_mem",
+ "campaign_id": "b22__T3_mem",
+ "admission": "flow_labelled",
+ "host_id": "b22",
+ "distribution": "labels_only",
+ "family": "ITC99",
+ "population": "decoy",
+ "trojan_class": "T3",
+ "sub_variant": "mem",
+ "params": {
+  "payload_bits": 4,
+  "trigger": "cnt8",
+  "payload_reset": true
+ },
+ "payload_output": null
+}

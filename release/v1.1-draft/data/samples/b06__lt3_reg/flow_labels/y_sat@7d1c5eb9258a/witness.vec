@@ -1,0 +1,16 @@
+# primary-input vectors, one line per clock cycle, bits MSB first; source: eq_counterexample
+# ports: clock cont_eql eql reset
+clock=0 cont_eql=0 eql=0 reset=1
+clock=0 cont_eql=0 eql=0 reset=0
+clock=0 cont_eql=0 eql=0 reset=0
+clock=0 cont_eql=1 eql=1 reset=0
+clock=0 cont_eql=0 eql=0 reset=0
+clock=0 cont_eql=0 eql=1 reset=0
+clock=0 cont_eql=0 eql=0 reset=0
+clock=0 cont_eql=0 eql=0 reset=0
+clock=0 cont_eql=0 eql=1 reset=0
+clock=0 cont_eql=0 eql=1 reset=0
+clock=0 cont_eql=1 eql=1 reset=0
+clock=0 cont_eql=0 eql=1 reset=0
+clock=0 cont_eql=0 eql=1 reset=0
+clock=0 cont_eql=0 eql=0 reset=0

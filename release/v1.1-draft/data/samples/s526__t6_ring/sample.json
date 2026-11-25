@@ -1,0 +1,17 @@
+{
+ "sample_id": "s526__t6_ring",
+ "campaign_id": "s526__T6_ring",
+ "admission": "flow_labelled",
+ "host_id": "s526",
+ "distribution": "netlists",
+ "family": "ISCAS89",
+ "population": "decoy",
+ "trojan_class": "T6",
+ "sub_variant": "ring",
+ "params": {
+  "width": 7,
+  "reset": false,
+  "enabled_by_trigger": true
+ },
+ "payload_output": null
+}
