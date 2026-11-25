@@ -447,12 +447,17 @@ flow_labels/
 
 Registered now (open-source, reference flow first):
 
-| flow_id (proposed) | Flow | Notes |
-|---|---|---|
-| `ll_classic@3.1.0.dev3` | LibreLane Classic, synthesis only | reference flow |
-| `y_sat@<hash>` | Yosys with `opt -full; opt_dff -sat` | |
-| `y_seq@<hash>` | Y_sat plus `abc -dff` with `scorr` | renames all nets; remnant evidence `delta_only` |
-| `y_seq_k<k>@<hash>` | Y_seq with `scorr -F k` | E1b only; one flow_id per k |
+| flow_id | Flow | Hosts | Notes |
+|---|---|---|---|
+| `ll_classic@3.1.0.dev3` | LibreLane Classic, synthesis only | all | reference flow |
+| `y_sat@7d1c5eb9258a` | Yosys with `opt -full; opt_dff -sat` | 42 of the 46 release hosts | |
+| `y_sat@0d365ed5721e` | the same script with one `techmap` before cell mapping | b14, b17, b20, b21 | see below |
+| `y_seq@9d87444f9c80` | Y_sat plus `abc -dff` with `scorr` | all | renames all nets; remnant evidence `delta_only` |
+| `y_seq_k<k>@<hash>` | Y_seq with `scorr -F k` | E1b hosts | E1b only; one flow_id per k; not in the release |
+
+The hash in a Yosys flow_id is the first 12 hex digits of the SHA-256 of the host's golden synthesis script, with the host name and file paths masked. `tools/htbench/export_release.py` computes it and writes the full script into `flows.json`.
+
+Y_sat is two flows (found when the release was exported, 25 November 2026). During the campaign run of 22 November 2026, one `techmap` step was added to the Y_sat script before cell mapping, because on b14, b20 and b21 the final `opt -full` rebuilt coarse `$mux` cells that `abc -liberty` does not map, and the probe rejected those netlists (notebook 11, cell 3). The four hosts synthesized after that change, b14, b17, b20 and b21, used the new script; the other 42 release hosts used the old one. b18, which is outside the release, is not covered by this table. Under R13 a script change is a new flow_id, so their Y_sat labels carry `y_sat@0d365ed5721e`. The notebook's argument that the two scripts give the same netlist on the 42 earlier hosts (techmap changes nothing when only fine-grained gate cells remain, and a coarse cell would have been rejected by the probe) is reasoning, not a check: those hosts were not re-synthesized with the new script. The Y_seq script already had the `techmap` step for every host, so Y_seq is one flow. For the b17 HOST_PERTURBATION labels, the comparison flow is `y_sat@0d365ed5721e`.
 
 Current campaign mapped onto the tiers (47 hosts, b19 excluded, 893 Trojan netlists per flow):
 
@@ -462,7 +467,7 @@ Current campaign mapped onto the tiers (47 hosts, b19 excluded, 893 Trojan netli
 | Y_sat | 15 | 784 | 94 | 0 | 0 | 0 |
 | Y_seq | 35 | 798 | 47 | 0 | 3 (b18) | 10 (b17) |
 
-All INERT rows use `remnant.evidence_level: delta_only` today. FUNCTIONAL candidates exist only outside the population: the E1 control with T = S (10 hosts, all three flows, `different`) and the four negative controls. None has a saved counterexample, so none is FUNCTIONAL yet under R14.
+The Y_sat row adds up the two Y_sat flow_ids; it is a campaign summary and not a label (R12). All INERT rows use `remnant.evidence_level: delta_only` today. FUNCTIONAL candidates exist only outside the population: the E1 control with T = S (10 hosts, all three flows, `different`) and the four negative controls. None has a saved counterexample, so none is FUNCTIONAL yet under R14.
 
 Slot for commercial flows (future work): `flow_family: commercial`, with Cadence Genus or Synopsys Design Compiler as the tool. Same record, same rules, same reference-flow golden check. Two things differ and are open decision 8: vendor licences may forbid redistributing the netlists (then the release ships `label.json`, hashes and witnesses but no `netlist.v`), and some licences restrict publishing benchmark results at all. No commercial flow is claimed until it is run, and no open-source label is ever used as a stand-in for one (R12).
 
