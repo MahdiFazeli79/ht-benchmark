@@ -6,6 +6,8 @@ authors:
   - family-names: Fazeli
     given-names: Mahdi
     affiliation: Halmstad University
+    orcid: "https://orcid.org/0000-0002-2874-6256"
+doi: "10.5281/zenodo.24525130"
 version: "1.1-draft"
 date-released: "2026-11-25"
 repository-code: "https://github.com/MahdiFazeli79/ht-benchmark"
