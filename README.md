@@ -34,6 +34,34 @@ python tools/htbench/export_release.py --check release/v1.1-draft
 The label definitions are in `spec/DRAFT-flow-labels-v1.1-2026-11-23.md`. That
 spec is a draft, so tiers and layout can still change.
 
+## Where are the Trojan-inserted designs?
+
+They are in `release/v1.1-draft/data/samples/`, one folder per sample. The Trojan-free
+designs are in `release/v1.1-draft/golden/`.
+
+| Path | Content |
+|---|---|
+| `release/v1.1-draft/data/samples/<sample_id>/rtl.v` | host RTL with the Trojan inserted |
+| `release/v1.1-draft/data/samples/<sample_id>/sample.json` | host, Trojan class, sub-variant, parameters |
+| `release/v1.1-draft/data/samples/<sample_id>/flow_labels/<flow_id>/netlist.v` | Trojan-inserted netlist after that synthesis flow |
+| `release/v1.1-draft/data/samples/<sample_id>/flow_labels/<flow_id>/label.json` | the label for that netlist |
+| `release/v1.1-draft/golden/<host>/<flow_id>/netlist.v` | Trojan-free netlist of the same host and flow |
+
+Sample names say which class a design belongs to. `<host>__lt…` is a live twin
+(positive class), for example [`s27__lt6_ring`](release/v1.1-draft/data/samples/s27__lt6_ring).
+`<host>__t…` is a decoy (negative class), for example
+[`s27__t4_seq_sat`](release/v1.1-draft/data/samples/s27__t4_seq_sat).
+
+The release has 3,078 Trojan-inserted netlists and 1,026 Trojan-inserted RTL
+files, all on the 27 ISCAS-89 hosts (names starting with `s`). The 722 samples
+on the 19 ITC'99 hosts (names starting with `b`) have labels and witnesses but
+no `rtl.v` or `netlist.v`, for the licence reason given in `LICENSE-DATA`.
+
+GitHub lists at most 1,000 entries per folder and `data/samples` has 1,748, so
+the web page cuts the list off and shows mostly ITC'99 samples first. Use
+`release/v1.1-draft/labels.jsonl` to find a sample: it has one line per sample and flow,
+with the tier and the folder path.
+
 ## What is in here
 
 - `release/`: the flow-labelled data release and its README.
